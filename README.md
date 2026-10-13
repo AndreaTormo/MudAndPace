@@ -1,18 +1,24 @@
 <div align="center">
 
-<img src="./Mountain1.png" alt="Logo de MudAndPace" width="200">
+<img src="./Mountain1.png" alt="Logo de MudAndPace" width="180">
 
-# MudAndPace
+<h1>⛰️ MudAndPace</h1>
 
-**Descubre rutas, explora la montaña y vive el trail running.**
+<p><em>Descubre rutas, explora la montaña y vive el trail running.</em></p>
 
-<br>
+<p>
+  <a href="#características">Características</a> •
+  <a href="#instalación">Instalación</a> •
+  <a href="#uso">Uso</a> •
+  <a href="#contribuir">Contribuir</a>
+</p>
 
-![Trail Running](https://img.shields.io/badge/Trail%20Running-8B5A2B?style=for-the-badge&logo=strava&logoColor=white)
-![Montaña](https://img.shields.io/badge/Monta%C3%B1a-4A6741?style=for-the-badge&logo=mountdotcom&logoColor=white)
-![Rutas](https://img.shields.io/badge/Rutas-C2793A?style=for-the-badge&logo=googlemaps&logoColor=white)
+<img src="https://img.shields.io/badge/estado-en%20desarrollo-8B5A2B?style=flat-square" alt="Estado">
+<img src="https://img.shields.io/badge/licencia-MIT-4A6741?style=flat-square" alt="Licencia">
 
 </div>
+
+<br>
 
 ---
 
