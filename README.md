@@ -1,6 +1,14 @@
-# MudAndPace 🏔️
-
-**Descubre rutas, explora la montaña y vive el trail running.**
+<table>
+  <tr>
+    <td width="160" align="center" valign="middle">
+      <img src="./Mountain1.png" alt="Logo de MudAndPace" width="140" />
+    </td>
+    <td valign="middle">
+      <h1>MudAndPace</h1>
+      <p><strong>Descubre rutas, explora la montaña y vive el trail running.</strong></p>
+    </td>
+  </tr>
+</table>
 
 MudAndPace es una plataforma web centrada en el mundo del trail running, concebida para explorar experiencias de montaña y acercar a los corredores a la emoción de las carreras de trail, inspiradas en circuitos como UTMB World Series y Golden Trail World Series (GTWS).
 
@@ -318,4 +326,6 @@ Si quieres contribuir al proyecto:
 3. Realiza los cambios y comprueba que la aplicación compila.
 4. Abre un pull request con una descripción clara.
 
+## 📄 Licencia
 
+Añade aquí la licencia del proyecto cuando esté definida.
