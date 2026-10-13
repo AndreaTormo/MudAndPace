@@ -1,11 +1,7 @@
 <div align="center">
 
 <img src="./Mountain1.png" alt="Logo de MudAndPace" width="200">
-
-# MudAndPace
-
 **Descubre rutas, explora la montaña y vive el trail running.**
-
 <br>
 
 ![Estado](https://img.shields.io/badge/Estado-En%20desarrollo-E0A526?style=for-the-badge&logo=github&logoColor=white)
