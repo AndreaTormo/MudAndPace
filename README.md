@@ -1,7 +1,7 @@
-<table>
+ <table>
   <tr>
-    <td width="160" align="center" valign="middle">
-      <img src="./Mountain1.png" alt="Logo de MudAndPace" width="140" />
+    <td width="180" align="center" valign="middle">
+      <img src="./Mountain1.png" alt="Logo original de MudAndPace" width="160">
     </td>
     <td valign="middle">
       <h1>MudAndPace</h1>
