@@ -11,7 +11,6 @@
 ![Rutas](https://img.shields.io/badge/Rutas-C2793A?style=for-the-badge&logo=googlemaps&logoColor=white)
 
 </div>
-<br>
 
 ---
 
