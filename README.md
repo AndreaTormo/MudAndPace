@@ -1,14 +1,20 @@
- <table>
-  <tr>
-    <td width="180" align="center" valign="middle">
-      <img src="./Mountain1.png" alt="Logo original de MudAndPace" width="160">
-    </td>
-    <td valign="middle">
-      <h1>MudAndPace</h1>
-      <p><strong>Descubre rutas, explora la montaña y vive el trail running.</strong></p>
-    </td>
-  </tr>
-</table>
+<div align="center">
+
+<img src="./Mountain1.png" alt="Logo de MudAndPace" width="200">
+
+# MudAndPace
+
+**Descubre rutas, explora la montaña y vive el trail running.**
+
+<br>
+
+![Trail Running](https://img.shields.io/badge/Trail%20Running-8B5A2B?style=for-the-badge&logo=strava&logoColor=white)
+![Montaña](https://img.shields.io/badge/Monta%C3%B1a-4A6741?style=for-the-badge&logo=mountdotcom&logoColor=white)
+![Rutas](https://img.shields.io/badge/Rutas-C2793A?style=for-the-badge&logo=googlemaps&logoColor=white)
+
+</div>
+
+---
 
 MudAndPace es una plataforma web centrada en el mundo del trail running, concebida para explorar experiencias de montaña y acercar a los corredores a la emoción de las carreras de trail, inspiradas en circuitos como UTMB World Series y Golden Trail World Series (GTWS).
 
