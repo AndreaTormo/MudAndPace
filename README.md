@@ -88,8 +88,6 @@ MudAndPace/
             └── shared/
 ```
 
-> El árbol es una representación conceptual de la organización de ambas aplicaciones. Ajusta los nombres de las carpetas raíz a los de tu repositorio si son diferentes.
-
 ### Flujo de datos
 
 En el frontend, las páginas interactúan con el store de rutas, que utiliza `TrailRouteService` y `ApiService` para realizar peticiones HTTP mediante `HttpClient`. El backend recibe las peticiones a través de sus rutas y controladores, aplica la lógica de negocio de los servicios y accede a MongoDB mediante los repositorios y modelos de Mongoose.
@@ -101,8 +99,6 @@ En el frontend, las páginas interactúan con el store de rutas, que utiliza `Tr
 - Los paquetes del frontend y del backend instalados.
 
 ## 🚀 Instalación y ejecución
-
-Los siguientes pasos presuponen que frontend y backend están en carpetas separadas. Sustituye las rutas por las de tu repositorio si fuera necesario.
 
 ### 1. Backend
 
@@ -120,12 +116,6 @@ cp .env.example .env
 ```
 
 Revisa `.env` y configura la conexión a MongoDB y los orígenes CORS permitidos.
-
-Si utilizas MongoDB local, asegúrate de que está en ejecución. Si el proyecto incluye la configuración de Docker Compose, también puedes iniciar los servicios con:
-
-```bash
-docker compose up -d
-```
 
 Arranca la API en modo desarrollo:
 
@@ -189,71 +179,12 @@ Comprobación del estado del backend:
 GET http://localhost:3000/health
 ```
 
-### Ejemplos de consulta
-
-Filtrar rutas por dificultad, país y rango de distancia:
-
-```text
-GET /api/v1/routes?difficulty=hard&country=España&minDistance=10&maxDistance=40
-```
-
-Buscar rutas cercanas a unas coordenadas:
-
-```text
-GET /api/v1/routes/nearby?longitude=0.1123&latitude=38.8027&radiusKm=25
-```
-
-La búsqueda geográfica utiliza un índice `2dsphere` de MongoDB sobre el campo `startPoint`.
-
-## 🗺️ Datos de una ruta
-
-Las rutas pueden incluir información como nombre, descripción, localización, punto de inicio, distancia, desnivel, dificultad, superficie, etiquetas e imágenes. También pueden incluir una URL a un archivo GPX.
-
-Ejemplo de objeto de ruta:
-
-```json
-{
-  "name": "Montgó Circular",
-  "description": "Ruta de montaña con vistas al Mediterráneo.",
-  "location": {
-    "country": "España",
-    "region": "Comunitat Valenciana",
-    "province": "Alicante",
-    "municipality": "Dénia"
-  },
-  "startPoint": {
-    "type": "Point",
-    "coordinates": [0.1123, 38.8027]
-  },
-  "distanceKm": 14.8,
-  "elevationGainM": 720,
-  "elevationLossM": 720,
-  "difficulty": "hard",
-  "surface": ["trail", "rock", "dirt"],
-  "tags": ["mediterraneo", "montana", "circular"],
-  "imageUrl": "https://example.com/montgo.jpg",
-  "gpxUrl": "https://example.com/montgo.gpx",
-  "isPublished": true
-}
-```
-
 ## 🛡️ Validación y gestión de errores
 
 - El backend valida los datos con Zod y Mongoose.
 - La API devuelve errores con una estructura uniforme.
 - El frontend centraliza el tratamiento de errores HTTP, incluidos los errores de validación, los tiempos de espera y las respuestas no válidas.
 - Los formularios del frontend validan los campos obligatorios y las URL HTTP/HTTPS.
-
-Ejemplo de respuesta de error:
-
-```json
-{
-  "error": {
-    "code": "ROUTE_NOT_FOUND",
-    "message": "Ruta no encontrada"
-  }
-}
-```
 
 ## 🔧 Configuración
 
@@ -274,7 +205,7 @@ La configuración se encuentra en:
 - `src/environments/environment.ts`
 - `src/environments/environment.development.ts`
 
-La URL base de la API se define mediante `API_URL`, y el tiempo máximo de espera de las peticiones mediante `requestTimeout` (en milisegundos).
+La URL base de la API se define mediante `API_URL`, y el tiempo máximo de espera de las peticiones mediante `requestTimeout`.
 
 ## 📦 Scripts disponibles
 
@@ -295,32 +226,6 @@ La compilación de producción se genera en `dist/trail_running_frontend_v3/`, s
 
 Consulta los `package.json` de cada aplicación para conocer otros scripts disponibles.
 
-## 🧪 Pruebas
-
-Según la documentación actual del frontend, no hay una suite de tests configurada; la comprobación indicada es ejecutar:
-
-```bash
-npm run build
-```
-
-Para probar los endpoints del backend, consulta el archivo `postman.md` incluido en el proyecto de la API.
-
-## 🌄 Próximas mejoras
-
-Algunas posibles evoluciones para acercar MudAndPace a una plataforma más completa de experiencias de trail running son:
-
-- Perfiles de usuario y autenticación.
-- Guardar rutas favoritas y crear listas personales.
-- Incorporar tracks GPX y geometrías completas de las rutas.
-- Catálogo de carreras y eventos de trail running.
-- Clasificaciones y estadísticas.
-- Comentarios y galerías de fotos.
-- Estadísticas detalladas de desnivel.
-- Paginación, caché y limitación de peticiones.
-- Roles de usuario y subida de archivos.
-
-Estas ideas son propuestas de evolución y no forman parte necesariamente de la funcionalidad implementada actualmente.
-
 ## 🤝 Contribuciones
 
 Si quieres contribuir al proyecto:
@@ -328,8 +233,4 @@ Si quieres contribuir al proyecto:
 1. Haz un fork del repositorio.
 2. Crea una rama para tu cambio.
 3. Realiza los cambios y comprueba que la aplicación compila.
-4. Abre un pull request con una descripción clara.
-
-## 📄 Licencia
-
-Añade aquí la licencia del proyecto cuando esté definida.
+4. Abre un pull request.
