@@ -64,6 +64,24 @@ class TrailRouteController {
     }
   }
 
+  async listDeleted(req, res, next) {
+    try {
+      const routes = await service.listDeleted();
+      return res.status(200).json({ success: true, message: 'Rutas eliminadas obtenidas correctamente', data: routes });
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  async hardDelete(req, res, next) {
+    try {
+      await service.hardDelete(req.params.id);
+      return res.status(200).json({ success: true, message: 'Ruta eliminada definitivamente' });
+    } catch (error) {
+      return next(error);
+    }
+  }
+
   async activate(req, res, next) {
     try {
       const route = await service.activate(req.params.id);

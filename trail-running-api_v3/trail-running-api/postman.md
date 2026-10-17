@@ -154,7 +154,7 @@ El radio está expresado en kilómetros.
 
 ---
 
-## 8. Eliminar ruta (soft delete)
+## 8. Enviar ruta a la papelera (soft delete)
 
 **DELETE**
 
@@ -164,8 +164,8 @@ El radio está expresado en kilómetros.
 
 Equivalente: **PATCH** `{{baseUrl}}/api/v1/routes/{{routeId}}/soft-delete`.
 
-Si la ruta está activa pasa a inactiva (`isActive: false`, `status: "inactive"`).
-Si ya está inactiva devuelve error 409.
+Si la ruta está activa pasa a `isActive: false`, `status: "deleted"`, `deleted_at: <fecha>`.
+Si ya está en la papelera devuelve error 409.
 
 Respuesta esperada:
 
@@ -174,14 +174,15 @@ Respuesta esperada:
   "data": {
     "_id": "...",
     "isActive": false,
-    "status": "inactive"
+    "status": "deleted",
+    "deleted_at": "2026-10-17T10:00:00.000Z"
   }
 }
 ```
 
 ---
 
-## 9. Restaurar ruta
+## 9. Restaurar ruta desde la papelera
 
 **PATCH**
 
@@ -189,11 +190,35 @@ Respuesta esperada:
 {{baseUrl}}/api/v1/routes/{{routeId}}/restore
 ```
 
-Solo restaura rutas inactivas (`isActive: true`, `status: "active"`). Si ya está activa devuelve error 409.
+Solo restaura rutas con `deleted_at` distinto de null. Devuelve `deleted_at: null`, `isActive: true`, `status: "active"`.
 
 ---
 
-## 10. Activar / desactivar
+## 10. Listar papelera de rutas
+
+**GET**
+
+```text
+{{baseUrl}}/api/v1/routes/deleted
+```
+
+Devuelve las rutas con `deleted_at` distinto de null, ordenadas por fecha de eliminación descendente.
+
+---
+
+## 11. Eliminar definitivamente una ruta
+
+**DELETE**
+
+```text
+{{baseUrl}}/api/v1/routes/{{routeId}}/permanent
+```
+
+Solo funciona si la ruta está en la papelera. Si no, devuelve 409 `ROUTE_NOT_DELETED`.
+
+---
+
+## 12. Activar / desactivar
 
 **PATCH**
 

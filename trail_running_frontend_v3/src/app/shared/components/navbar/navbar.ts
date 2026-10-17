@@ -32,6 +32,14 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
           >
             Rutas
           </a>
+          <a
+            routerLink="/events"
+            routerLinkActive="text-brand"
+            [routerLinkActiveOptions]="{ exact: true }"
+            class="rounded-full px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100 hover:text-gray-900"
+          >
+            Eventos
+          </a>
           <a routerLink="/routes/create" class="button-primary">+ Nueva ruta</a>
         </div>
 
@@ -83,6 +91,15 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
             (click)="menuOpen.set(false)"
           >
             Rutas
+          </a>
+          <a
+            routerLink="/events"
+            routerLinkActive="bg-gray-100 text-brand"
+            [routerLinkActiveOptions]="{ exact: true }"
+            class="block rounded-lg px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100"
+            (click)="menuOpen.set(false)"
+          >
+            Eventos
           </a>
           <a
             routerLink="/routes/create"

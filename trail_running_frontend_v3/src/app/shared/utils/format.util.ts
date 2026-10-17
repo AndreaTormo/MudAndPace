@@ -19,3 +19,10 @@ export function formatDate(iso: string | undefined): string {
     year: 'numeric'
   });
 }
+
+export function formatPrice(amount: number | undefined | null): string {
+  if (amount === undefined || amount === null) {
+    return '-';
+  }
+  return `${amount.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} €`;
+}

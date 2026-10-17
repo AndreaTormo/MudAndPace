@@ -27,22 +27,30 @@ class TrailRouteRepository {
   async softDeleteById(id) {
     return TrailRoute.findOneAndUpdate(
       { _id: id, ...NOT_DELETED, isActive: true },
-      { $set: { isActive: false, status: 'inactive', deleted_at: null } },
+      { $set: { isActive: false, status: 'deleted', deleted_at: new Date() } },
       { new: true, runValidators: true }
     );
   }
 
   async restoreById(id) {
     return TrailRoute.findOneAndUpdate(
-      { _id: id, isActive: false },
+      { _id: id, deleted_at: { $ne: null } },
       { $set: { isActive: true, status: 'active', deleted_at: null } },
       { new: true, runValidators: true }
     );
   }
 
+  async findAllDeleted() {
+    return TrailRoute.find({ deleted_at: { $ne: null } }).sort({ deleted_at: -1 });
+  }
+
+  async hardDeleteById(id) {
+    return TrailRoute.findOneAndDelete({ _id: id, deleted_at: { $ne: null } });
+  }
+
   async activateById(id) {
     return TrailRoute.findOneAndUpdate(
-      { _id: id, isActive: false },
+      { _id: id, ...NOT_DELETED, isActive: false },
       { $set: { isActive: true, status: 'active', deleted_at: null } },
       { new: true, runValidators: true }
     );

@@ -66,8 +66,18 @@ npm run dev
 
 ### Cargar datos de ejemplo
 
+Las rutas de ejemplo:
+
 ```bash
 node src/seed.js
+```
+
+Los eventos, organizadores, categorías y ubicaciones se cargan automáticamente al
+arrancar MongoDB con Docker (`init-db.js` se ejecuta desde `docker-entrypoint-initdb.d`).
+Para recargarlos manualmente:
+
+```bash
+docker exec trail-running-mongodb mongosh < ../../init-db.js
 ```
 
 ## Endpoints
@@ -80,17 +90,50 @@ http://localhost:3000/api/v1/routes
 
 | Método | Endpoint | Descripción |
 |---|---|---|
+| GET | `/deleted` | Lista rutas en la papelera |
 | GET | `/` | Lista rutas con filtros |
 | GET | `/:id` | Obtiene una ruta por ID |
 | GET | `/slug/:slug` | Obtiene una ruta por slug |
 | GET | `/nearby` | Busca rutas cercanas |
 | POST | `/` | Crea una ruta |
 | PUT | `/:id` | Actualiza una ruta |
-| PATCH | `/:id/soft-delete` | Desactiva una ruta (soft delete) |
-| PATCH | `/:id/restore` | Restaura una ruta inactiva |
+| PATCH | `/:id/soft-delete` | Envía una ruta a la papelera |
+| PATCH | `/:id/restore` | Restaura una ruta de la papelera |
 | PATCH | `/:id/activate` | Activa una ruta inactiva |
 | PATCH | `/:id/deactivate` | Desactiva una ruta activa |
-| DELETE | `/:id` | Desactiva una ruta (soft delete) |
+| DELETE | `/:id` | Envía una ruta a la papelera (soft delete) |
+| DELETE | `/:id/permanent` | Elimina definitivamente una ruta de la papelera |
+
+### Eventos
+
+Base URL: `http://localhost:3000/api/v1/events`
+
+| Método | Endpoint | Descripción |
+|---|---|---|
+| GET | `/deleted` | Lista eventos en la papelera |
+| GET | `/` | Lista eventos con filtros |
+| GET | `/:id` | Obtiene un evento por ID |
+| GET | `/slug/:slug` | Obtiene un evento por slug |
+| POST | `/` | Crea un evento |
+| PUT | `/:id` | Actualiza un evento |
+| PATCH | `/:id/publish` | Publica un evento (borrador → publicado) |
+| PATCH | `/:id/unpublish` | Pasa un evento a borrador |
+| PATCH | `/:id/soft-delete` | Envía un evento a la papelera |
+| PATCH | `/:id/restore` | Restaura un evento de la papelera |
+| DELETE | `/:id` | Envía un evento a la papelera (soft delete) |
+| DELETE | `/:id/permanent` | Elimina definitivamente un evento de la papelera |
+
+Filtros de listado: `status` (`published`, `draft`, `all`), `categoryId`, `locationId`, `hostId`, `minDistance`, `maxDistance`, `fromDate`, `toDate`, `isActive`.
+
+### Referencias
+
+Base URL: `http://localhost:3000/api/v1/references`
+
+| Método | Endpoint | Descripción |
+|---|---|---|
+| GET | `/categories` | Lista categorías activas |
+| GET | `/locations` | Lista ubicaciones activas |
+| GET | `/hosts` | Lista organizadores activos |
 
 Health check:
 

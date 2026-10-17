@@ -24,7 +24,7 @@ class EventService {
     try {
       const input = validateService(listQuerySchema, query);
       const {
-        status, categoryId, locationId, hostId, minDistance, maxDistance, fromDate, toDate, isActive, includeDeleted
+        status, categoryId, locationId, hostId, minDistance, maxDistance, fromDate, toDate, isActive
       } = input;
 
       const filters = {};
@@ -44,7 +44,7 @@ class EventService {
       if (isActive !== undefined) filters.isActive = isActive;
       if (status === 'published' || status === 'draft') filters.status = status;
 
-      return await repository.findAll(filters, { includeDeleted });
+      return await repository.findAll(filters);
     } catch (error) { throw normalizeAppError(error); }
   }
 
@@ -113,7 +113,26 @@ class EventService {
       if (!event) {
         const existing = await repository.findById(id, { includeDeleted: true });
         if (!existing) throw new AppError('Evento no encontrado', 404, 'EVENT_NOT_FOUND');
-        throw new AppError('El evento ya está activo y no se puede restaurar', 409, 'EVENT_ALREADY_ACTIVE');
+        throw new AppError('El evento no está en la papelera y no se puede restaurar', 409, 'EVENT_ALREADY_ACTIVE');
+      }
+      return event;
+    } catch (error) { throw normalizeAppError(error); }
+  }
+
+  async listDeleted() {
+    try {
+      return await repository.findAllDeleted();
+    } catch (error) { throw normalizeAppError(error); }
+  }
+
+  async hardDelete(id) {
+    try {
+      validateId(id);
+      const event = await repository.hardDeleteById(id);
+      if (!event) {
+        const existing = await repository.findById(id, { includeDeleted: true });
+        if (!existing) throw new AppError('Evento no encontrado', 404, 'EVENT_NOT_FOUND');
+        throw new AppError('Solo se puede eliminar definitivamente un evento de la papelera', 409, 'EVENT_NOT_DELETED');
       }
       return event;
     } catch (error) { throw normalizeAppError(error); }

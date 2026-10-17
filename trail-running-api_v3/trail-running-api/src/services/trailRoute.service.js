@@ -30,7 +30,7 @@ class TrailRouteService {
         if (minDistance !== undefined) filters.distanceKm.$gte = minDistance;
         if (maxDistance !== undefined) filters.distanceKm.$lte = maxDistance;
       }
-      if (status === 'deleted') return await repository.findAll({ ...filters, status: 'deleted' }, { includeDeleted: true });
+      if (status === 'deleted') return await repository.findAllDeleted();
       if (status === undefined) filters.status = { $in: ['active', 'inactive'] };
       else if (status !== 'all') filters.status = status;
       return await repository.findAll(filters, { includeDeleted });
@@ -98,7 +98,26 @@ class TrailRouteService {
       if (!route) {
         const existing = await repository.findById(id, { includeDeleted: true });
         if (!existing) throw new AppError('Ruta no encontrada', 404, 'ROUTE_NOT_FOUND');
-        throw new AppError('La ruta ya está activa y no se puede restaurar', 409, 'ROUTE_ALREADY_ACTIVE');
+        throw new AppError('La ruta no está en la papelera y no se puede restaurar', 409, 'ROUTE_ALREADY_ACTIVE');
+      }
+      return route;
+    } catch (error) { throw normalizeAppError(error); }
+  }
+
+  async listDeleted() {
+    try {
+      return await repository.findAllDeleted();
+    } catch (error) { throw normalizeAppError(error); }
+  }
+
+  async hardDelete(id) {
+    try {
+      validateId(id);
+      const route = await repository.hardDeleteById(id);
+      if (!route) {
+        const existing = await repository.findById(id, { includeDeleted: true });
+        if (!existing) throw new AppError('Ruta no encontrada', 404, 'ROUTE_NOT_FOUND');
+        throw new AppError('Solo se puede eliminar definitivamente una ruta de la papelera', 409, 'ROUTE_NOT_DELETED');
       }
       return route;
     } catch (error) { throw normalizeAppError(error); }

@@ -50,6 +50,20 @@ class EventController {
     } catch (error) { return next(error); }
   }
 
+  async listDeleted(req, res, next) {
+    try {
+      const events = await service.listDeleted();
+      return res.status(200).json({ success: true, message: 'Eventos eliminados obtenidos correctamente', data: events });
+    } catch (error) { return next(error); }
+  }
+
+  async hardDelete(req, res, next) {
+    try {
+      await service.hardDelete(req.params.id);
+      return res.status(200).json({ success: true, message: 'Evento eliminado definitivamente' });
+    } catch (error) { return next(error); }
+  }
+
   async publish(req, res, next) {
     try {
       const event = await service.publish(req.params.id);

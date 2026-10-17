@@ -26,6 +26,10 @@ El proyecto está desarrollado con **Angular** para el frontend y una **API REST
 - Páginas de detalle para consultar la información de una ruta.
 - Formularios para crear y editar rutas con validaciones en el cliente.
 - Gestión de rutas mediante borrado lógico y recuperación.
+- Sección de eventos con listado, filtros, detalle, creación y edición.
+- Gestión de eventos: publicar/despublicar y borrado lógico con recuperación.
+- Papelera de rutas y eventos con restauración y eliminación definitiva.
+- Panel de administración en el sidebar con acceso a las papeleras.
 - Estados de carga, errores y resultados vacíos.
 - Manejo centralizado de errores y mensajes en español.
 - Gestión del estado con Angular Signals y componentes con `OnPush`.
@@ -37,6 +41,10 @@ El proyecto está desarrollado con **Angular** para el frontend y una **API REST
 - Búsqueda geográfica de rutas cercanas mediante coordenadas y radio.
 - Creación y actualización de rutas.
 - Desactivación lógica, restauración, activación y desactivación de rutas.
+- API REST para eventos: listado con filtros, detalle, creación, edición, publicación y borrado lógico.
+- Papelera de rutas y eventos: restauración y eliminación definitiva.
+- Control de acceso a funciones administrativas mediante guard de UI.
+- Modelos de organizador, categoría y ubicación con población de datos relacionados.
 - Validación de datos con Zod y esquemas de Mongoose.
 - Gestión centralizada de errores y respuestas uniformes.
 - Middleware de seguridad, CORS, logging y gestión de rutas no encontradas.
@@ -172,6 +180,33 @@ http://localhost:3000/api/v1/routes
 | `PATCH` | `/:id/activate` | Activa una ruta inactiva |
 | `PATCH` | `/:id/deactivate` | Desactiva una ruta activa |
 | `DELETE` | `/:id` | Desactiva una ruta mediante borrado lógico |
+
+### Eventos
+
+Base URL: `http://localhost:3000/api/v1/events`
+
+| Método | Endpoint | Descripción |
+|---|---|---|
+| `GET` | `/` | Lista eventos y aplica filtros |
+| `GET` | `/:id` | Obtiene un evento por ID |
+| `GET` | `/slug/:slug` | Obtiene un evento por slug |
+| `POST` | `/` | Crea un evento |
+| `PUT` | `/:id` | Actualiza un evento |
+| `PATCH` | `/:id/publish` | Publica un evento (borrador → publicado) |
+| `PATCH` | `/:id/unpublish` | Pasa un evento a borrador |
+| `PATCH` | `/:id/soft-delete` | Desactiva un evento (borrado lógico) |
+| `PATCH` | `/:id/restore` | Restaura un evento inactivo |
+| `DELETE` | `/:id` | Desactiva un evento (borrado lógico) |
+
+Filtros de listado: `status` (`published`, `draft`, `all`), `categoryId`, `locationId`, `hostId`, `minDistance`, `maxDistance`, `fromDate`, `toDate`, `isActive`.
+
+### Referencias
+
+| Método | Endpoint | Descripción |
+|---|---|---|
+| `GET` | `/references/categories` | Lista categorías activas |
+| `GET` | `/references/locations` | Lista ubicaciones activas |
+| `GET` | `/references/hosts` | Lista organizadores activos |
 
 Comprobación del estado del backend:
 

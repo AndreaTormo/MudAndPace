@@ -35,17 +35,25 @@ class EventRepository {
   async softDeleteById(id) {
     return Event.findOneAndUpdate(
       { _id: id, ...NOT_DELETED, isActive: true },
-      { $set: { isActive: false, deleted_at: null } },
+      { $set: { isActive: false, deleted_at: new Date() } },
       { new: true, runValidators: true }
     );
   }
 
   async restoreById(id) {
     return Event.findOneAndUpdate(
-      { _id: id, isActive: false },
+      { _id: id, deleted_at: { $ne: null } },
       { $set: { isActive: true, deleted_at: null } },
       { new: true, runValidators: true }
     );
+  }
+
+  async findAllDeleted() {
+    return Event.find({ deleted_at: { $ne: null } }).sort({ deleted_at: -1 });
+  }
+
+  async hardDeleteById(id) {
+    return Event.findOneAndDelete({ _id: id, deleted_at: { $ne: null } });
   }
 
   async publishById(id) {
