@@ -7,6 +7,7 @@ const {
 
 const router = express.Router();
 
+router.get('/deleted', controller.listDeleted);
 router.get('/', validate(listQuerySchema, 'query'), controller.list);
 router.get('/slug/:slug', validate(slugParamsSchema, 'params'), controller.getBySlug);
 router.get('/:id', validate(idParamsSchema, 'params'), controller.getById);
@@ -17,5 +18,6 @@ router.patch('/:id/unpublish', validate(idParamsSchema, 'params'), controller.un
 router.patch('/:id/soft-delete', validate(idParamsSchema, 'params'), controller.softDelete);
 router.patch('/:id/restore', validate(idParamsSchema, 'params'), controller.restore);
 router.delete('/:id', validate(idParamsSchema, 'params'), controller.softDelete);
+router.delete('/:id/permanent', validate(idParamsSchema, 'params'), controller.hardDelete);
 
 module.exports = router;

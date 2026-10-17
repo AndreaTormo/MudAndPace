@@ -9,6 +9,10 @@ export class EventsStore {
   private readonly _selectedEvent = signal<Event | null>(null);
   private readonly _loaded = signal(false);
   private readonly _stale = signal(false);
+  private readonly _deletedLoading = signal(false);
+  private readonly _deletedError = signal<string | null>(null);
+  private readonly _deletedEvents = signal<Event[]>([]);
+  private readonly _deletedLoaded = signal(false);
 
   readonly loading = this._loading.asReadonly();
   readonly error = this._error.asReadonly();
@@ -16,6 +20,10 @@ export class EventsStore {
   readonly selectedEvent = this._selectedEvent.asReadonly();
   readonly loaded = this._loaded.asReadonly();
   readonly stale = this._stale.asReadonly();
+  readonly deletedLoading = this._deletedLoading.asReadonly();
+  readonly deletedError = this._deletedError.asReadonly();
+  readonly deletedEvents = this._deletedEvents.asReadonly();
+  readonly deletedLoaded = this._deletedLoaded.asReadonly();
 
   readonly isEmpty = computed(
     () => !this._loading() && !this._error() && this._events().length === 0
@@ -65,6 +73,32 @@ export class EventsStore {
     this._stale.set(true);
   }
 
+  setDeletedEvents(list: Event[]): void {
+    this._deletedEvents.set(list);
+    this._deletedLoaded.set(true);
+    this._deletedLoading.set(false);
+    this._deletedError.set(null);
+  }
+
+  setDeletedLoading(value: boolean): void {
+    this._deletedLoading.set(value);
+  }
+
+  setDeletedError(value: string | null): void {
+    this._deletedError.set(value);
+    this._deletedLoading.set(false);
+  }
+
+  removeDeletedEvent(id: string): void {
+    this._deletedEvents.update((list) => list.filter((event) => event._id !== id));
+  }
+
+  patchDeletedEvent(updated: Event): void {
+    this._deletedEvents.update((list) =>
+      list.map((event) => (event._id === updated._id ? updated : event))
+    );
+  }
+
   reset(): void {
     this._loading.set(false);
     this._error.set(null);
@@ -72,5 +106,9 @@ export class EventsStore {
     this._selectedEvent.set(null);
     this._loaded.set(false);
     this._stale.set(false);
+    this._deletedLoading.set(false);
+    this._deletedError.set(null);
+    this._deletedEvents.set([]);
+    this._deletedLoaded.set(false);
   }
 }

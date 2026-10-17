@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, effect, inject, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, inject, input, output, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { firstValueFrom } from 'rxjs';
 import { ReferenceService } from '../../../../core/services/reference.service';
@@ -217,7 +217,7 @@ import {
             formControlName="isActive"
             class="h-4 w-4 rounded border-gray-300"
           />
-          Evento activo (los inactivos se ocultan de la lista por defecto)
+          Evento activo (los inactivos se muestran en la lista y se pueden recuperar)
         </label>
       </section>
 

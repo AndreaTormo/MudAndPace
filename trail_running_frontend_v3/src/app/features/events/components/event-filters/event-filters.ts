@@ -96,7 +96,7 @@ export class EventFilters {
     toDate: ['']
   });
 
-  constructor(): void {
+  constructor() {
     void this.loadReferences();
   }
 

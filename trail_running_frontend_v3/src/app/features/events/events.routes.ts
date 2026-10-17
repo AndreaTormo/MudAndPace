@@ -1,10 +1,17 @@
 import { Routes } from '@angular/router';
+import { adminGuard } from '../../core/guards/admin.guard';
 
 export const EVENTS_ROUTES: Routes = [
   {
     path: '',
     loadComponent: () =>
       import('./pages/event-list/event-list').then((m) => m.EventList)
+  },
+  {
+    path: 'trash',
+    canActivate: [adminGuard],
+    loadComponent: () =>
+      import('./pages/event-trash/event-trash').then((m) => m.EventTrash)
   },
   {
     path: 'create',

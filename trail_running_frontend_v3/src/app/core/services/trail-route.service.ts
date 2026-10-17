@@ -87,4 +87,16 @@ export class TrailRouteService {
       .patch<ApiResponse<TrailRoute>>(`routes/${encodeURIComponent(id)}/restore`)
       .pipe(map((response) => extractData<TrailRoute>(response, isRoute)));
   }
+
+  listDeleted(): Observable<TrailRoute[]> {
+    return this.api
+      .get<ApiResponse<TrailRoute[]>>('routes/deleted')
+      .pipe(map((response) => extractData<TrailRoute[]>(response, Array.isArray)));
+  }
+
+  hardDelete(id: string): Observable<void> {
+    return this.api
+      .delete<ApiResponse<void>>(`routes/${encodeURIComponent(id)}/permanent`)
+      .pipe(map(() => undefined));
+  }
 }

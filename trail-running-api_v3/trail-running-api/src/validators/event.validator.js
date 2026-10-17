@@ -31,8 +31,7 @@ const listQuerySchema = z.object({
   maxDistance: z.coerce.number().positive().optional(),
   fromDate: z.coerce.date().optional(),
   toDate: z.coerce.date().optional(),
-  isActive: z.coerce.boolean().optional(),
-  includeDeleted: z.coerce.boolean().optional()
+  isActive: z.coerce.boolean().optional()
 }).strict();
 
 module.exports = { objectIdSchema, slugSchema, eventPayloadSchema, updateEventSchema, idParamsSchema, slugParamsSchema, listQuerySchema };

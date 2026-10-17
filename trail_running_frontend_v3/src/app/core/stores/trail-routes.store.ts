@@ -9,6 +9,10 @@ export class TrailRoutesStore {
   private readonly _selectedRoute = signal<TrailRoute | null>(null);
   private readonly _loaded = signal(false);
   private readonly _stale = signal(false);
+  private readonly _deletedLoading = signal(false);
+  private readonly _deletedError = signal<string | null>(null);
+  private readonly _deletedRoutes = signal<TrailRoute[]>([]);
+  private readonly _deletedLoaded = signal(false);
 
   readonly loading = this._loading.asReadonly();
   readonly error = this._error.asReadonly();
@@ -16,6 +20,10 @@ export class TrailRoutesStore {
   readonly selectedRoute = this._selectedRoute.asReadonly();
   readonly loaded = this._loaded.asReadonly();
   readonly stale = this._stale.asReadonly();
+  readonly deletedLoading = this._deletedLoading.asReadonly();
+  readonly deletedError = this._deletedError.asReadonly();
+  readonly deletedRoutes = this._deletedRoutes.asReadonly();
+  readonly deletedLoaded = this._deletedLoaded.asReadonly();
 
   readonly isEmpty = computed(
     () => !this._loading() && !this._error() && this._routes().length === 0
@@ -65,6 +73,32 @@ export class TrailRoutesStore {
     this._stale.set(true);
   }
 
+  setDeletedRoutes(list: TrailRoute[]): void {
+    this._deletedRoutes.set(list);
+    this._deletedLoaded.set(true);
+    this._deletedLoading.set(false);
+    this._deletedError.set(null);
+  }
+
+  setDeletedLoading(value: boolean): void {
+    this._deletedLoading.set(value);
+  }
+
+  setDeletedError(value: string | null): void {
+    this._deletedError.set(value);
+    this._deletedLoading.set(false);
+  }
+
+  removeDeletedRoute(id: string): void {
+    this._deletedRoutes.update((list) => list.filter((route) => route._id !== id));
+  }
+
+  patchDeletedRoute(updated: TrailRoute): void {
+    this._deletedRoutes.update((list) =>
+      list.map((route) => (route._id === updated._id ? updated : route))
+    );
+  }
+
   reset(): void {
     this._loading.set(false);
     this._error.set(null);
@@ -72,5 +106,9 @@ export class TrailRoutesStore {
     this._selectedRoute.set(null);
     this._loaded.set(false);
     this._stale.set(false);
+    this._deletedLoading.set(false);
+    this._deletedError.set(null);
+    this._deletedRoutes.set([]);
+    this._deletedLoaded.set(false);
   }
 }
