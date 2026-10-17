@@ -50,6 +50,7 @@ class EventController {
     } catch (error) { return next(error); }
   }
 
+<<<<<<< HEAD
   async listDeleted(req, res, next) {
     try {
       const events = await service.listDeleted();
@@ -64,6 +65,8 @@ class EventController {
     } catch (error) { return next(error); }
   }
 
+=======
+>>>>>>> e6414492749754c86037fe5b22fe9940d3ddc0ce
   async publish(req, res, next) {
     try {
       const event = await service.publish(req.params.id);

@@ -96,7 +96,11 @@ export class EventFilters {
     toDate: ['']
   });
 
+<<<<<<< HEAD
   constructor() {
+=======
+  constructor(): void {
+>>>>>>> e6414492749754c86037fe5b22fe9940d3ddc0ce
     void this.loadReferences();
   }
 

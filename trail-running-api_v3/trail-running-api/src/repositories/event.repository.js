@@ -35,19 +35,28 @@ class EventRepository {
   async softDeleteById(id) {
     return Event.findOneAndUpdate(
       { _id: id, ...NOT_DELETED, isActive: true },
+<<<<<<< HEAD
       { $set: { isActive: false, deleted_at: new Date() } },
+=======
+      { $set: { isActive: false, deleted_at: null } },
+>>>>>>> e6414492749754c86037fe5b22fe9940d3ddc0ce
       { new: true, runValidators: true }
     );
   }
 
   async restoreById(id) {
     return Event.findOneAndUpdate(
+<<<<<<< HEAD
       { _id: id, deleted_at: { $ne: null } },
+=======
+      { _id: id, isActive: false },
+>>>>>>> e6414492749754c86037fe5b22fe9940d3ddc0ce
       { $set: { isActive: true, deleted_at: null } },
       { new: true, runValidators: true }
     );
   }
 
+<<<<<<< HEAD
   async findAllDeleted() {
     return Event.find({ deleted_at: { $ne: null } }).sort({ deleted_at: -1 });
   }
@@ -56,6 +65,8 @@ class EventRepository {
     return Event.findOneAndDelete({ _id: id, deleted_at: { $ne: null } });
   }
 
+=======
+>>>>>>> e6414492749754c86037fe5b22fe9940d3ddc0ce
   async publishById(id) {
     return Event.findOneAndUpdate(
       { _id: id, ...NOT_DELETED, status: 'draft' },

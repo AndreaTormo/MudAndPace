@@ -104,6 +104,7 @@ export class EventService {
       .patch<ApiResponse<Event>>(`events/${encodeURIComponent(id)}/restore`)
       .pipe(map((response) => extractData<Event>(response, isEvent)));
   }
+<<<<<<< HEAD
 
   listDeleted(): Observable<Event[]> {
     return this.api
@@ -116,4 +117,6 @@ export class EventService {
       .delete<ApiResponse<void>>(`events/${encodeURIComponent(id)}/permanent`)
       .pipe(map(() => undefined));
   }
+=======
+>>>>>>> e6414492749754c86037fe5b22fe9940d3ddc0ce
 }
