@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
+﻿import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { firstValueFrom } from 'rxjs';
@@ -70,7 +70,7 @@ import { isHttpError, showUnexpectedError } from '../../../../shared/utils/error
           <a routerLink="/routes/create" class="button-primary">Crear la primera ruta</a>
         </app-empty-state>
       } @else {
-        <div class="divide-y divide-gray-100 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+        <div class="divide-y divide-gray-100 overflow-hidden rounded-2xl border border-gray-200 bg-white/80 backdrop-blur-sm shadow-sm">
           @for (route of store.routes(); track route._id) {
             <app-route-row
               [route]="route"
@@ -205,9 +205,9 @@ export class RouteList implements OnInit {
       text: `"${route.name}" dejará de estar activa (borrado lógico). Podrás recuperarla después.`,
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonColor: '#FF385C',
-      cancelButtonColor: '#6b7280',
-      confirmButtonText: 'Sí, eliminar',
+      confirmButtonColor: '#386641',
+      cancelButtonColor: '#566F4B',
+      confirmButtonText: 'Sí­, eliminar',
       cancelButtonText: 'Cancelar'
     });
 
@@ -238,9 +238,9 @@ export class RouteList implements OnInit {
       text: `"${route.name}" volverá a estar activa.`,
       icon: 'question',
       showCancelButton: true,
-      confirmButtonColor: '#FF385C',
-      cancelButtonColor: '#6b7280',
-      confirmButtonText: 'Sí, recuperar',
+      confirmButtonColor: '#386641',
+      cancelButtonColor: '#566F4B',
+      confirmButtonText: 'Sí­, recuperar',
       cancelButtonText: 'Cancelar'
     });
 

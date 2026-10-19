@@ -11,13 +11,17 @@ import { Loader } from '../../shared/components/loader/loader';
   imports: [RouterOutlet, Navbar, Sidebar, Loader],
   template: `
     <div class="min-h-screen bg-gray-50">
-      <app-navbar />
-      <app-loader />
-      <div class="flex">
-        <app-sidebar />
-        <main class="min-w-0 flex-1">
-          <router-outlet />
-        </main>
+      <div class="mountain-backdrop" aria-hidden="true"></div>
+      <div class="mountain-fade" aria-hidden="true"></div>
+      <div class="relative z-10">
+        <app-navbar />
+        <app-loader />
+        <div class="flex">
+          <app-sidebar />
+          <main class="min-w-0 flex-1">
+            <router-outlet />
+          </main>
+        </div>
       </div>
     </div>
   `

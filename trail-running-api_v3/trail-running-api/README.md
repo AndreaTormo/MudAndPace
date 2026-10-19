@@ -66,18 +66,12 @@ npm run dev
 
 ### Cargar datos de ejemplo
 
-Las rutas de ejemplo:
+Los eventos, organizadores, categorías, ubicaciones y las rutas de ejemplo se
+cargan con el script de seed (el antiguo `init-db.js` se integró en
+`src/config/database.js`):
 
 ```bash
-node src/seed.js
-```
-
-Los eventos, organizadores, categorías y ubicaciones se cargan automáticamente al
-arrancar MongoDB con Docker (`init-db.js` se ejecuta desde `docker-entrypoint-initdb.d`).
-Para recargarlos manualmente:
-
-```bash
-docker exec trail-running-mongodb mongosh < ../../init-db.js
+npm run seed
 ```
 
 ## Endpoints
@@ -235,8 +229,6 @@ Para acercar el producto a una plataforma completa de trail running, se pueden a
 - fotos;
 - estadísticas de desnivel;
 - paginación;
-- autenticación JWT;
-- roles de usuario;
 - subida de archivos;
 - caché y rate limiting.
 

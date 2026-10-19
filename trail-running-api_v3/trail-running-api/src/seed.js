@@ -1,6 +1,6 @@
 require('dotenv').config();
 
-const { connectDatabase } = require('./config/database');
+const { connectDatabase, seedDatabase } = require('./config/database');
 const TrailRoute = require('./models/trailRoute.model');
 
 const routes = [
@@ -272,8 +272,10 @@ const routes = [
 
 async function seed() {
   await connectDatabase();
+  const summary = await seedDatabase();
   await TrailRoute.deleteMany({});
   await TrailRoute.insertMany(routes);
+  console.log('Seed principal completado:', summary);
   console.log(`Seed completado: ${routes.length} rutas`);
   process.exit(0);
 }

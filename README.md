@@ -43,7 +43,6 @@ El proyecto está desarrollado con **Angular** para el frontend y una **API REST
 - Desactivación lógica, restauración, activación y desactivación de rutas.
 - API REST para eventos: listado con filtros, detalle, creación, edición, publicación y borrado lógico.
 - Papelera de rutas y eventos: restauración y eliminación definitiva.
-- Control de acceso a funciones administrativas mediante guard de UI.
 - Modelos de organizador, categoría y ubicación con población de datos relacionados.
 - Validación de datos con Zod y esquemas de Mongoose.
 - Gestión centralizada de errores y respuestas uniformes.

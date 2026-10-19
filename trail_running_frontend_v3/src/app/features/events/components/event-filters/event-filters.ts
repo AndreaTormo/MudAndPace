@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, output, signal } from '@angular/core';
+﻿import { ChangeDetectionStrategy, Component, inject, output, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { firstValueFrom } from 'rxjs';
 import { ReferenceService } from '../../../../core/services/reference.service';
@@ -17,11 +17,11 @@ import {
     <form
       [formGroup]="form"
       (ngSubmit)="apply()"
-      class="rounded-2xl border border-gray-200 bg-white p-4"
+      class="rounded-2xl border border-gray-200 bg-white/80 backdrop-blur-sm p-4"
     >
       <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
         <div>
-          <label class="form-label" for="category">Categoría</label>
+          <label class="form-label" for="category">Categorí­a</label>
           <select id="category" class="form-input" formControlName="categoryId">
             <option value="">Todas</option>
             @for (option of categories(); track option._id) {
@@ -50,7 +50,7 @@ import {
         </div>
 
         <div>
-          <label class="form-label" for="minDistance">Distancia mín. (km)</label>
+          <label class="form-label" for="minDistance">Distancia mí­n. (km)</label>
           <input id="minDistance" class="form-input" type="number" formControlName="minDistance" />
         </div>
 
@@ -96,11 +96,7 @@ export class EventFilters {
     toDate: ['']
   });
 
-<<<<<<< HEAD
   constructor() {
-=======
-  constructor(): void {
->>>>>>> e6414492749754c86037fe5b22fe9940d3ddc0ce
     void this.loadReferences();
   }
 

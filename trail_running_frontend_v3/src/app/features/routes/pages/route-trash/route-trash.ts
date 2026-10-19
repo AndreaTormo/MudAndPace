@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+﻿import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import Swal from 'sweetalert2';
@@ -42,7 +42,7 @@ import { isHttpError, showUnexpectedError } from '../../../../shared/utils/error
           <a routerLink="/routes" class="button-primary">Volver a las rutas</a>
         </app-empty-state>
       } @else {
-        <div class="divide-y divide-gray-100 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+        <div class="divide-y divide-gray-100 overflow-hidden rounded-2xl border border-gray-200 bg-white/80 backdrop-blur-sm shadow-sm">
           @for (route of store.deletedRoutes(); track route._id) {
             <div class="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:gap-4">
               <div class="min-w-0 flex-1">
@@ -52,7 +52,7 @@ import { isHttpError, showUnexpectedError } from '../../../../shared/utils/error
                 <p class="text-sm text-gray-500">
                   {{ route.location.country }}
                   @if (route.location.region) {
-                    · {{ route.location.region }}
+                    Â· {{ route.location.region }}
                   }
                 </p>
                 <p class="mt-1 text-xs text-gray-400">
@@ -127,9 +127,9 @@ export class RouteTrash implements OnInit {
       text: `"${route.name}" volverá al listado principal.`,
       icon: 'question',
       showCancelButton: true,
-      confirmButtonColor: '#FF385C',
-      cancelButtonColor: '#6b7280',
-      confirmButtonText: 'Sí, recuperar',
+      confirmButtonColor: '#386641',
+      cancelButtonColor: '#566F4B',
+      confirmButtonText: 'Sí­, recuperar',
       cancelButtonText: 'Cancelar'
     });
 
@@ -163,9 +163,9 @@ export class RouteTrash implements OnInit {
       text: `"${route.name}" se borrará para siempre y no podrá recuperarse.`,
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonColor: '#FF385C',
-      cancelButtonColor: '#6b7280',
-      confirmButtonText: 'Sí, eliminar definitivamente',
+      confirmButtonColor: '#386641',
+      cancelButtonColor: '#566F4B',
+      confirmButtonText: 'Sí­, eliminar definitivamente',
       cancelButtonText: 'Cancelar'
     });
 

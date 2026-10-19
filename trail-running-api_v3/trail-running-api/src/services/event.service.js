@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const repository = require('../repositories/event.repository');
-const { AppError, normalizeAppError, slugify } = require('../utils/appError');
+const { AppError, normalizeAppError } = require('../utils/appError');
+const { slugify } = require('../utils/slugify');
 const {
   eventPayloadSchema, updateEventSchema, objectIdSchema, slugSchema, listQuerySchema
 } = require('../validators/event.validator');
@@ -19,16 +20,48 @@ function validateId(id) {
   return id;
 }
 
+function validateBusinessRules(payload) {
+  const details = [];
+
+  if (payload.distanceKm !== undefined) {
+    if (typeof payload.distanceKm !== 'number' || !Number.isFinite(payload.distanceKm) || payload.distanceKm <= 0) {
+      details.push({ path: 'distanceKm', message: 'distanceKm debe ser un número mayor que 0' });
+    }
+  }
+  if (payload.elevationGain !== undefined) {
+    if (typeof payload.elevationGain !== 'number' || !Number.isFinite(payload.elevationGain) || payload.elevationGain < 0) {
+      details.push({ path: 'elevationGain', message: 'elevationGain debe ser un número mayor o igual que 0' });
+    }
+  }
+  if (payload.price !== undefined) {
+    if (typeof payload.price !== 'number' || !Number.isFinite(payload.price) || payload.price < 0) {
+      details.push({ path: 'price', message: 'price debe ser un número mayor o igual que 0' });
+    }
+  }
+
+  if (details.length) throw new AppError('Datos de negocio inválidos', 400, 'VALIDATION_ERROR', details);
+  return payload;
+}
+
 class EventService {
+  async buildUniqueSlug(name, excludeId) {
+    const base = slugify(name);
+    if (!base) throw new AppError('No se pudo generar el slug', 400, 'INVALID_SLUG');
+
+    let candidate = base;
+    let suffix = 2;
+    while (await repository.existsBySlug(candidate, excludeId)) {
+      candidate = `${base}-${suffix}`;
+      suffix += 1;
+    }
+    return candidate;
+  }
+
   async list(query = {}) {
     try {
       const input = validateService(listQuerySchema, query);
       const {
-<<<<<<< HEAD
         status, categoryId, locationId, hostId, minDistance, maxDistance, fromDate, toDate, isActive
-=======
-        status, categoryId, locationId, hostId, minDistance, maxDistance, fromDate, toDate, isActive, includeDeleted
->>>>>>> e6414492749754c86037fe5b22fe9940d3ddc0ce
       } = input;
 
       const filters = {};
@@ -48,11 +81,7 @@ class EventService {
       if (isActive !== undefined) filters.isActive = isActive;
       if (status === 'published' || status === 'draft') filters.status = status;
 
-<<<<<<< HEAD
       return await repository.findAll(filters);
-=======
-      return await repository.findAll(filters, { includeDeleted });
->>>>>>> e6414492749754c86037fe5b22fe9940d3ddc0ce
     } catch (error) { throw normalizeAppError(error); }
   }
 
@@ -77,14 +106,15 @@ class EventService {
   async create(data) {
     try {
       const input = validateService(eventPayloadSchema, data);
+      const slug = await this.buildUniqueSlug(input.name);
       const payload = {
         ...input,
-        slug: input.slug || slugify(input.name),
+        slug,
         isActive: input.isActive ?? true,
         status: input.status || 'draft',
         deleted_at: null
       };
-      if (!payload.slug) throw new AppError('No se pudo generar el slug', 400, 'INVALID_SLUG');
+      validateBusinessRules(payload);
       return await repository.create(payload);
     } catch (error) { throw normalizeAppError(error); }
   }
@@ -92,9 +122,17 @@ class EventService {
   async update(id, data) {
     try {
       validateId(id);
+      const existing = await repository.findById(id);
+      if (!existing) throw new AppError('Evento no encontrado', 404, 'EVENT_NOT_FOUND');
+
       const input = validateService(updateEventSchema, data);
       const payload = { ...input };
-      if (payload.name && !payload.slug) payload.slug = slugify(payload.name);
+
+      if (payload.name) payload.slug = await this.buildUniqueSlug(payload.name, id);
+      else if (payload.slug) payload.slug = await this.buildUniqueSlug(payload.slug, id);
+
+      validateBusinessRules(payload);
+
       const event = await repository.updateById(id, payload);
       if (!event) throw new AppError('Evento no encontrado', 404, 'EVENT_NOT_FOUND');
       return event;
@@ -121,7 +159,6 @@ class EventService {
       if (!event) {
         const existing = await repository.findById(id, { includeDeleted: true });
         if (!existing) throw new AppError('Evento no encontrado', 404, 'EVENT_NOT_FOUND');
-<<<<<<< HEAD
         throw new AppError('El evento no está en la papelera y no se puede restaurar', 409, 'EVENT_ALREADY_ACTIVE');
       }
       return event;
@@ -142,9 +179,6 @@ class EventService {
         const existing = await repository.findById(id, { includeDeleted: true });
         if (!existing) throw new AppError('Evento no encontrado', 404, 'EVENT_NOT_FOUND');
         throw new AppError('Solo se puede eliminar definitivamente un evento de la papelera', 409, 'EVENT_NOT_DELETED');
-=======
-        throw new AppError('El evento ya está activo y no se puede restaurar', 409, 'EVENT_ALREADY_ACTIVE');
->>>>>>> e6414492749754c86037fe5b22fe9940d3ddc0ce
       }
       return event;
     } catch (error) { throw normalizeAppError(error); }

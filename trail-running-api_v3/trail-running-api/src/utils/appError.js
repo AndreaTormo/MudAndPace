@@ -13,8 +13,6 @@ function normalizeAppError(error) {
   return new AppError(error?.message || 'Error interno del servicio', error?.statusCode || 500, error?.code || 'INTERNAL_SERVICE_ERROR', error?.details);
 }
 
-function slugify(value) {
-  return value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
-}
+const { slugify } = require('./slugify');
 
 module.exports = { AppError, normalizeAppError, slugify };

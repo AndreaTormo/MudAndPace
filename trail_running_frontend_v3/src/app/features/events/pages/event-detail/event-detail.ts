@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
+﻿import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import Swal from 'sweetalert2';
@@ -59,7 +59,7 @@ import { isHttpError, showUnexpectedError } from '../../../../shared/utils/error
               <p class="mt-1 text-sm text-gray-500">{{ locationText() }}</p>
             </div>
 
-            <section class="rounded-2xl border border-gray-200 bg-white p-5">
+            <section class="rounded-2xl border border-gray-200 bg-white/80 backdrop-blur-sm p-5">
               <h2 class="mb-3 text-base font-semibold text-gray-900">Descripción</h2>
               @if (event()!.description) {
                 <p class="whitespace-pre-line text-sm leading-relaxed text-gray-700">
@@ -71,37 +71,37 @@ import { isHttpError, showUnexpectedError } from '../../../../shared/utils/error
             </section>
 
             <section class="grid grid-cols-2 gap-4 sm:grid-cols-3">
-              <div class="rounded-2xl border border-gray-200 bg-white p-4 text-center">
+              <div class="rounded-2xl border border-gray-200 bg-white/80 backdrop-blur-sm p-4 text-center">
                 <p class="text-lg font-semibold text-gray-900">
                   {{ formatDistance(event()!.distanceKm) }}
                 </p>
                 <p class="text-xs text-gray-500">Distancia</p>
               </div>
-              <div class="rounded-2xl border border-gray-200 bg-white p-4 text-center">
+              <div class="rounded-2xl border border-gray-200 bg-white/80 backdrop-blur-sm p-4 text-center">
                 <p class="text-lg font-semibold text-gray-900">
                   {{ formatElevation(event()!.elevationGain) }}
                 </p>
                 <p class="text-xs text-gray-500">Desnivel +</p>
               </div>
-              <div class="rounded-2xl border border-gray-200 bg-white p-4 text-center">
+              <div class="rounded-2xl border border-gray-200 bg-white/80 backdrop-blur-sm p-4 text-center">
                 <p class="text-lg font-semibold text-gray-900">{{ formatPrice(event()!.price) }}</p>
                 <p class="text-xs text-gray-500">Precio</p>
               </div>
-              <div class="rounded-2xl border border-gray-200 bg-white p-4 text-center">
+              <div class="rounded-2xl border border-gray-200 bg-white/80 backdrop-blur-sm p-4 text-center">
                 <p class="text-lg font-semibold text-gray-900">{{ formatDate(event()!.startDate) }}</p>
                 <p class="text-xs text-gray-500">Inicio</p>
               </div>
-              <div class="rounded-2xl border border-gray-200 bg-white p-4 text-center">
+              <div class="rounded-2xl border border-gray-200 bg-white/80 backdrop-blur-sm p-4 text-center">
                 <p class="text-lg font-semibold text-gray-900">{{ formatDate(event()!.endDate) }}</p>
                 <p class="text-xs text-gray-500">Fin</p>
               </div>
-              <div class="rounded-2xl border border-gray-200 bg-white p-4 text-center">
+              <div class="rounded-2xl border border-gray-200 bg-white/80 backdrop-blur-sm p-4 text-center">
                 <p class="text-lg font-semibold text-gray-900">{{ categoryText() }}</p>
-                <p class="text-xs text-gray-500">Categoría</p>
+                <p class="text-xs text-gray-500">Categorí­a</p>
               </div>
             </section>
 
-            <section class="rounded-2xl border border-gray-200 bg-white p-5">
+            <section class="rounded-2xl border border-gray-200 bg-white/80 backdrop-blur-sm p-5">
               <h2 class="mb-3 text-base font-semibold text-gray-900">Organización</h2>
               <p class="text-sm text-gray-700">
                 <strong class="font-semibold text-gray-900">{{ hostText() }}</strong>
@@ -110,7 +110,7 @@ import { isHttpError, showUnexpectedError } from '../../../../shared/utils/error
           </div>
 
           <aside>
-            <div class="sticky top-20 space-y-4 rounded-2xl border border-gray-200 bg-white p-5">
+            <div class="sticky top-20 space-y-4 rounded-2xl border border-gray-200 bg-white/80 backdrop-blur-sm p-5">
               <dl class="space-y-2 text-sm">
                 <div class="flex justify-between gap-2">
                   <dt class="text-gray-500">ID</dt>
@@ -184,7 +184,7 @@ export class EventDetail implements OnInit {
     const parts = [event.location?.name, event.location?.city].filter(
       (part): part is string => Boolean(part)
     );
-    return parts.join(' · ');
+    return parts.join(' Â· ');
   });
 
   protected readonly categoryText = computed(() => this.event()?.category?.name ?? '-');
@@ -255,9 +255,9 @@ export class EventDetail implements OnInit {
       text: `"${event.name}" dejará de estar activo (borrado lógico). Podrás recuperarlo después.`,
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonColor: '#FF385C',
-      cancelButtonColor: '#6b7280',
-      confirmButtonText: 'Sí, eliminar',
+      confirmButtonColor: '#386641',
+      cancelButtonColor: '#566F4B',
+      confirmButtonText: 'Sí­, eliminar',
       cancelButtonText: 'Cancelar'
     });
 
@@ -295,8 +295,8 @@ export class EventDetail implements OnInit {
       text: `"${event.name}" volverá a estar activo.`,
       icon: 'question',
       showCancelButton: true,
-      confirmButtonColor: '#FF385C',
-      cancelButtonColor: '#6b7280',
+      confirmButtonColor: '#386641',
+      cancelButtonColor: '#566F4B',
       confirmButtonText: 'Sí, recuperar',
       cancelButtonText: 'Cancelar'
     });

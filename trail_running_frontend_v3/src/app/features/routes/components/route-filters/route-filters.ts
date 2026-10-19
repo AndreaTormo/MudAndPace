@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, output } from '@angular/core';
+﻿import { ChangeDetectionStrategy, Component, inject, output } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import {
   DIFFICULTY_LABELS,
@@ -15,7 +15,7 @@ import {
     <form
       [formGroup]="form"
       (ngSubmit)="apply()"
-      class="rounded-2xl border border-gray-200 bg-white p-4"
+      class="rounded-2xl border border-gray-200 bg-white/80 backdrop-blur-sm p-4"
     >
       <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-6">
         <div>
@@ -51,7 +51,7 @@ import {
         </div>
 
         <div>
-          <label class="form-label" for="minDistance">Distancia mín. (km)</label>
+          <label class="form-label" for="minDistance">Distancia mí­n. (km)</label>
           <input id="minDistance" class="form-input" type="number" formControlName="minDistance" />
         </div>
 

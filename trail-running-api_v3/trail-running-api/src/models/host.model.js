@@ -2,7 +2,6 @@ const mongoose = require('mongoose');
 
 const hostSchema = new mongoose.Schema(
   {
-    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null, index: true },
     name: { type: String, required: true, trim: true, minlength: 3, maxlength: 120 },
     description: { type: String, trim: true, maxlength: 3000 },
     slug: { type: String, required: true, unique: true, lowercase: true, trim: true, index: true },

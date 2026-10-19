@@ -1,5 +1,4 @@
 import { Routes } from '@angular/router';
-import { adminGuard } from '../../core/guards/admin.guard';
 
 export const ROUTES_ROUTES: Routes = [
   {
@@ -9,7 +8,6 @@ export const ROUTES_ROUTES: Routes = [
   },
   {
     path: 'trash',
-    canActivate: [adminGuard],
     loadComponent: () =>
       import('./pages/route-trash/route-trash').then((m) => m.RouteTrash)
   },

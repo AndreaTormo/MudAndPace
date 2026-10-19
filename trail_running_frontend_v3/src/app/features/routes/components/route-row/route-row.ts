@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
+﻿import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { DIFFICULTY_LABELS, STATUS_LABELS, TrailRoute } from '../../../../core/models/trail-route.model';
 import { formatDistance, formatElevation } from '../../../../shared/utils/format.util';
@@ -9,7 +9,7 @@ import { formatDistance, formatElevation } from '../../../../shared/utils/format
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [RouterLink],
   template: `
-    <div class="flex flex-col gap-3 bg-white p-4 sm:flex-row sm:items-center sm:gap-4">
+    <div class="flex flex-col gap-3 bg-transparent p-4 sm:flex-row sm:items-center sm:gap-4">
       <div class="flex min-w-0 flex-1 items-center gap-4">
         <div
           class="route-avatar"
@@ -42,7 +42,7 @@ import { formatDistance, formatElevation } from '../../../../shared/utils/format
           <p class="text-sm text-gray-500">
             {{ route().location.country }}
             @if (route().location.region) {
-              · {{ route().location.region }}
+              Â· {{ route().location.region }}
             }
           </p>
           <div class="mt-1 flex flex-wrap gap-x-4 gap-y-0.5 text-xs text-gray-500">
@@ -50,17 +50,17 @@ import { formatDistance, formatElevation } from '../../../../shared/utils/format
               <strong class="font-semibold text-gray-900">
                 {{ formatDistance(route().distanceKm) }}
               </strong>
-              · Distancia
+              Â· Distancia
             </span>
             <span>
               <strong class="font-semibold text-gray-900">
                 {{ formatElevation(route().elevationGainM) }}
               </strong>
-              · Desnivel +
+              Â· Desnivel +
             </span>
             <span>
               <strong class="font-semibold text-gray-900">{{ difficultyLabel() }}</strong>
-              · Dificultad
+              Â· Dificultad
             </span>
           </div>
         </div>

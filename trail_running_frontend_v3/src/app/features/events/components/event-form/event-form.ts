@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-import { ChangeDetectionStrategy, Component, effect, inject, input, output, signal } from '@angular/core';
-=======
-import { ChangeDetectionStrategy, Component, effect, inject, input, output } from '@angular/core';
->>>>>>> e6414492749754c86037fe5b22fe9940d3ddc0ce
+﻿import { ChangeDetectionStrategy, Component, effect, inject, input, output, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { firstValueFrom } from 'rxjs';
 import { ReferenceService } from '../../../../core/services/reference.service';
@@ -24,7 +20,7 @@ import {
     <form
       [formGroup]="form"
       (ngSubmit)="submit()"
-      class="space-y-8 rounded-2xl border border-gray-200 bg-white p-6"
+      class="space-y-8 rounded-2xl border border-gray-200 bg-white/80 backdrop-blur-sm p-6"
     >
       <section class="space-y-4">
         <h2 class="text-base font-semibold text-gray-900">Datos generales</h2>
@@ -36,7 +32,7 @@ import {
               type="text"
               class="form-input"
               formControlName="name"
-              placeholder="Ej.: Ultra Trail Vall de Boí 2027"
+              placeholder="Ej.: Ultra Trail Vall de Boí­ 2027"
               [attr.aria-invalid]="errorFor('name') ? true : null"
               [attr.aria-describedby]="errorFor('name') ? 'name-error' : null"
             />
@@ -75,7 +71,7 @@ import {
               [attr.aria-invalid]="errorFor('hostId') ? true : null"
               [attr.aria-describedby]="errorFor('hostId') ? 'hostId-error' : null"
             >
-              <option value="">Selecciona…</option>
+              <option value="">Seleccionaâ€¦</option>
               @for (option of hosts(); track option._id) {
                 <option [value]="option._id">{{ option.name }}</option>
               }
@@ -86,7 +82,7 @@ import {
           </div>
 
           <div>
-            <label class="form-label" for="categoryId">Categoría *</label>
+            <label class="form-label" for="categoryId">Categorí­a *</label>
             <select
               id="categoryId"
               class="form-input"
@@ -94,7 +90,7 @@ import {
               [attr.aria-invalid]="errorFor('categoryId') ? true : null"
               [attr.aria-describedby]="errorFor('categoryId') ? 'categoryId-error' : null"
             >
-              <option value="">Selecciona…</option>
+              <option value="">Seleccionaâ€¦</option>
               @for (option of categories(); track option._id) {
                 <option [value]="option._id">{{ option.name }}</option>
               }
@@ -113,7 +109,7 @@ import {
               [attr.aria-invalid]="errorFor('locationId') ? true : null"
               [attr.aria-describedby]="errorFor('locationId') ? 'locationId-error' : null"
             >
-              <option value="">Selecciona…</option>
+              <option value="">Seleccionaâ€¦</option>
               @for (option of locations(); track option._id) {
                 <option [value]="option._id">{{ option.name }}</option>
               }
@@ -191,7 +187,7 @@ import {
           </div>
 
           <div>
-            <label class="form-label" for="price">Precio (€) *</label>
+            <label class="form-label" for="price">Precio (â‚¬) *</label>
             <input
               id="price"
               type="number"
@@ -221,11 +217,7 @@ import {
             formControlName="isActive"
             class="h-4 w-4 rounded border-gray-300"
           />
-<<<<<<< HEAD
           Evento activo (los inactivos se muestran en la lista y se pueden recuperar)
-=======
-          Evento activo (los inactivos se ocultan de la lista por defecto)
->>>>>>> e6414492749754c86037fe5b22fe9940d3ddc0ce
         </label>
       </section>
 
@@ -339,7 +331,7 @@ export class EventForm {
       return 'Este campo es obligatorio.';
     }
     if (errors['minlength']) {
-      return `Mínimo ${errors['minlength'].requiredLength} caracteres.`;
+      return `Mí­nimo ${errors['minlength'].requiredLength} caracteres.`;
     }
     if (errors['maxlength']) {
       return `Máximo ${errors['maxlength'].requiredLength} caracteres.`;

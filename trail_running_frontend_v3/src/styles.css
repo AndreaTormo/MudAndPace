@@ -19,6 +19,31 @@
 }
 
 @layer components {
+  .mountain-backdrop {
+    @apply pointer-events-none fixed inset-0 z-0;
+    background-image: url('/val-daran.webp');
+    background-repeat: no-repeat;
+    background-position: bottom center;
+    background-size: cover;
+    filter: blur(2px);
+    opacity: 0.35;
+  }
+
+  .mountain-fade {
+    @apply pointer-events-none fixed inset-0 z-0;
+    background: linear-gradient(
+      to bottom,
+      #f7f8f2 0%,
+      rgba(247, 248, 242, 0.55) 18%,
+      rgba(247, 248, 242, 0.15) 42%,
+      rgba(247, 248, 242, 0) 60%
+    );
+  }
+
+  .glass-panel {
+    @apply border border-gray-200 bg-white/80 backdrop-blur-sm;
+  }
+
   .badge {
     @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap;
   }

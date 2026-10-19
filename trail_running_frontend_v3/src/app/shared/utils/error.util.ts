@@ -1,4 +1,4 @@
-import { HttpErrorResponse } from '@angular/common/http';
+﻿import { HttpErrorResponse } from '@angular/common/http';
 import Swal from 'sweetalert2';
 
 export function isHttpError(error: unknown): error is HttpErrorResponse {
@@ -16,9 +16,9 @@ export function showUnexpectedError(error?: unknown): void {
     icon: 'error',
     title: 'Error',
     text: isTimeout
-      ? 'La petición ha superado el tiempo de espera. Comprueba que la API esté activa.'
+      ? 'La petición ha superado el tiempo de espera. Comprueba que la API está activa.'
       : 'La respuesta del servidor no es válida. Inténtalo de nuevo más tarde.',
-    confirmButtonColor: '#FF385C',
+    confirmButtonColor: '#386641',
     timer: 5000,
     timerProgressBar: true
   });

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, effect, inject, input, output } from '@angular/core';
+﻿import { ChangeDetectionStrategy, Component, effect, inject, input, output } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import {
   DIFFICULTY_LABELS,
@@ -19,7 +19,7 @@ import { urlValidator } from '../../../../shared/utils/validators';
     <form
       [formGroup]="form"
       (ngSubmit)="submit()"
-      class="space-y-8 rounded-2xl border border-gray-200 bg-white p-6"
+      class="space-y-8 rounded-2xl border border-gray-200 bg-white/80 backdrop-blur-sm p-6"
     >
       <section class="space-y-4">
         <h2 class="text-base font-semibold text-gray-900">Datos generales</h2>
@@ -62,7 +62,7 @@ import { urlValidator } from '../../../../shared/utils/validators';
         <h2 class="text-base font-semibold text-gray-900">Ubicación</h2>
         <div class="grid gap-4 sm:grid-cols-2">
           <div>
-            <label class="form-label" for="country">País *</label>
+            <label class="form-label" for="country">Paí­s *</label>
             <input
               id="country"
               type="text"
@@ -161,7 +161,7 @@ import { urlValidator } from '../../../../shared/utils/validators';
           </div>
 
           <div>
-            <label class="form-label" for="elevationLossM">Desnivel − (m)</label>
+            <label class="form-label" for="elevationLossM">Desnivel âˆ’ (m)</label>
             <input
               id="elevationLossM"
               type="number"
@@ -447,13 +447,13 @@ export class RouteForm {
       return 'Este campo es obligatorio.';
     }
     if (errors['minlength']) {
-      return `Mínimo ${errors['minlength'].requiredLength} caracteres.`;
+      return `Mí­nimo ${errors['minlength'].requiredLength} caracteres.`;
     }
     if (errors['maxlength']) {
       return `Máximo ${errors['maxlength'].requiredLength} caracteres.`;
     }
     if (errors['min']) {
-      return `El valor debe ser como mínimo ${errors['min'].min}.`;
+      return `El valor debe ser como mí­nimo ${errors['min'].min}.`;
     }
     if (errors['max']) {
       return `El valor debe ser como máximo ${errors['max'].max}.`;

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
+﻿import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { firstValueFrom } from 'rxjs';
@@ -71,11 +71,11 @@ import { isHttpError, showUnexpectedError } from '../../../../shared/utils/error
         } @else if (store.error()) {
           <app-error-state [message]="store.error()!" (retry)="load()" />
         } @else if (store.isEmpty()) {
-          <app-empty-state title="No hay eventos todavía" message="Crea un evento de trail running para empezar a trabajar con la API.">
+          <app-empty-state title="No hay eventos todaví­a" message="Crea un evento de trail running para empezar a trabajar con la API.">
             <a routerLink="/events/create" class="button-primary">Crear el primer evento</a>
           </app-empty-state>
         } @else {
-          <div class="divide-y divide-gray-100 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+          <div class="divide-y divide-gray-100 overflow-hidden rounded-2xl border border-gray-200 bg-white/80 backdrop-blur-sm shadow-sm">
             @for (event of store.events(); track event._id) {
               <app-event-row
                 [event]="event"
@@ -215,9 +215,9 @@ export class EventList implements OnInit {
       text: `"${event.name}" dejará de estar activo (borrado lógico). Podrás recuperarlo después.`,
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonColor: '#FF385C',
-      cancelButtonColor: '#6b7280',
-      confirmButtonText: 'Sí, eliminar',
+      confirmButtonColor: '#386641',
+      cancelButtonColor: '#566F4B',
+      confirmButtonText: 'Sí­, eliminar',
       cancelButtonText: 'Cancelar'
     });
 
@@ -248,9 +248,9 @@ export class EventList implements OnInit {
       text: `"${event.name}" volverá a estar activo.`,
       icon: 'question',
       showCancelButton: true,
-      confirmButtonColor: '#FF385C',
-      cancelButtonColor: '#6b7280',
-      confirmButtonText: 'Sí, recuperar',
+      confirmButtonColor: '#386641',
+      cancelButtonColor: '#566F4B',
+      confirmButtonText: 'Sí­, recuperar',
       cancelButtonText: 'Cancelar'
     });
 

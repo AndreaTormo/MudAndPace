@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+﻿import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 
 @Component({
@@ -9,7 +9,7 @@ import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
   template: `
     <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
       @for (item of items(); track item) {
-        <div class="rounded-2xl border border-gray-200 bg-white p-4">
+        <div class="rounded-2xl border border-gray-200 bg-white/80 backdrop-blur-sm p-4">
           <ngx-skeleton-loader
             appearance=""
             [theme]="{ height: '160px', 'border-radius': '12px' }"

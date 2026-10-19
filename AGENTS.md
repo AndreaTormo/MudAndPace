@@ -27,12 +27,13 @@ No hay tests ni linter. La verificación del frontend es `ng build` sin errores.
 
 ## Recargar la base de datos
 
-`init-db.js` se ejecuta solo la primera vez que el volumen Docker está vacío. Para recargar los datos de ejemplo (10 eventos, 2 rutas vía seed):
+El seed de datos de ejemplo ya no vive en `init-db.js`: está en `src/config/database.js` (`seedDatabase()`) y se ejecuta con el script npm.
 
 ```bash
-docker exec trail-running-mongodb mongosh < ../../init-db.js
 cd trail-running-api_v3/trail-running-api && npm run seed
 ```
+
+Esto repuebla hosts, categorías, ubicaciones y eventos (10 eventos), además de experiencias e imágenes, y las 12 rutas de ejemplo. Un volumen Docker nuevo queda vacío hasta ejecutar `npm run seed`.
 
 Si el frontend muestra menos eventos de los esperados, comprueba primero `db.events.countDocuments({})` en MongoDB.
 
@@ -75,9 +76,14 @@ Página → Store (signals) → Service (único que conoce la URL) → `ApiServi
 ### Panel de administración
 
 - `Sidebar` en `shared/components/sidebar` con secciones "Principal" y "Administración".
-- La sección "Administración" solo se muestra si `AuthStore.isAdmin()` es true.
-- `AdminGuard` protege las rutas `/routes/trash` y `/events/trash`.
-- **No hay autenticación real.** El guard es solo de UI. La protección real exigiría auth en backend.
+- La sección "Administración" es siempre visible (acceso directo a las papeleras). Ya no existe `AuthStore` ni `AdminGuard`.
+- Las rutas `/routes/trash` y `/events/trash` son accesibles sin gating de UI.
+
+### Eventos
+
+- `buildUniqueSlug(name, excludeId)` en `event.service.js` deriva el slug del nombre con `utils/slugify.js` y resuelve colisiones con sufijos `-2`, `-3`… En `update` se ignora el propio evento.
+- Reglas de negocio numéricas: `distanceKm > 0`, `elevationGain >= 0`, `price >= 0`.
+- `slugify` vive en `src/utils/slugify.js`; `utils/appError.js` lo reexporta por compatibilidad.
 
 ### Listados sin límite
 

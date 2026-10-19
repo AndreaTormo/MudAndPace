@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
+﻿import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import Swal from 'sweetalert2';
@@ -81,7 +81,7 @@ import { isHttpError, showUnexpectedError } from '../../../../shared/utils/error
               <p class="mt-1 text-sm text-gray-500">{{ locationText() }}</p>
             </div>
 
-            <section class="rounded-2xl border border-gray-200 bg-white p-5">
+            <section class="rounded-2xl border border-gray-200 bg-white/80 backdrop-blur-sm p-5">
               <h2 class="mb-3 text-base font-semibold text-gray-900">Descripción</h2>
               @if (trailRoute()!.description) {
                 <p class="whitespace-pre-line text-sm leading-relaxed text-gray-700">
@@ -93,31 +93,31 @@ import { isHttpError, showUnexpectedError } from '../../../../shared/utils/error
             </section>
 
             <section class="grid grid-cols-2 gap-4 sm:grid-cols-4">
-              <div class="rounded-2xl border border-gray-200 bg-white p-4 text-center">
+              <div class="rounded-2xl border border-gray-200 bg-white/80 backdrop-blur-sm p-4 text-center">
                 <p class="text-lg font-semibold text-gray-900">
                   {{ formatDistance(trailRoute()!.distanceKm) }}
                 </p>
                 <p class="text-xs text-gray-500">Distancia</p>
               </div>
-              <div class="rounded-2xl border border-gray-200 bg-white p-4 text-center">
+              <div class="rounded-2xl border border-gray-200 bg-white/80 backdrop-blur-sm p-4 text-center">
                 <p class="text-lg font-semibold text-gray-900">
                   {{ formatElevation(trailRoute()!.elevationGainM) }}
                 </p>
                 <p class="text-xs text-gray-500">Desnivel +</p>
               </div>
-              <div class="rounded-2xl border border-gray-200 bg-white p-4 text-center">
+              <div class="rounded-2xl border border-gray-200 bg-white/80 backdrop-blur-sm p-4 text-center">
                 <p class="text-lg font-semibold text-gray-900">
                   {{ formatElevation(trailRoute()!.elevationLossM) }}
                 </p>
-                <p class="text-xs text-gray-500">Desnivel −</p>
+                <p class="text-xs text-gray-500">Desnivel âˆ’</p>
               </div>
-              <div class="rounded-2xl border border-gray-200 bg-white p-4 text-center">
+              <div class="rounded-2xl border border-gray-200 bg-white/80 backdrop-blur-sm p-4 text-center">
                 <p class="text-lg font-semibold text-gray-900">{{ difficultyLabel() }}</p>
                 <p class="text-xs text-gray-500">Dificultad</p>
               </div>
             </section>
 
-            <section class="rounded-2xl border border-gray-200 bg-white p-5">
+            <section class="rounded-2xl border border-gray-200 bg-white/80 backdrop-blur-sm p-5">
               <h2 class="mb-3 text-base font-semibold text-gray-900">Terreno y etiquetas</h2>
               <div class="flex flex-wrap gap-2">
                 @for (surface of trailRoute()!.surface ?? []; track surface) {
@@ -132,7 +132,7 @@ import { isHttpError, showUnexpectedError } from '../../../../shared/utils/error
               </div>
             </section>
 
-            <section class="rounded-2xl border border-gray-200 bg-white p-5">
+            <section class="rounded-2xl border border-gray-200 bg-white/80 backdrop-blur-sm p-5">
               <h2 class="mb-3 text-base font-semibold text-gray-900">Punto de inicio</h2>
               <p class="text-sm text-gray-700">
                 Longitud {{ trailRoute()!.startPoint.coordinates[0] }},
@@ -152,7 +152,7 @@ import { isHttpError, showUnexpectedError } from '../../../../shared/utils/error
           </div>
 
           <aside>
-            <div class="sticky top-20 space-y-4 rounded-2xl border border-gray-200 bg-white p-5">
+            <div class="sticky top-20 space-y-4 rounded-2xl border border-gray-200 bg-white/80 backdrop-blur-sm p-5">
               <dl class="space-y-2 text-sm">
                 <div class="flex justify-between gap-2">
                   <dt class="text-gray-500">ID</dt>
@@ -230,7 +230,7 @@ export class RouteDetail implements OnInit {
       route.location.municipality
     ]
       .filter((part): part is string => Boolean(part))
-      .join(' · ');
+      .join(' Â· ');
   });
 
   protected readonly difficultyLabel = computed(() => {
@@ -305,9 +305,9 @@ export class RouteDetail implements OnInit {
       text: `"${route.name}" dejará de estar activa (borrado lógico). Podrás recuperarla después.`,
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonColor: '#FF385C',
-      cancelButtonColor: '#6b7280',
-      confirmButtonText: 'Sí, eliminar',
+      confirmButtonColor: '#386641',
+      cancelButtonColor: '#566F4B',
+      confirmButtonText: 'Sí­, eliminar',
       cancelButtonText: 'Cancelar'
     });
 
@@ -345,9 +345,9 @@ export class RouteDetail implements OnInit {
       text: `"${route.name}" volverá a estar activa.`,
       icon: 'question',
       showCancelButton: true,
-      confirmButtonColor: '#FF385C',
-      cancelButtonColor: '#6b7280',
-      confirmButtonText: 'Sí, recuperar',
+      confirmButtonColor: '#386641',
+      cancelButtonColor: '#566F4B',
+      confirmButtonText: 'Sí­, recuperar',
       cancelButtonText: 'Cancelar'
     });
 

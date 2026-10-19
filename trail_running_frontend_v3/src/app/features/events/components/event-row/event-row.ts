@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
+﻿import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Event, STATUS_LABELS } from '../../../../core/models/event.model';
 import { formatDate, formatDistance, formatElevation, formatPrice } from '../../../../shared/utils/format.util';
@@ -9,7 +9,7 @@ import { formatDate, formatDistance, formatElevation, formatPrice } from '../../
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [RouterLink],
   template: `
-    <div class="flex flex-col gap-3 bg-white p-4 sm:flex-row sm:items-center sm:gap-4">
+    <div class="flex flex-col gap-3 bg-transparent p-4 sm:flex-row sm:items-center sm:gap-4">
       <div class="flex min-w-0 flex-1 items-center gap-4">
         <div
           class="event-avatar"
@@ -35,23 +35,23 @@ import { formatDate, formatDistance, formatElevation, formatPrice } from '../../
               <strong class="font-semibold text-gray-900">
                 {{ formatDate(event().startDate) }}
               </strong>
-              · Inicio
+              Â· Inicio
             </span>
             <span>
               <strong class="font-semibold text-gray-900">
                 {{ formatDistance(event().distanceKm) }}
               </strong>
-              · Distancia
+              Â· Distancia
             </span>
             <span>
               <strong class="font-semibold text-gray-900">
                 {{ formatElevation(event().elevationGain) }}
               </strong>
-              · Desnivel +
+              Â· Desnivel +
             </span>
             <span>
               <strong class="font-semibold text-gray-900">{{ formatPrice(event().price) }}</strong>
-              · Precio
+              Â· Precio
             </span>
           </div>
         </div>
@@ -201,7 +201,7 @@ export class EventRow {
     if (!location) {
       return '';
     }
-    return [location.name, location.city].filter((part): part is string => Boolean(part)).join(' · ');
+    return [location.name, location.city].filter((part): part is string => Boolean(part)).join(' Â· ');
   });
 
   protected readonly statusLabel = computed(() => (this.event().isActive ? 'Activo' : 'Inactivo'));

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+﻿import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import Swal from 'sweetalert2';
@@ -36,13 +36,13 @@ import { isHttpError, showUnexpectedError } from '../../../../shared/utils/error
         <app-error-state [message]="store.deletedError()!" (retry)="load()" />
       } @else if (isEmpty()) {
         <app-empty-state
-          title="La papelera está vacía"
-          message="Cuando elimines un evento aparecerá aquí para que puedas restaurarlo o borrarlo definitivamente."
+          title="La papelera está vací­a"
+          message="Cuando elimines un evento aparecerá aquí­ para que puedas restaurarlo o borrarlo definitivamente."
         >
           <a routerLink="/events" class="button-primary">Volver a los eventos</a>
         </app-empty-state>
       } @else {
-        <div class="divide-y divide-gray-100 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+        <div class="divide-y divide-gray-100 overflow-hidden rounded-2xl border border-gray-200 bg-white/80 backdrop-blur-sm shadow-sm">
           @for (event of store.deletedEvents(); track event._id) {
             <div class="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:gap-4">
               <div class="min-w-0 flex-1">
@@ -50,7 +50,7 @@ import { isHttpError, showUnexpectedError } from '../../../../shared/utils/error
                   {{ event.name }}
                 </a>
                 <p class="text-sm text-gray-500">
-                  {{ formatDate(event.startDate) }} · {{ event.distanceKm }} km
+                  {{ formatDate(event.startDate) }} Â· {{ event.distanceKm }} km
                 </p>
                 <p class="mt-1 text-xs text-gray-400">
                   Eliminado el {{ formatDate(event.deleted_at ?? undefined) }}
@@ -124,8 +124,8 @@ export class EventTrash implements OnInit {
       text: `"${event.name}" volverá al listado principal.`,
       icon: 'question',
       showCancelButton: true,
-      confirmButtonColor: '#FF385C',
-      cancelButtonColor: '#6b7280',
+      confirmButtonColor: '#386641',
+      cancelButtonColor: '#566F4B',
       confirmButtonText: 'Sí, recuperar',
       cancelButtonText: 'Cancelar'
     });
@@ -160,9 +160,9 @@ export class EventTrash implements OnInit {
       text: `"${event.name}" se borrará para siempre y no podrá recuperarse.`,
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonColor: '#FF385C',
-      cancelButtonColor: '#6b7280',
-      confirmButtonText: 'Sí, eliminar definitivamente',
+      confirmButtonColor: '#386641',
+      cancelButtonColor: '#566F4B',
+      confirmButtonText: 'Sí­, eliminar definitivamente',
       cancelButtonText: 'Cancelar'
     });
 

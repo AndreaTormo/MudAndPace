@@ -1,4 +1,4 @@
-import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
+﻿import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
 import { catchError, throwError } from 'rxjs';
 import Swal from 'sweetalert2';
 import { ApiErrorBody } from '../models/api.model';
@@ -9,9 +9,9 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
       let message = 'Se ha producido un error inesperado.';
 
       if ((error as { name?: string }).name === 'TimeoutError') {
-        message = 'La petición ha superado el tiempo de espera. Comprueba que la API esté activa.';
+        message = 'La petición ha superado el tiempo de espera. Comprueba que la API está activa.';
       } else if (error.status === 0) {
-        message = 'No se puede conectar con el servidor. Comprueba que la API esté en marcha.';
+        message = 'No se puede conectar con el servidor. Comprueba que la API está en marcha.';
       } else {
         const body = error.error as ApiErrorBody | null | undefined;
         const apiMessage = body?.error?.message;
@@ -25,7 +25,7 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
               .map((item) => {
                 const issue = item as { path?: unknown; message?: unknown };
                 const path = typeof issue.path === 'string' && issue.path ? issue.path : 'campo';
-                const text = typeof issue.message === 'string' ? issue.message : 'no válido';
+                const text = typeof issue.message === 'string' ? issue.message : 'no vÃ¡lido';
                 return `${path}: ${text}`;
               })
               .join('\n');
@@ -46,7 +46,7 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
         icon: 'error',
         title: 'Error',
         text: message,
-        confirmButtonColor: '#FF385C',
+        confirmButtonColor: '#386641',
         timer: 5000,
         timerProgressBar: true
       });
