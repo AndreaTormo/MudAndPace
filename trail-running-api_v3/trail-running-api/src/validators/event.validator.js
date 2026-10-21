@@ -14,6 +14,11 @@ const eventPayloadSchema = z.object({
   endDate: z.coerce.date(),
   distanceKm: z.number().positive(),
   elevationGain: z.number().nonnegative(),
+  elevationLossM: z.number().nonnegative().optional(),
+  difficulty: z.enum(['easy', 'moderate', 'hard', 'expert']).optional(),
+  surface: z.array(z.enum(['trail', 'rock', 'dirt', 'gravel', 'asphalt', 'mixed'])).optional(),
+  tags: z.array(z.string().trim()).optional(),
+  gpxUrl: z.string().trim().optional(),
   price: z.number().nonnegative(),
   status: z.enum(['published', 'draft']).optional(),
   isActive: z.boolean().optional()

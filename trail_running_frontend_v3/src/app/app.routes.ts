@@ -6,12 +6,7 @@ export const routes: Routes = [
     path: '',
     component: MainLayout,
     children: [
-      { path: '', redirectTo: 'routes', pathMatch: 'full' },
-      {
-        path: 'routes',
-        loadChildren: () =>
-          import('./features/routes/routes.routes').then((m) => m.ROUTES_ROUTES)
-      },
+      { path: '', redirectTo: 'events', pathMatch: 'full' },
       {
         path: 'events',
         loadChildren: () =>
@@ -19,5 +14,5 @@ export const routes: Routes = [
       }
     ]
   },
-  { path: '**', redirectTo: 'routes' }
+  { path: '**', redirectTo: 'events' }
 ];

@@ -10,7 +10,7 @@ class ReferenceService {
   }
 
   async listLocations() {
-    return Location.find(ACTIVE).select('name slug city').sort({ name: 1 });
+    return Location.find(ACTIVE).select('name slug city coordinates').sort({ name: 1 });
   }
 
   async listHosts() {

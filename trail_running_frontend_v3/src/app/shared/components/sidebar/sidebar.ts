@@ -14,15 +14,6 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
           <ul class="space-y-1">
             <li>
               <a
-                routerLink="/routes"
-                routerLinkActive="bg-brand/10 text-brand"
-                class="block rounded-lg px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100"
-              >
-                Rutas
-              </a>
-            </li>
-            <li>
-              <a
                 routerLink="/events"
                 routerLinkActive="bg-brand/10 text-brand"
                 class="block rounded-lg px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100"
@@ -36,15 +27,6 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
         <div>
           <p class="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-gray-400">Administración</p>
           <ul class="space-y-1">
-            <li>
-              <a
-                routerLink="/routes/trash"
-                routerLinkActive="bg-brand/10 text-brand"
-                class="block rounded-lg px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100"
-              >
-                Papelera de rutas
-              </a>
-            </li>
             <li>
               <a
                 routerLink="/events/trash"

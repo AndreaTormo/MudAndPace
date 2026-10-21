@@ -2,14 +2,21 @@ import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@ang
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import Swal from 'sweetalert2';
-import { Event, EventPayload } from '../../../../core/models/event.model';
+import {
+  Event,
+  EventCategory,
+  EventFormValue,
+  EventLocation
+} from '../../../../core/models/event.model';
 import { EventService } from '../../../../core/services/event.service';
+import { ReferenceService } from '../../../../core/services/reference.service';
 import { EventsStore } from '../../../../core/stores/events.store';
 import { EmptyState } from '../../../../shared/components/empty-state/empty-state';
 import { ErrorState } from '../../../../shared/components/error-state/error-state';
 import { isValidObjectId } from '../../../../shared/utils/object-id.util';
 import { isHttpError, showUnexpectedError } from '../../../../shared/utils/error.util';
 import { EventForm } from '../../components/event-form/event-form';
+import { toEventEditPayload } from '../../utils/event-payload.util';
 
 @Component({
   selector: 'app-event-edit',
@@ -43,8 +50,17 @@ import { EventForm } from '../../components/event-form/event-form';
           </p>
         </div>
 
+        @if (referenceError(); as message) {
+          <div class="mb-6">
+            <app-error-state [message]="message" (retry)="loadReferences()" />
+          </div>
+        }
+
         <app-event-form
           [event]="event()"
+          mode="edit"
+          [categories]="categories()"
+          [locations]="locations()"
           (formSubmit)="onUpdate($event)"
           (cancelled)="onCancel()"
         />
@@ -55,6 +71,7 @@ import { EventForm } from '../../components/event-form/event-form';
 export class EventEdit implements OnInit {
   private readonly activatedRoute = inject(ActivatedRoute);
   private readonly service = inject(EventService);
+  private readonly reference = inject(ReferenceService);
   private readonly store = inject(EventsStore);
   private readonly router = inject(Router);
 
@@ -63,6 +80,10 @@ export class EventEdit implements OnInit {
   protected readonly notFound = signal(false);
   protected readonly loadError = signal<string | null>(null);
   protected readonly submitting = signal(false);
+
+  protected readonly categories = signal<EventCategory[]>([]);
+  protected readonly locations = signal<EventLocation[]>([]);
+  protected readonly referenceError = signal<string | null>(null);
 
   private currentId = '';
 
@@ -80,6 +101,8 @@ export class EventEdit implements OnInit {
       this.currentId = id;
       this.load();
     });
+
+    void this.loadReferences();
   }
 
   protected load(): void {
@@ -112,7 +135,27 @@ export class EventEdit implements OnInit {
     }
   }
 
-  protected async onUpdate(payload: EventPayload): Promise<void> {
+  protected async loadReferences(): Promise<void> {
+    this.referenceError.set(null);
+
+    try {
+      const [categories, locations] = await Promise.all([
+        firstValueFrom(this.reference.categories()),
+        firstValueFrom(this.reference.locations())
+      ]);
+      this.categories.set(categories);
+      this.locations.set(locations);
+    } catch (error) {
+      this.categories.set([]);
+      this.locations.set([]);
+      this.referenceError.set('No se han podido cargar las categorías ni las ubicaciones.');
+      if (!isHttpError(error)) {
+        showUnexpectedError(error);
+      }
+    }
+  }
+
+  protected async onUpdate(value: EventFormValue): Promise<void> {
     if (this.submitting()) {
       return;
     }
@@ -120,7 +163,9 @@ export class EventEdit implements OnInit {
     this.submitting.set(true);
 
     try {
-      const updated = await firstValueFrom(this.service.update(this.currentId, payload));
+      const updated = await firstValueFrom(
+        this.service.update(this.currentId, toEventEditPayload(value))
+      );
       this.store.markStale();
       this.store.setSelectedEvent(updated);
       this.router.navigate(['/events', updated._id]);

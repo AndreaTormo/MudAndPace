@@ -6,7 +6,6 @@ const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
 const { connectDatabase } = require('./config/database');
-const trailRouteRoutes = require('./routes/trailRoute.routes');
 const eventRoutes = require('./routes/event.routes');
 const referenceRoutes = require('./routes/reference.routes');
 const notFoundMiddleware = require('./middlewares/notFound.middleware');
@@ -21,7 +20,6 @@ app.use(express.json({ limit: '2mb' }));
 app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
 
 app.get('/health', (req, res) => res.json({ status: 'ok', service: 'trail-running-api', timestamp: new Date().toISOString() }));
-app.use('/api/v1/routes', trailRouteRoutes);
 app.use('/api/v1/events', eventRoutes);
 app.use('/api/v1/references', referenceRoutes);
 app.use(notFoundMiddleware);

@@ -1,5 +1,9 @@
 export type EventStatus = 'published' | 'draft';
 
+export type Difficulty = 'easy' | 'moderate' | 'hard' | 'expert';
+
+export type Surface = 'trail' | 'rock' | 'dirt' | 'gravel' | 'asphalt' | 'mixed';
+
 export interface EventHost {
   _id: string;
   name: string;
@@ -17,6 +21,7 @@ export interface EventLocation {
   name: string;
   slug: string;
   city?: string;
+  coordinates?: [number, number] | null;
 }
 
 export interface Event {
@@ -31,6 +36,11 @@ export interface Event {
   endDate: string;
   distanceKm: number;
   elevationGain: number;
+  elevationLossM?: number;
+  difficulty?: Difficulty;
+  surface?: Surface[];
+  tags?: string[];
+  gpxUrl?: string;
   price: number;
   status: EventStatus;
   isActive: boolean;
@@ -53,9 +63,23 @@ export interface EventPayload {
   endDate: string;
   distanceKm: number;
   elevationGain: number;
+  elevationLossM?: number;
+  difficulty?: Difficulty;
+  surface?: Surface[];
+  tags?: string[];
+  gpxUrl?: string;
   price: number;
   status?: EventStatus;
   isActive?: boolean;
+}
+
+export interface EventEditPayload {
+  name: string;
+  description?: string;
+  categoryId: string;
+  locationId: string;
+  distanceKm: number;
+  elevationGain: number;
 }
 
 export interface EventFilters {
@@ -69,7 +93,38 @@ export interface EventFilters {
   toDate?: string;
 }
 
+export interface EventFormValue {
+  name: string;
+  description: string;
+  hostId: string;
+  categoryId: string;
+  locationId: string;
+  startDate: string;
+  endDate: string;
+  distanceKm: number | null;
+  elevationGain: number | null;
+  price: number | null;
+  status: EventStatus;
+  isActive: boolean;
+}
+
 export const STATUS_LABELS: Record<EventStatus, string> = {
   published: 'Publicado',
   draft: 'Borrador'
+};
+
+export const DIFFICULTY_LABELS: Record<Difficulty, string> = {
+  easy: 'Fácil',
+  moderate: 'Moderado',
+  hard: 'Difícil',
+  expert: 'Experto'
+};
+
+export const SURFACE_LABELS: Record<Surface, string> = {
+  trail: 'Trail',
+  rock: 'Roca',
+  dirt: 'Tierra',
+  gravel: 'Grava',
+  asphalt: 'Asfalto',
+  mixed: 'Mixto'
 };

@@ -1,6 +1,8 @@
 # Trail Running API
 
-API REST con **Node.js + Express + MongoDB/Mongoose** para gestionar rutas de trail running, pensada como backend para una aplicación de exploración de rutas inspirada en la experiencia de plataformas de trail running.
+API REST con **Node.js + Express + MongoDB/Mongoose** para gestionar eventos de trail running, pensada
+como backend para una aplicación de exploración de carreras inspirada en la experiencia de
+plataformas de trail running.
 
 > Este proyecto se centra en la API y no incluye frontend ni identidad visual de terceros.
 
@@ -11,19 +13,29 @@ src/
 ├── config/
 │   └── database.js
 ├── controllers/
-│   └── trailRoute.controller.js
+│   ├── event.controller.js
+│   └── reference.controller.js
 ├── middlewares/
 │   ├── error.middleware.js
-│   └── notFound.middleware.js
+│   ├── notFound.middleware.js
+│   └── validate.middleware.js
 ├── models/
-│   └── trailRoute.model.js
+│   ├── category.model.js
+│   ├── event.model.js
+│   ├── host.model.js
+│   └── location.model.js
 ├── repositories/
-│   └── trailRoute.repository.js
+│   └── event.repository.js
 ├── routes/
-│   └── trailRoute.routes.js
+│   ├── event.routes.js
+│   └── reference.routes.js
 ├── services/
 │   ├── errors.js
-│   └── trailRoute.service.js
+│   ├── event.service.js
+│   └── reference.service.js
+├── utils/
+│   ├── appError.js
+│   └── slugify.js
 ├── app.js
 └── seed.js
 ```
@@ -35,7 +47,7 @@ src/
 - **Services**: reglas de negocio y control/normalización de errores.
 - **Repositories**: acceso a MongoDB.
 - **Models**: esquema y validaciones de Mongoose.
-- **Middlewares**: CORS, logging, 404 y gestión final de errores.
+- **Middlewares**: validación con Zod, CORS, logging, 404 y gestión final de errores.
 
 ## Requisitos
 
@@ -66,37 +78,14 @@ npm run dev
 
 ### Cargar datos de ejemplo
 
-Los eventos, organizadores, categorías, ubicaciones y las rutas de ejemplo se
-cargan con el script de seed (el antiguo `init-db.js` se integró en
-`src/config/database.js`):
+Los eventos, organizadores, categorías y ubicaciones de ejemplo se cargan con el script de seed (el
+antiguo `init-db.js` se integró en `src/config/database.js`):
 
 ```bash
 npm run seed
 ```
 
 ## Endpoints
-
-Base URL:
-
-```text
-http://localhost:3000/api/v1/routes
-```
-
-| Método | Endpoint | Descripción |
-|---|---|---|
-| GET | `/deleted` | Lista rutas en la papelera |
-| GET | `/` | Lista rutas con filtros |
-| GET | `/:id` | Obtiene una ruta por ID |
-| GET | `/slug/:slug` | Obtiene una ruta por slug |
-| GET | `/nearby` | Busca rutas cercanas |
-| POST | `/` | Crea una ruta |
-| PUT | `/:id` | Actualiza una ruta |
-| PATCH | `/:id/soft-delete` | Envía una ruta a la papelera |
-| PATCH | `/:id/restore` | Restaura una ruta de la papelera |
-| PATCH | `/:id/activate` | Activa una ruta inactiva |
-| PATCH | `/:id/deactivate` | Desactiva una ruta activa |
-| DELETE | `/:id` | Envía una ruta a la papelera (soft delete) |
-| DELETE | `/:id/permanent` | Elimina definitivamente una ruta de la papelera |
 
 ### Eventos
 
@@ -117,7 +106,8 @@ Base URL: `http://localhost:3000/api/v1/events`
 | DELETE | `/:id` | Envía un evento a la papelera (soft delete) |
 | DELETE | `/:id/permanent` | Elimina definitivamente un evento de la papelera |
 
-Filtros de listado: `status` (`published`, `draft`, `all`), `categoryId`, `locationId`, `hostId`, `minDistance`, `maxDistance`, `fromDate`, `toDate`, `isActive`.
+Filtros de listado: `status` (`published`, `draft`, `all`), `categoryId`, `locationId`, `hostId`,
+`minDistance`, `maxDistance`, `fromDate`, `toDate`, `isActive`.
 
 ### Referencias
 
@@ -135,38 +125,12 @@ Health check:
 GET http://localhost:3000/health
 ```
 
-## Filtros
-
-Ejemplo:
-
-```text
-GET /api/v1/routes?difficulty=hard&country=España&minDistance=10&maxDistance=40
-```
-
-Filtros disponibles:
-
-- `difficulty`: `easy`, `moderate`, `hard`, `expert`
-- `country`
-- `region`
-- `minDistance`
-- `maxDistance`
-- `isPublished`
-- `status`: `active`, `inactive`, `deleted`, `all` (sin filtro devuelve activas e inactivas)
-
-## Búsqueda geográfica
-
-```text
-GET /api/v1/routes/nearby?longitude=0.1123&latitude=38.8027&radiusKm=25
-```
-
-MongoDB utiliza un índice `2dsphere` sobre `startPoint`.
-
 ## CORS
 
 Configura los orígenes permitidos en:
 
 ```env
-CORS_ORIGIN=http://localhost:3000,http://localhost:5173
+CORS_ORIGIN=http://localhost:3000,http://localhost:4200
 ```
 
 Si hay varios orígenes, sepáralos por comas.
@@ -178,8 +142,8 @@ Los servicios convierten errores de validación, duplicados, IDs inválidos y er
 ```json
 {
   "error": {
-    "code": "ROUTE_NOT_FOUND",
-    "message": "Ruta no encontrada"
+    "code": "EVENT_NOT_FOUND",
+    "message": "Evento no encontrado"
   }
 }
 ```
@@ -188,33 +152,35 @@ Los servicios convierten errores de validación, duplicados, IDs inválidos y er
 
 ```json
 {
-  "name": "Montgó Circular",
-  "description": "Ruta de montaña con vistas al Mediterráneo.",
-  "location": {
-    "country": "España",
-    "region": "Comunitat Valenciana",
-    "province": "Alicante",
-    "municipality": "Dénia"
-  },
-  "startPoint": {
-    "type": "Point",
-    "coordinates": [0.1123, 38.8027]
-  },
-  "distanceKm": 14.8,
-  "elevationGainM": 720,
-  "elevationLossM": 720,
+  "name": "Ultra Trail Vall de Boí 2027",
+  "description": "Carrera por los lagos de la Vall de Boí.",
+  "hostId": "665a1b2c3d4e5f60718293b5",
+  "categoryId": "665a1b2c3d4e5f60718293c6",
+  "locationId": "665a1b2c3d4e5f60718293d7",
+  "startDate": "2027-06-12T07:00:00.000Z",
+  "endDate": "2027-06-12T19:00:00.000Z",
+  "distanceKm": 68.5,
+  "elevationGain": 4200,
+  "elevationLossM": 950,
   "difficulty": "hard",
-  "surface": ["trail", "rock", "dirt"],
-  "tags": ["mediterraneo", "montana", "circular"],
-  "imageUrl": "https://example.com/montgo.jpg",
-  "gpxUrl": "https://example.com/montgo.gpx",
-  "isPublished": true
+  "surface": ["trail", "rock", "mixed"],
+  "tags": ["pirineos", "lagos", "circular"],
+  "gpxUrl": "https://example.com/vall-boi.gpx",
+  "price": 85,
+  "status": "published",
+  "isActive": true
 }
 ```
 
 ## Postman
 
 Consulta `postman.md` para importar/crear las peticiones y probar todos los endpoints.
+
+## Nota de migración
+
+El antiguo módulo `trailRoute` (rutas) se eliminó y sus campos propios (`difficulty`, `surface`,
+`tags`, `elevationLossM`, `gpxUrl`) se migraron al modelo `Event`. `Event` es ahora el módulo único
+de contenido.
 
 ## Evolución recomendada
 
@@ -223,7 +189,6 @@ Para acercar el producto a una plataforma completa de trail running, se pueden a
 - usuarios y perfiles;
 - favoritos y listas;
 - tracks GPX y geometrías `LineString`;
-- carreras/eventos;
 - clasificaciones;
 - comentarios;
 - fotos;
@@ -231,20 +196,3 @@ Para acercar el producto a una plataforma completa de trail running, se pueden a
 - paginación;
 - subida de archivos;
 - caché y rate limiting.
-
-## Cambios de la versión 2
-
-- `slug` y consulta `GET /api/v1/routes/slug/:slug`.
-- Soft delete: `DELETE /api/v1/routes/:id` o `PATCH /api/v1/routes/:id/soft-delete` pasan la ruta a
-  `isActive: false` / `status: "inactive"` sin tocar `deleted_at`. Borrar una ruta ya inactiva
-  devuelve 409 `ROUTE_ALREADY_INACTIVE`.
-- Restauración: `PATCH /api/v1/routes/:id/restore` solo activa rutas inactivas; si ya está activa
-  devuelve 409 `ROUTE_ALREADY_ACTIVE`.
-- Activación/desactivación: `PATCH /api/v1/routes/:id/activate` y `PATCH /api/v1/routes/:id/deactivate`
-  con las mismas precondiciones (409 si no corresponden).
-- El modelo expone `slug`, `isActive`, `status`, `created_At`, `deleted_at` y `updated_at`.
-- `deleted_at` queda reservado para registros antiguos; `GET /api/v1/routes` devuelve activas e
-  inactivas por defecto (acepta `?status=`).
-- Validación con Zod tanto en las rutas mediante middleware como en la capa de servicio.
-- `AppError` centralizado en `src/utils/appError.js`.
-- `helmet` y `morgan` configurados en `src/app.js`.

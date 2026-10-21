@@ -2,12 +2,18 @@
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import Swal from 'sweetalert2';
-import { Event, STATUS_LABELS } from '../../../../core/models/event.model';
+import {
+  DIFFICULTY_LABELS,
+  Event,
+  STATUS_LABELS,
+  SURFACE_LABELS
+} from '../../../../core/models/event.model';
 import { EventService } from '../../../../core/services/event.service';
 import { EventsStore } from '../../../../core/stores/events.store';
 import { EmptyState } from '../../../../shared/components/empty-state/empty-state';
 import { ErrorState } from '../../../../shared/components/error-state/error-state';
 import { SkeletonLoader } from '../../../../shared/components/skeleton-loader/skeleton-loader';
+import { EventMap } from '../../../../shared/components/event-map/event-map';
 import { formatDate, formatDistance, formatElevation, formatPrice } from '../../../../shared/utils/format.util';
 import { isValidObjectId } from '../../../../shared/utils/object-id.util';
 import { isHttpError, showUnexpectedError } from '../../../../shared/utils/error.util';
@@ -16,7 +22,7 @@ import { isHttpError, showUnexpectedError } from '../../../../shared/utils/error
   selector: 'app-event-detail',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, EmptyState, ErrorState, SkeletonLoader],
+  imports: [RouterLink, EmptyState, ErrorState, SkeletonLoader, EventMap],
   template: `
     <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       @if (loading()) {
@@ -107,9 +113,55 @@ import { isHttpError, showUnexpectedError } from '../../../../shared/utils/error
                 <strong class="font-semibold text-gray-900">{{ hostText() }}</strong>
               </p>
             </section>
+
+            @if (hasCharacteristics()) {
+              <section class="rounded-2xl border border-gray-200 bg-white/80 backdrop-blur-sm p-5">
+                <h2 class="mb-3 text-base font-semibold text-gray-900">Características</h2>
+                <dl class="space-y-2 text-sm">
+                  @if (difficultyLabel(); as difficulty) {
+                    <div class="flex justify-between gap-2">
+                      <dt class="text-gray-500">Dificultad</dt>
+                      <dd class="text-gray-800">{{ difficulty }}</dd>
+                    </div>
+                  }
+                  @if (event()!.elevationLossM) {
+                    <div class="flex justify-between gap-2">
+                      <dt class="text-gray-500">Desnivel −</dt>
+                      <dd class="text-gray-800">{{ formatElevation(event()!.elevationLossM) }}</dd>
+                    </div>
+                  }
+                </dl>
+                @if (event()!.surface?.length) {
+                  <div class="mt-3 flex flex-wrap gap-2">
+                    @for (surface of event()!.surface; track surface) {
+                      <span class="badge bg-gray-100 text-gray-700">{{ surfaceLabels[surface] }}</span>
+                    }
+                  </div>
+                }
+                @if (event()!.tags?.length) {
+                  <div class="mt-3 flex flex-wrap gap-2">
+                    @for (tag of event()!.tags; track tag) {
+                      <span class="badge bg-indigo-50 text-indigo-700">#{{ tag }}</span>
+                    }
+                  </div>
+                }
+                @if (event()!.gpxUrl) {
+                  <a
+                    [href]="event()!.gpxUrl"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="mt-3 inline-block text-sm font-medium text-brand hover:underline"
+                  >
+                    Descargar GPX
+                  </a>
+                }
+              </section>
+            }
           </div>
 
-          <aside>
+          <aside class="space-y-4">
+            <app-event-map [location]="event()!.location" />
+
             <div class="sticky top-20 space-y-4 rounded-2xl border border-gray-200 bg-white/80 backdrop-blur-sm p-5">
               <dl class="space-y-2 text-sm">
                 <div class="flex justify-between gap-2">
@@ -171,10 +223,31 @@ export class EventDetail implements OnInit {
   private currentId = '';
 
   protected readonly statusLabels = STATUS_LABELS;
+  protected readonly difficultyLabels = DIFFICULTY_LABELS;
+  protected readonly surfaceLabels = SURFACE_LABELS;
   protected readonly formatDate = formatDate;
   protected readonly formatDistance = formatDistance;
   protected readonly formatElevation = formatElevation;
   protected readonly formatPrice = formatPrice;
+
+  protected readonly difficultyLabel = computed(() => {
+    const difficulty = this.event()?.difficulty;
+    return difficulty ? this.difficultyLabels[difficulty] : null;
+  });
+
+  protected readonly hasCharacteristics = computed(() => {
+    const event = this.event();
+    if (!event) {
+      return false;
+    }
+    return Boolean(
+      event.difficulty ||
+        event.elevationLossM ||
+        event.surface?.length ||
+        event.tags?.length ||
+        event.gpxUrl
+    );
+  });
 
   protected readonly locationText = computed(() => {
     const event = this.event();

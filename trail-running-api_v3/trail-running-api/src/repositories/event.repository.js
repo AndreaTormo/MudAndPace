@@ -5,7 +5,7 @@ const NOT_DELETED = { deleted_at: null };
 const POPULATE = [
   { path: 'host', select: 'name slug' },
   { path: 'category', select: 'name slug' },
-  { path: 'location', select: 'name slug city' }
+  { path: 'location', select: 'name slug city coordinates' }
 ];
 
 class EventRepository {

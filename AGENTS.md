@@ -14,7 +14,7 @@ trail_running_frontend_v3/                App Angular 18 (TypeScript, standalone
 npm install                      # en trail-running-api_v3/trail-running-api
 npm run dev                      # nodemon
 npm start                        # node src/app.js
-npm run seed                     # node src/seed.js  (rutas de ejemplo)
+npm run seed                     # node src/seed.js  (eventos de ejemplo)
 docker compose up -d             # mongo:8 en 27017, volumen mongodb_data
 
 # Frontend  (http://localhost:4200)
@@ -33,7 +33,7 @@ El seed de datos de ejemplo ya no vive en `init-db.js`: está en `src/config/dat
 cd trail-running-api_v3/trail-running-api && npm run seed
 ```
 
-Esto repuebla hosts, categorías, ubicaciones y eventos (10 eventos), además de experiencias e imágenes, y las 12 rutas de ejemplo. Un volumen Docker nuevo queda vacío hasta ejecutar `npm run seed`.
+Esto repuebla hosts, categorías, ubicaciones (12) y eventos (12), además de experiencias e imágenes. Un volumen Docker nuevo queda vacío hasta ejecutar `npm run seed`.
 
 Si el frontend muestra menos eventos de los esperados, comprueba primero `db.events.countDocuments({})` en MongoDB.
 
@@ -54,15 +54,15 @@ Flujo fijo: `routes/ → controllers/ → services/ → repositories/ → models
 - `findAllDeleted` devuelve `{ deleted_at: { $ne: null } }` ordenado por `deleted_at` descendente.
 - `hardDeleteById` hace `findOneAndDelete({ _id, deleted_at: { $ne: null } })` (solo desde la papelera).
 - `GET /deleted` lista la papelera. `DELETE /:id/permanent` elimina definitivamente.
-- Restaurar algo que no está en la papelera devuelve 409 `ROUTE_ALREADY_ACTIVE` / `EVENT_ALREADY_ACTIVE`.
-- Eliminar definitivamente algo no borrado devuelve 409 `ROUTE_NOT_DELETED` / `EVENT_NOT_DELETED`.
+- Restaurar algo que no está en la papelera devuelve 409 `EVENT_ALREADY_ACTIVE`.
+- Eliminar definitivamente algo no borrado devuelve 409 `EVENT_NOT_DELETED`.
 
 ### Convenciones de la API
 
 - `slug` único e indexado. Operaciones internas por ID, no por slug.
 - Timestamps: `created_At` / `updated_at` (con mayúscula en `created_At`, no es un error). `versionKey: false`.
-- Índice `2dsphere` en `startPoint` para `$near`.
-- `isPublicada/Borrador` (rutas) y `status: published/draft` (eventos) son dominios separados del borrado.
+- Índice `2dsphere` en `coordinates` de `Location` (mapa de ubicación).
+- `status: published/draft` (eventos) es un dominio separado del borrado.
 
 ## Arquitectura del frontend
 
@@ -71,18 +71,20 @@ Página → Store (signals) → Service (único que conoce la URL) → `ApiServi
 - Componentes standalone + `ChangeDetectionStrategy.OnPush` + plantilla inline (sin `.html` por componente). Estilos en `src/styles.css`.
 - Estado con Angular signals (sin NgRx), expuestos vía `.asReadonly()`.
 - Rutas lazy con `loadComponent`.
-- Componentes compartidos: `navbar`, `sidebar`, `loader`, `skeleton-loader`, `empty-state`, `error-state`.
+- Componentes compartidos: `navbar`, `sidebar`, `loader`, `skeleton-loader`, `empty-state`, `error-state`, `event-map`.
 
 ### Panel de administración
 
 - `Sidebar` en `shared/components/sidebar` con secciones "Principal" y "Administración".
 - La sección "Administración" es siempre visible (acceso directo a las papeleras). Ya no existe `AuthStore` ni `AdminGuard`.
-- Las rutas `/routes/trash` y `/events/trash` son accesibles sin gating de UI.
+- La ruta `/events/trash` es accesible sin gating de UI.
 
 ### Eventos
 
+- Módulo único de contenido. El antiguo módulo `trailRoute` (rutas) se eliminó y sus campos propios (`difficulty`, `surface`, `tags`, `elevationLossM`, `gpxUrl`) se migraron al modelo `Event`.
 - `buildUniqueSlug(name, excludeId)` en `event.service.js` deriva el slug del nombre con `utils/slugify.js` y resuelve colisiones con sufijos `-2`, `-3`… En `update` se ignora el propio evento.
 - Reglas de negocio numéricas: `distanceKm > 0`, `elevationGain >= 0`, `price >= 0`.
+- Edición desde el dashboard (`/events/:id/edit`): el formulario solo permite modificar `name`, `description`, `categoryId`, `locationId`, `distanceKm` y `elevationGain`. El resto de campos se conservan (actualización parcial).
 - `slugify` vive en `src/utils/slugify.js`; `utils/appError.js` lo reexporta por compatibilidad.
 
 ### Listados sin límite

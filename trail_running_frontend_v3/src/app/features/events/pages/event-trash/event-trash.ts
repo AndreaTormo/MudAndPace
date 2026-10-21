@@ -20,7 +20,7 @@ import { isHttpError, showUnexpectedError } from '../../../../shared/utils/error
     <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       <div class="mb-8">
         <nav class="mb-4 flex items-center gap-2 text-sm text-gray-500">
-          <a routerLink="/admin/trash" class="hover:text-gray-800 hover:underline">Administración</a>
+          <a routerLink="/events" class="hover:text-gray-800 hover:underline">Eventos</a>
           <span>/</span>
           <span class="font-medium text-gray-800">Papelera de eventos</span>
         </nav>

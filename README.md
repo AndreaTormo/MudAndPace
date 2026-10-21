@@ -16,33 +16,25 @@
 
 MudAndPace es una plataforma web centrada en el mundo del trail running, concebida para explorar experiencias de montaña y acercar a los corredores a la emoción de las carreras de trail, inspiradas en circuitos como UTMB World Series y Golden Trail World Series (GTWS).
 
-El proyecto está desarrollado con **Angular** para el frontend y una **API REST con Node.js, Express y MongoDB** para el backend. Actualmente, la aplicación permite consultar y administrar rutas de trail running, con filtros, fichas de detalle y herramientas para crear, editar y gestionar rutas.
+El proyecto está desarrollado con **Angular** para el frontend y una **API REST con Node.js, Express y MongoDB** para el backend. Actualmente, la aplicación permite consultar y administrar eventos de trail running, con filtros, fichas de detalle, mapa de ubicación y herramientas para crear, editar y gestionar eventos.
 
 ## ✨ Funcionalidades
 
 ### Frontend
-- Listado de rutas con filtros por dificultad, país, región, distancia y estado de publicación.
-- Búsqueda de rutas por su identificador.
-- Páginas de detalle para consultar la información de una ruta.
-- Formularios para crear y editar rutas con validaciones en el cliente.
-- Gestión de rutas mediante borrado lógico y recuperación.
-- Sección de eventos con listado, filtros, detalle, creación y edición.
+- Listado de eventos con filtros por estado, categoría, ubicación, distancia y fechas.
+- Búsqueda de eventos por su identificador.
+- Páginas de detalle con mapa de ubicación (OpenStreetMap) y características técnicas.
+- Formularios para crear y editar eventos con validaciones en el cliente.
+- Edición desde el dashboard limitada a `name`, `description`, `categoryId`, `locationId`, `distanceKm` y `elevationGain`.
 - Gestión de eventos: publicar/despublicar y borrado lógico con recuperación.
-- Papelera de rutas y eventos con restauración y eliminación definitiva.
-- Panel de administración en el sidebar con acceso a las papeleras.
+- Papelera de eventos con restauración y eliminación definitiva.
+- Panel de administración en el sidebar con acceso a la papelera.
 - Estados de carga, errores y resultados vacíos.
 - Manejo centralizado de errores y mensajes en español.
 - Gestión del estado con Angular Signals y componentes con `OnPush`.
 
 ### Backend
-- API REST para consultar y administrar rutas de trail running.
-- Búsqueda por identificador y por `slug`.
-- Filtrado por dificultad, país, región, distancia, publicación y estado.
-- Búsqueda geográfica de rutas cercanas mediante coordenadas y radio.
-- Creación y actualización de rutas.
-- Desactivación lógica, restauración, activación y desactivación de rutas.
 - API REST para eventos: listado con filtros, detalle, creación, edición, publicación y borrado lógico.
-- Papelera de rutas y eventos: restauración y eliminación definitiva.
 - Modelos de organizador, categoría y ubicación con población de datos relacionados.
 - Validación de datos con Zod y esquemas de Mongoose.
 - Gestión centralizada de errores y respuestas uniformes.
@@ -55,6 +47,7 @@ El proyecto está desarrollado con **Angular** para el frontend y una **API REST
 | Frontend | Angular 18, TypeScript, HTML, CSS |
 | Estado y formularios | Angular Signals, Reactive Forms |
 | Estilos e interfaz | Tailwind CSS, SweetAlert2 |
+| Mapas | OpenStreetMap embebido (sin dependencias) |
 | Backend | Node.js, Express |
 | Base de datos | MongoDB, Mongoose |
 | Validación | Zod |
@@ -67,19 +60,20 @@ MudAndPace está dividido en dos aplicaciones: frontend y backend.
 
 ```text
 MudAndPace/
-├── backend/
+├── trail-running-api_v3/
 │   └── trail-running-api/
 │       └── src/
-│           ├── config/          # Configuración de base de datos
+│           ├── config/          # Configuración de base de datos y seed
 │           ├── controllers/     # Controladores HTTP
-│           ├── middlewares/     # CORS, logging y gestión de errores
+│           ├── middlewares/     # Validación, CORS, logging y gestión de errores
 │           ├── models/          # Modelos de Mongoose
 │           ├── repositories/    # Acceso a datos
 │           ├── routes/          # Endpoints de la API
 │           ├── services/        # Lógica de negocio y errores
+│           ├── utils/           # AppError y slugify
 │           ├── app.js
 │           └── seed.js          # Datos de ejemplo
-└── frontend/
+└── trail_running_frontend_v3/
     └── src/
         ├── environments/        # Configuración por entorno
         └── app/
@@ -88,7 +82,7 @@ MudAndPace/
             │   ├── models/
             │   ├── services/
             │   └── stores/
-            ├── features/routes/
+            ├── features/events/
             │   ├── components/
             │   └── pages/
             ├── layouts/
@@ -97,7 +91,7 @@ MudAndPace/
 
 ### Flujo de datos
 
-En el frontend, las páginas interactúan con el store de rutas, que utiliza `TrailRouteService` y `ApiService` para realizar peticiones HTTP mediante `HttpClient`. El backend recibe las peticiones a través de sus rutas y controladores, aplica la lógica de negocio de los servicios y accede a MongoDB mediante los repositorios y modelos de Mongoose.
+En el frontend, las páginas interactúan con el store de eventos, que utiliza `EventService` y `ApiService` para realizar peticiones HTTP mediante `HttpClient`. El backend recibe las peticiones a través de sus rutas y controladores, aplica la lógica de negocio de los servicios y accede a MongoDB mediante los repositorios y modelos de Mongoose.
 
 ## ⚙️ Requisitos
 
@@ -112,7 +106,7 @@ En el frontend, las páginas interactúan con el store de rutas, que utiliza `Tr
 Entra en la carpeta del backend e instala las dependencias:
 
 ```bash
-cd backend/trail-running-api
+cd trail-running-api_v3/trail-running-api
 npm install
 ```
 
@@ -134,10 +128,10 @@ La API estará disponible, según la configuración incluida, en `http://localho
 
 ### 2. Datos de ejemplo (opcional)
 
-Para cargar las rutas de ejemplo:
+Para cargar los eventos de ejemplo:
 
 ```bash
-node src/seed.js
+npm run seed
 ```
 
 ### 3. Frontend
@@ -145,7 +139,7 @@ node src/seed.js
 Abre otra terminal y entra en la carpeta del frontend:
 
 ```bash
-cd frontend
+cd trail_running_frontend_v3
 npm install
 npm start
 ```
@@ -160,29 +154,11 @@ El frontend utiliza por defecto la API configurada en `src/environments/environm
 
 ## 🔌 API REST
 
-URL base de las rutas:
+Base URL de eventos:
 
 ```text
-http://localhost:3000/api/v1/routes
+http://localhost:3000/api/v1/events
 ```
-
-| Método | Endpoint | Descripción |
-|---|---|---|
-| `GET` | `/` | Lista rutas y aplica filtros |
-| `GET` | `/:id` | Obtiene una ruta por ID |
-| `GET` | `/slug/:slug` | Obtiene una ruta por slug |
-| `GET` | `/nearby` | Busca rutas cercanas por ubicación |
-| `POST` | `/` | Crea una ruta |
-| `PUT` | `/:id` | Actualiza una ruta |
-| `PATCH` | `/:id/soft-delete` | Desactiva una ruta mediante borrado lógico |
-| `PATCH` | `/:id/restore` | Restaura una ruta inactiva |
-| `PATCH` | `/:id/activate` | Activa una ruta inactiva |
-| `PATCH` | `/:id/deactivate` | Desactiva una ruta activa |
-| `DELETE` | `/:id` | Desactiva una ruta mediante borrado lógico |
-
-### Eventos
-
-Base URL: `http://localhost:3000/api/v1/events`
 
 | Método | Endpoint | Descripción |
 |---|---|---|
@@ -193,9 +169,11 @@ Base URL: `http://localhost:3000/api/v1/events`
 | `PUT` | `/:id` | Actualiza un evento |
 | `PATCH` | `/:id/publish` | Publica un evento (borrador → publicado) |
 | `PATCH` | `/:id/unpublish` | Pasa un evento a borrador |
-| `PATCH` | `/:id/soft-delete` | Desactiva un evento (borrado lógico) |
-| `PATCH` | `/:id/restore` | Restaura un evento inactivo |
-| `DELETE` | `/:id` | Desactiva un evento (borrado lógico) |
+| `PATCH` | `/:id/soft-delete` | Envía un evento a la papelera (borrado lógico) |
+| `PATCH` | `/:id/restore` | Restaura un evento de la papelera |
+| `DELETE` | `/:id` | Envía un evento a la papelera (borrado lógico) |
+| `DELETE` | `/:id/permanent` | Elimina definitivamente un evento de la papelera |
+| `GET` | `/deleted` | Lista la papelera |
 
 Filtros de listado: `status` (`published`, `draft`, `all`), `categoryId`, `locationId`, `hostId`, `minDistance`, `maxDistance`, `fromDate`, `toDate`, `isActive`.
 
@@ -218,7 +196,7 @@ GET http://localhost:3000/health
 - El backend valida los datos con Zod y Mongoose.
 - La API devuelve errores con una estructura uniforme.
 - El frontend centraliza el tratamiento de errores HTTP, incluidos los errores de validación, los tiempos de espera y las respuestas no válidas.
-- Los formularios del frontend validan los campos obligatorios y las URL HTTP/HTTPS.
+- Los formularios del frontend validan los campos obligatorios.
 
 ## 🔧 Configuración
 
@@ -257,6 +235,7 @@ La compilación de producción se genera en `dist/trail_running_frontend_v3/`, s
 | Comando | Descripción |
 |---|---|
 | `npm run dev` | Inicia la API en modo desarrollo |
+| `npm run seed` | Carga los datos de ejemplo |
 
 Consulta los `package.json` de cada aplicación para conocer otros scripts disponibles.
 

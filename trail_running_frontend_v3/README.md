@@ -1,6 +1,6 @@
 # Mud and Pace — Frontend
 
-Aplicación Angular 18 para consultar y administrar rutas de trail running. Consume la API Express
+Aplicación Angular 18 para consultar y administrar eventos de trail running. Consume la API Express
 `trail-running-api_v3` (`http://localhost:3000/api/v1`).
 
 ## Requisitos
@@ -49,18 +49,18 @@ src/
 └── app/
     ├── core/
     │   ├── interceptors/    loading + error (SweetAlert2 en español)
-    │   ├── models/          interfaces TrailRoute, RouteFilters, ApiResponse
-    │   ├── services/        ApiService (HTTP + timeout) y TrailRouteService (único fichero con la URL)
-    │   └── stores/          TrailRoutesStore (signals; selectedRoute, loading, error, stale)
-    ├── features/routes/
-    │   ├── components/      route-card, route-grid, route-filters, route-form (compartido)
-    │   ├── pages/           route-list, route-detail, route-create, route-edit
-    │   └── routes.routes.ts rutas: '' (lista), create, :id/edit, :id
-    ├── layouts/main-layout/ navbar + <router-outlet>
-    └── shared/              navbar, loader, skeleton, empty/error states, utils (validators, format, error.util)
+    │   ├── models/          interfaces Event, EventPayload, ApiResponse
+    │   ├── services/        ApiService (HTTP + timeout), EventService y ReferenceService (URLs)
+    │   └── stores/          EventsStore (signals; selectedEvent, loading, error, stale)
+    ├── features/events/
+    │   ├── components/      event-row, event-filters, event-form
+    │   ├── pages/           event-list, event-detail, event-create, event-edit, event-trash
+    │   └── events.routes.ts rutas: '' (lista), create, :id/edit, :id, trash
+    ├── layouts/main-layout/ navbar + sidebar + <router-outlet>
+    └── shared/              navbar, sidebar, loader, skeleton, empty/error states, event-map, utils
 ```
 
-Flujo de datos: página → store → `TrailRouteService` → `ApiService` → `HttpClient`; los componentes
+Flujo de datos: página → store → `EventService` → `ApiService` → `HttpClient`; los componentes
 hijos solo reciben inputs/emiten outputs.
 
 ## Variables de entorno
@@ -76,12 +76,16 @@ hijos solo reciben inputs/emiten outputs.
 
 ## Funcionalidades
 
-- Listado con filtros (dificultad, país, región, distancia, estado de publicación) y búsqueda por
-  ID hexadecimal de 24 caracteres (validada con Reactive Forms).
-- Alta y edición de rutas con validación en cliente (URLs http(s), campos obligatorios) y mensajes
-  accesibles (`role="alert"`, `aria-invalid`/`aria-describedby`).
-- Detalle con caché: si el store ya tiene esa ruta y no está desactualizada, no repite la petición.
-- Borrado lógico (soft delete) y recuperación, con confirmación SweetAlert2 y refresco de la lista.
+- Listado con filtros (estado, categoría, ubicación, distancia, fechas) y búsqueda por ID hexadecimal
+  de 24 caracteres (validada con Reactive Forms).
+- Alta y edición de eventos con validación en cliente y mensajes accesibles (`role="alert"`,
+  `aria-invalid`/`aria-describedby`). Desde el dashboard solo se pueden editar `name`, `description`,
+  `categoryId`, `locationId`, `distanceKm` y `elevationGain`.
+- Detalle con caché: si el store ya tiene ese evento y no está desactualizado, no repite la petición.
+  Incluye mapa de ubicación (OpenStreetMap embebido, sin dependencias) y características técnicas
+  (dificultad, superficies, etiquetas, desnivel negativo, GPX).
+- Publicar/despublicar, borrado lógico (soft delete) y recuperación, con confirmación SweetAlert2 y
+  refresco de la lista. Papelera con restauración y eliminación definitiva.
 - Manejo de errores centralizado: el interceptor traduce los códigos de la API a mensajes en
   español (incluye el desglose `details` de Zod en los 400) y `error.util` cubre errores no HTTP
   (respuestas inválidas, timeouts).

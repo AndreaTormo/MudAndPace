@@ -1,15 +1,15 @@
-﻿import { ChangeDetectionStrategy, Component, effect, inject, input, output, signal } from '@angular/core';
+﻿import { ChangeDetectionStrategy, Component, effect, inject, input, output } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { firstValueFrom } from 'rxjs';
-import { ReferenceService } from '../../../../core/services/reference.service';
 import {
   Event,
   EventCategory,
+  EventFormValue,
   EventHost,
   EventLocation,
-  EventPayload,
   EventStatus
 } from '../../../../core/models/event.model';
+import { toDateInputValue } from '../../../../shared/utils/format.util';
+import { EDITABLE_FIELDS } from '../../utils/event-payload.util';
 
 @Component({
   selector: 'app-event-form',
@@ -62,24 +62,26 @@ import {
       <section class="space-y-4">
         <h2 class="text-base font-semibold text-gray-900">Organización y clasificación</h2>
         <div class="grid gap-4 sm:grid-cols-3">
-          <div>
-            <label class="form-label" for="hostId">Organizador *</label>
-            <select
-              id="hostId"
-              class="form-input"
-              formControlName="hostId"
-              [attr.aria-invalid]="errorFor('hostId') ? true : null"
-              [attr.aria-describedby]="errorFor('hostId') ? 'hostId-error' : null"
-            >
-              <option value="">Seleccionaâ€¦</option>
-              @for (option of hosts(); track option._id) {
-                <option [value]="option._id">{{ option.name }}</option>
+          @if (mode() === 'create') {
+            <div>
+              <label class="form-label" for="hostId">Organizador *</label>
+              <select
+                id="hostId"
+                class="form-input"
+                formControlName="hostId"
+                [attr.aria-invalid]="errorFor('hostId') ? true : null"
+                [attr.aria-describedby]="errorFor('hostId') ? 'hostId-error' : null"
+              >
+                <option value="">Seleccionaâ€¦</option>
+                @for (option of hosts(); track option._id) {
+                  <option [value]="option._id">{{ option.name }}</option>
+                }
+              </select>
+              @if (errorFor('hostId'); as message) {
+                <p id="hostId-error" class="form-error" role="alert">{{ message }}</p>
               }
-            </select>
-            @if (errorFor('hostId'); as message) {
-              <p id="hostId-error" class="form-error" role="alert">{{ message }}</p>
-            }
-          </div>
+            </div>
+          }
 
           <div>
             <label class="form-label" for="categoryId">Categorí­a *</label>
@@ -124,35 +126,37 @@ import {
       <section class="space-y-4">
         <h2 class="text-base font-semibold text-gray-900">Fechas y métricas</h2>
         <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <div>
-            <label class="form-label" for="startDate">Inicio *</label>
-            <input
-              id="startDate"
-              type="date"
-              class="form-input"
-              formControlName="startDate"
-              [attr.aria-invalid]="errorFor('startDate') ? true : null"
-              [attr.aria-describedby]="errorFor('startDate') ? 'startDate-error' : null"
-            />
-            @if (errorFor('startDate'); as message) {
-              <p id="startDate-error" class="form-error" role="alert">{{ message }}</p>
-            }
-          </div>
+          @if (mode() === 'create') {
+            <div>
+              <label class="form-label" for="startDate">Inicio *</label>
+              <input
+                id="startDate"
+                type="date"
+                class="form-input"
+                formControlName="startDate"
+                [attr.aria-invalid]="errorFor('startDate') ? true : null"
+                [attr.aria-describedby]="errorFor('startDate') ? 'startDate-error' : null"
+              />
+              @if (errorFor('startDate'); as message) {
+                <p id="startDate-error" class="form-error" role="alert">{{ message }}</p>
+              }
+            </div>
 
-          <div>
-            <label class="form-label" for="endDate">Fin *</label>
-            <input
-              id="endDate"
-              type="date"
-              class="form-input"
-              formControlName="endDate"
-              [attr.aria-invalid]="errorFor('endDate') ? true : null"
-              [attr.aria-describedby]="errorFor('endDate') ? 'endDate-error' : null"
-            />
-            @if (errorFor('endDate'); as message) {
-              <p id="endDate-error" class="form-error" role="alert">{{ message }}</p>
-            }
-          </div>
+            <div>
+              <label class="form-label" for="endDate">Fin *</label>
+              <input
+                id="endDate"
+                type="date"
+                class="form-input"
+                formControlName="endDate"
+                [attr.aria-invalid]="errorFor('endDate') ? true : null"
+                [attr.aria-describedby]="errorFor('endDate') ? 'endDate-error' : null"
+              />
+              @if (errorFor('endDate'); as message) {
+                <p id="endDate-error" class="form-error" role="alert">{{ message }}</p>
+              }
+            </div>
+          }
 
           <div>
             <label class="form-label" for="distanceKm">Distancia (km) *</label>
@@ -186,39 +190,41 @@ import {
             }
           </div>
 
-          <div>
-            <label class="form-label" for="price">Precio (â‚¬) *</label>
-            <input
-              id="price"
-              type="number"
-              step="0.01"
-              class="form-input"
-              formControlName="price"
-              [attr.aria-invalid]="errorFor('price') ? true : null"
-              [attr.aria-describedby]="errorFor('price') ? 'price-error' : null"
-            />
-            @if (errorFor('price'); as message) {
-              <p id="price-error" class="form-error" role="alert">{{ message }}</p>
-            }
-          </div>
+          @if (mode() === 'create') {
+            <div>
+              <label class="form-label" for="price">Precio (â‚¬) *</label>
+              <input
+                id="price"
+                type="number"
+                step="0.01"
+                class="form-input"
+                formControlName="price"
+                [attr.aria-invalid]="errorFor('price') ? true : null"
+                [attr.aria-describedby]="errorFor('price') ? 'price-error' : null"
+              />
+              @if (errorFor('price'); as message) {
+                <p id="price-error" class="form-error" role="alert">{{ message }}</p>
+              }
+            </div>
 
-          <div>
-            <label class="form-label" for="status">Estado</label>
-            <select id="status" class="form-input" formControlName="status">
-              <option value="draft">Borrador</option>
-              <option value="published">Publicado</option>
-            </select>
-          </div>
+            <div>
+              <label class="form-label" for="status">Estado</label>
+              <select id="status" class="form-input" formControlName="status">
+                <option value="draft">Borrador</option>
+                <option value="published">Publicado</option>
+              </select>
+            </div>
+
+            <label class="flex items-center gap-2 text-sm text-gray-700">
+              <input
+                type="checkbox"
+                formControlName="isActive"
+                class="h-4 w-4 rounded border-gray-300"
+              />
+              Evento activo (los inactivos se muestran en la lista y se pueden recuperar)
+            </label>
+          }
         </div>
-
-        <label class="flex items-center gap-2 text-sm text-gray-700">
-          <input
-            type="checkbox"
-            formControlName="isActive"
-            class="h-4 w-4 rounded border-gray-300"
-          />
-          Evento activo (los inactivos se muestran en la lista y se pueden recuperar)
-        </label>
       </section>
 
       <div class="flex justify-end gap-3 border-t border-gray-100 pt-4">
@@ -232,15 +238,14 @@ import {
 })
 export class EventForm {
   private readonly fb = inject(FormBuilder);
-  private readonly reference = inject(ReferenceService);
 
   event = input<Event | null>(null);
-  formSubmit = output<EventPayload>();
+  mode = input<'create' | 'edit'>('create');
+  categories = input<EventCategory[]>([]);
+  locations = input<EventLocation[]>([]);
+  hosts = input<EventHost[]>([]);
+  formSubmit = output<EventFormValue>();
   cancelled = output<void>();
-
-  protected readonly categories = signal<EventCategory[]>([]);
-  protected readonly locations = signal<EventLocation[]>([]);
-  protected readonly hosts = signal<EventHost[]>([]);
 
   protected readonly form = this.fb.nonNullable.group({
     name: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(120)]],
@@ -253,24 +258,47 @@ export class EventForm {
     distanceKm: [null as number | null, [Validators.required, Validators.min(0.1)]],
     elevationGain: [null as number | null, [Validators.required, Validators.min(0)]],
     price: [null as number | null, [Validators.required, Validators.min(0)]],
-    status: ['draft'],
+    status: this.fb.nonNullable.control<EventStatus>('draft'),
     isActive: [true]
   });
 
   constructor() {
-    void this.loadReferences();
-
     effect(() => {
+      const mode = this.mode();
+      const controls = this.form.controls;
+
+      for (const name of Object.keys(controls) as (keyof EventFormValue)[]) {
+        const control = controls[name];
+        if (mode === 'create' || EDITABLE_FIELDS.includes(name)) {
+          control.enable();
+        } else {
+          control.disable();
+        }
+      }
+
       const event = this.event();
-      if (event) {
+      if (!event) {
+        return;
+      }
+
+      if (mode === 'edit') {
+        this.form.patchValue({
+          name: event.name,
+          description: event.description ?? '',
+          categoryId: event.categoryId,
+          locationId: event.locationId,
+          distanceKm: event.distanceKm,
+          elevationGain: event.elevationGain
+        });
+      } else {
         this.form.patchValue({
           name: event.name,
           description: event.description ?? '',
           hostId: event.hostId,
           categoryId: event.categoryId,
           locationId: event.locationId,
-          startDate: toLocalDate(event.startDate),
-          endDate: toLocalDate(event.endDate),
+          startDate: toDateInputValue(event.startDate),
+          endDate: toDateInputValue(event.endDate),
           distanceKm: event.distanceKm,
           elevationGain: event.elevationGain,
           price: event.price,
@@ -281,40 +309,13 @@ export class EventForm {
     });
   }
 
-  private async loadReferences(): Promise<void> {
-    const [categories, locations, hosts] = await Promise.all([
-      firstValueFrom(this.reference.categories()),
-      firstValueFrom(this.reference.locations()),
-      firstValueFrom(this.reference.hosts())
-    ]);
-    this.categories.set(categories);
-    this.locations.set(locations);
-    this.hosts.set(hosts);
-  }
-
   protected submit(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
     }
 
-    const value = this.form.getRawValue();
-    const payload: EventPayload = {
-      name: value.name.trim(),
-      description: value.description.trim() || undefined,
-      hostId: value.hostId,
-      categoryId: value.categoryId,
-      locationId: value.locationId,
-      startDate: value.startDate,
-      endDate: value.endDate,
-      distanceKm: value.distanceKm ?? 0,
-      elevationGain: value.elevationGain ?? 0,
-      price: value.price ?? 0,
-      status: value.status as EventStatus,
-      isActive: value.isActive
-    };
-
-    this.formSubmit.emit(payload);
+    this.formSubmit.emit(this.form.getRawValue());
   }
 
   protected errorFor(controlName: string): string | null {
@@ -341,18 +342,4 @@ export class EventForm {
     }
     return 'Valor no válido.';
   }
-}
-
-function toLocalDate(iso: string | undefined): string {
-  if (!iso) {
-    return '';
-  }
-  const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) {
-    return '';
-  }
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
 }

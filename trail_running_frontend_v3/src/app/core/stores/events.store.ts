@@ -93,12 +93,6 @@ export class EventsStore {
     this._deletedEvents.update((list) => list.filter((event) => event._id !== id));
   }
 
-  patchDeletedEvent(updated: Event): void {
-    this._deletedEvents.update((list) =>
-      list.map((event) => (event._id === updated._id ? updated : event))
-    );
-  }
-
   reset(): void {
     this._loading.set(false);
     this._error.set(null);

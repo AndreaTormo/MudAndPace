@@ -4,11 +4,15 @@ Memoria del proyecto entre sesiones. Breve y actualizada.
 
 ## Estado actual
 - v4 con backend (Express + Mongoose) y frontend (Angular 18) funcionales.
-- Papelera implementada en rutas y eventos (restaurar + eliminar definitivamente).
-- Panel de administración en sidebar con acceso directo a las papeleras (sin gating).
+- Módulo único de contenido: `events`. El módulo `trailRoute` (rutas) se eliminó.
+- Papelera implementada en eventos (restaurar + eliminar definitivamente).
+- Panel de administración en sidebar con acceso directo a la papelera (sin gating).
+- Mapa de ubicación en el detalle de eventos mediante iframe de OpenStreetMap (sin Leaflet).
 
 ## Decisiones
-- `trailRoutes` es el módulo principal de eventos (no renombrar).
+- Módulo único de contenido: `events`. El antiguo `trailRoute` se eliminó y sus campos propios (`difficulty`, `surface`, `tags`, `elevationLossM`, `gpxUrl`) se migraron al modelo `Event`.
+- La edición desde el dashboard (`/events/:id/edit`) solo permite modificar `name`, `description`, `categoryId`, `locationId`, `distanceKm` y `elevationGain`; el resto se conserva por actualización parcial.
+- Mapa sin dependencias externas: iframe embebido de OpenStreetMap en `event-map.ts`. Leaflet eliminado.
 - Borrado lógico = `deleted_at` con fecha. `restoreById` filtra por `deleted_at != null`.
 - Eliminar definitivo solo desde la papelera.
 - Todo se opera por ID, no por slug.
@@ -23,4 +27,5 @@ Memoria del proyecto entre sesiones. Breve y actualizada.
 - Un volumen Docker nuevo queda vacío hasta ejecutar `npm run seed`.
 
 ## Pendiente
-- Verificar conteo real de eventos en MongoDB tras el seed (10 eventos).
+- Verificar conteo real de eventos en MongoDB tras el seed (12 eventos).
+- Revisar `README.md` (raíz y de cada app), que aún describen el módulo de rutas.

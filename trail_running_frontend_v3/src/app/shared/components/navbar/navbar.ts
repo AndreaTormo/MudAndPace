@@ -12,7 +12,7 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
         class="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8"
         aria-label="Navegación principal"
       >
-        <a routerLink="/routes" class="flex items-center gap-2 text-lg font-semibold text-gray-900">
+        <a routerLink="/events" class="flex items-center gap-2 text-lg font-semibold text-gray-900">
           <img
             src="logo.png"
             alt="Mud and Pace"
@@ -25,14 +25,6 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
 
         <div class="hidden items-center gap-2 sm:flex">
           <a
-            routerLink="/routes"
-            routerLinkActive="text-brand"
-            [routerLinkActiveOptions]="{ exact: true }"
-            class="rounded-full px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100 hover:text-gray-900"
-          >
-            Rutas
-          </a>
-          <a
             routerLink="/events"
             routerLinkActive="text-brand"
             [routerLinkActiveOptions]="{ exact: true }"
@@ -40,7 +32,7 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
           >
             Eventos
           </a>
-          <a routerLink="/routes/create" class="button-primary">+ Nueva ruta</a>
+          <a routerLink="/events/create" class="button-primary">+ Nuevo evento</a>
         </div>
 
         <button
@@ -84,15 +76,6 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
       @if (menuOpen()) {
         <div id="mobile-menu" class="space-y-1 border-t border-gray-100 px-4 py-3 sm:hidden">
           <a
-            routerLink="/routes"
-            routerLinkActive="bg-gray-100 text-brand"
-            [routerLinkActiveOptions]="{ exact: true }"
-            class="block rounded-lg px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100"
-            (click)="menuOpen.set(false)"
-          >
-            Rutas
-          </a>
-          <a
             routerLink="/events"
             routerLinkActive="bg-gray-100 text-brand"
             [routerLinkActiveOptions]="{ exact: true }"
@@ -102,12 +85,12 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
             Eventos
           </a>
           <a
-            routerLink="/routes/create"
+            routerLink="/events/create"
             routerLinkActive="bg-gray-100 text-brand"
             class="block rounded-lg px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100"
             (click)="menuOpen.set(false)"
           >
-            + Nueva ruta
+            + Nuevo evento
           </a>
         </div>
       }

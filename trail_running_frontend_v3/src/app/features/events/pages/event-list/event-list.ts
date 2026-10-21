@@ -1,13 +1,12 @@
-﻿import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
+﻿import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { firstValueFrom } from 'rxjs';
 import Swal from 'sweetalert2';
 import { EventsStore } from '../../../../core/stores/events.store';
 import { EventService } from '../../../../core/services/event.service';
-import { Event, EventFilters } from '../../../../core/models/event.model';
+import { Event } from '../../../../core/models/event.model';
 import { EventRow } from '../../components/event-row/event-row';
-import { EventFilters as EventFiltersComponent } from '../../components/event-filters/event-filters';
 import { SkeletonLoader } from '../../../../shared/components/skeleton-loader/skeleton-loader';
 import { EmptyState } from '../../../../shared/components/empty-state/empty-state';
 import { ErrorState } from '../../../../shared/components/error-state/error-state';
@@ -22,7 +21,6 @@ import { isHttpError, showUnexpectedError } from '../../../../shared/utils/error
     RouterLink,
     ReactiveFormsModule,
     EventRow,
-    EventFiltersComponent,
     SkeletonLoader,
     EmptyState,
     ErrorState
@@ -63,8 +61,6 @@ import { isHttpError, showUnexpectedError } from '../../../../shared/utils/error
         </div>
       </div>
 
-      <app-event-filters (filtersChange)="onFilters($event)" />
-
       <div class="mt-6">
         @if (store.loading()) {
           <app-skeleton-loader [count]="8" />
@@ -104,9 +100,6 @@ export class EventList implements OnInit {
   });
   private readonly searchAttempted = signal(false);
   private readonly pending = signal<ReadonlySet<string>>(new Set());
-  private readonly filters = signal<EventFilters>({ status: 'all' });
-
-  protected readonly visibleEvents = computed(() => this.store.events());
 
   ngOnInit(): void {
     if (!this.store.loaded() || this.store.stale()) {
@@ -114,17 +107,12 @@ export class EventList implements OnInit {
     }
   }
 
-  protected onFilters(filters: EventFilters): void {
-    this.filters.set(filters);
-    this.load();
-  }
-
   protected async load(): Promise<void> {
     this.store.setLoading(true);
     this.store.setError(null);
 
     try {
-      const events = await firstValueFrom(this.service.list(this.filters()));
+      const events = await firstValueFrom(this.service.list());
       this.store.setEvents(events);
     } catch {
       this.store.setError('No se han podido cargar los eventos. Inténtalo de nuevo.');
