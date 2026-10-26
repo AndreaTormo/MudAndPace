@@ -30,6 +30,12 @@ class EventRepository {
     return Boolean(await Event.exists(query));
   }
 
+  async existsBySku(sku, excludeId) {
+    const query = { sku };
+    if (excludeId) query._id = { $ne: excludeId };
+    return Boolean(await Event.exists(query));
+  }
+
   async create(data) {
     return Event.create(data);
   }

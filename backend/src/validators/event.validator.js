@@ -3,9 +3,12 @@ const { z } = require('zod');
 const objectIdSchema = z.string().regex(/^[a-f\d]{24}$/i, 'ID de evento inválido');
 const slugSchema = z.string().trim().min(1).max(140).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'El slug no tiene un formato válido');
 
+const skuSchema = z.string().trim().min(3).max(80).regex(/^[A-Z0-9]+(?:-[A-Z0-9]+)*$/, 'El SKU no tiene un formato válido');
+
 const eventPayloadSchema = z.object({
   name: z.string().trim().min(3).max(120),
   slug: slugSchema.optional(),
+  sku: skuSchema.optional(),
   description: z.string().trim().max(3000).optional(),
   hostId: objectIdSchema,
   categoryId: objectIdSchema,
@@ -43,6 +46,7 @@ const listQuerySchema = z.object({
 module.exports = {
   objectIdSchema,
   slugSchema,
+  skuSchema,
   eventPayloadSchema,
   updateEventSchema,
   idParamsSchema,

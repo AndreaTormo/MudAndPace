@@ -4,6 +4,7 @@ const eventSchema = new mongoose.Schema(
   {
     name: { type: String, required: true, trim: true, minlength: 3, maxlength: 120 },
     slug: { type: String, required: true, unique: true, lowercase: true, trim: true, index: true },
+    sku: { type: String, required: true, unique: true, uppercase: true, trim: true, index: true },
     description: { type: String, trim: true, maxlength: 3000 },
     hostId: { type: mongoose.Schema.Types.ObjectId, ref: 'Host', required: true, index: true },
     categoryId: { type: mongoose.Schema.Types.ObjectId, ref: 'Category', required: true, index: true },

@@ -3,6 +3,7 @@ const repository = require('../repositories/event.repository');
 const eventImageService = require('./eventImage.service');
 const { AppError, normalizeAppError } = require('../utils/appError');
 const { slugify } = require('../utils/slugify');
+const { generateUniqueSku } = require('../utils/sku');
 const {
   eventPayloadSchema, updateEventSchema, objectIdSchema, slugSchema, listQuerySchema
 } = require('../validators/event.validator');
@@ -52,6 +53,21 @@ class EventService {
     let candidate = base;
     let suffix = 2;
     while (await repository.existsBySlug(candidate, excludeId)) {
+      candidate = `${base}-${suffix}`;
+      suffix += 1;
+    }
+    return candidate;
+  }
+
+  async generateUniqueSku(name, excludeId) {
+    if (!name || typeof name !== 'string') {
+      throw new AppError('No se pudo generar el SKU', 400, 'INVALID_SKU');
+    }
+    let candidate = generateUniqueSku(name);
+    if (!candidate) throw new AppError('No se pudo generar el SKU', 400, 'INVALID_SKU');
+    let suffix = 2;
+    while (await repository.existsBySku(candidate, excludeId)) {
+      const base = candidate.replace(/-[A-Z0-9]+$/, '').replace(/-\d+$/, '');
       candidate = `${base}-${suffix}`;
       suffix += 1;
     }
@@ -108,9 +124,23 @@ class EventService {
     try {
       const input = validateService(eventPayloadSchema, data);
       const slug = await this.buildUniqueSlug(input.name);
+      let sku = input.sku;
+      if (!sku) {
+        sku = await this.generateUniqueSku(input.name);
+      } else {
+        sku = String(sku).toUpperCase().trim();
+        let candidate = sku;
+        let suffix = 2;
+        while (await repository.existsBySku(candidate)) {
+          candidate = `${sku.replace(/-\d+$/, '')}-${suffix}`;
+          suffix += 1;
+        }
+        sku = candidate;
+      }
       const payload = {
         ...input,
         slug,
+        sku,
         isActive: input.isActive ?? true,
         status: input.status || 'draft',
         deleted_at: null
@@ -129,8 +159,23 @@ class EventService {
       const input = validateService(updateEventSchema, data);
       const payload = { ...input };
 
-      if (payload.name) payload.slug = await this.buildUniqueSlug(payload.name, id);
-      else if (payload.slug) payload.slug = await this.buildUniqueSlug(payload.slug, id);
+      if (payload.name) {
+        payload.slug = await this.buildUniqueSlug(payload.name, id);
+        payload.sku = await this.generateUniqueSku(payload.name, id);
+      } else if (payload.slug) {
+        payload.slug = await this.buildUniqueSlug(payload.slug, id);
+      }
+
+      if (payload.sku && !payload.name) {
+        let sku = String(payload.sku).toUpperCase().trim();
+        let candidate = sku;
+        let suffix = 2;
+        while (await repository.existsBySku(candidate, id)) {
+          candidate = `${sku.replace(/-\d+$/, '')}-${suffix}`;
+          suffix += 1;
+        }
+        payload.sku = candidate;
+      }
 
       validateBusinessRules(payload);
 
