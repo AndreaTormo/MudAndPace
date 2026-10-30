@@ -9,6 +9,7 @@ import {
   SURFACE_LABELS
 } from '../../../../core/models/event.model';
 import { EventService } from '../../../../core/services/event.service';
+import { AuthStore } from '../../../../core/stores/auth.store';
 import { EventsStore } from '../../../../core/stores/events.store';
 import { EmptyState } from '../../../../shared/components/empty-state/empty-state';
 import { ErrorState } from '../../../../shared/components/error-state/error-state';
@@ -197,20 +198,22 @@ import { isHttpError, showUnexpectedError } from '../../../../shared/utils/error
               </dl>
 
               <div class="space-y-2 border-t border-gray-100 pt-4">
-                <a
-                  [routerLink]="['/events', event()!._id, 'edit']"
-                  class="button-primary block text-center"
-                >
-                  Editar evento
-                </a>
-                @if (event()!.isActive) {
-                  <button type="button" class="button-danger w-full" (click)="onDelete()">
-                    Eliminar evento
-                  </button>
-                } @else {
-                  <button type="button" class="button-success w-full" (click)="onActivate()">
-                    Activar evento
-                  </button>
+                @if (isAdmin()) {
+                  <a
+                    [routerLink]="['/events', event()!._id, 'edit']"
+                    class="button-primary block text-center"
+                  >
+                    Editar evento
+                  </a>
+                  @if (event()!.isActive) {
+                    <button type="button" class="button-danger w-full" (click)="onDelete()">
+                      Eliminar evento
+                    </button>
+                  } @else {
+                    <button type="button" class="button-success w-full" (click)="onActivate()">
+                      Activar evento
+                    </button>
+                  }
                 }
                 <a routerLink="/events" class="button-secondary block text-center">
                   Volver a la lista
@@ -228,6 +231,7 @@ export class EventDetail implements OnInit {
   private readonly service = inject(EventService);
   private readonly store = inject(EventsStore);
   private readonly router = inject(Router);
+  protected readonly isAdmin = inject(AuthStore).isAdmin;
 
   protected readonly event = signal<Event | null>(null);
   protected readonly loading = signal(false);

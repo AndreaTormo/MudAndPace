@@ -3,6 +3,7 @@ import { Router, RouterLink } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { firstValueFrom } from 'rxjs';
 import Swal from 'sweetalert2';
+import { AuthStore } from '../../../../core/stores/auth.store';
 import { EventsStore } from '../../../../core/stores/events.store';
 import { EventService } from '../../../../core/services/event.service';
 import { Event } from '../../../../core/models/event.model';
@@ -54,9 +55,11 @@ import { isHttpError, showUnexpectedError } from '../../../../shared/utils/error
           </div>
           <div class="flex items-center gap-2">
             <button type="button" class="button-secondary" (click)="searchById()">Buscar</button>
-            <a routerLink="/events/create" class="button-primary whitespace-nowrap">
-              + Nuevo evento
-            </a>
+            @if (isAdmin()) {
+              <a routerLink="/events/create" class="button-primary whitespace-nowrap">
+                + Nuevo evento
+              </a>
+            }
           </div>
         </div>
       </div>
@@ -67,15 +70,20 @@ import { isHttpError, showUnexpectedError } from '../../../../shared/utils/error
         } @else if (store.error()) {
           <app-error-state [message]="store.error()!" (retry)="load()" />
         } @else if (store.isEmpty()) {
-          <app-empty-state title="No hay eventos todavía" message="Crea un evento de trail running para empezar a trabajar con la API.">
-            <a routerLink="/events/create" class="button-primary">Crear el primer evento</a>
-          </app-empty-state>
+          @if (isAdmin()) {
+            <app-empty-state title="No hay eventos todavía" message="Crea un evento de trail running para empezar a trabajar con la API.">
+              <a routerLink="/events/create" class="button-primary">Crear el primer evento</a>
+            </app-empty-state>
+          } @else {
+            <app-empty-state title="No hay eventos todavía" message="Todavía no hay eventos disponibles." />
+          }
         } @else {
           <div class="divide-y divide-gray-100 overflow-hidden rounded-2xl border border-gray-200 bg-white/80 backdrop-blur-sm shadow-sm">
             @for (event of store.events(); track event._id) {
               <app-event-row
                 [event]="event"
                 [pending]="isPending(event._id)"
+                [canManage]="isAdmin()"
                 (edit)="onEdit($event)"
                 (remove)="onDelete($event)"
                 (activate)="onActivate($event)"
@@ -94,6 +102,7 @@ export class EventList implements OnInit {
   private readonly service = inject(EventService);
   private readonly router = inject(Router);
   private readonly fb = inject(FormBuilder);
+  protected readonly isAdmin = inject(AuthStore).isAdmin;
 
   protected readonly searchForm = this.fb.nonNullable.group({
     id: ['', [Validators.required, Validators.pattern(OBJECT_ID_PATTERN)]]

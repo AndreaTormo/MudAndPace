@@ -31,10 +31,14 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
               .join('\n');
             message = `${message}\n\n${lines}`;
           }
+        } else if (error.status === 401) {
+          message = apiMessage ?? 'Debes iniciar sesión para acceder a este recurso.';
+        } else if (error.status === 403) {
+          message = apiMessage ?? 'No tienes permiso para acceder a este recurso.';
         } else if (error.status === 404) {
           message = apiMessage ?? 'No se ha encontrado el recurso solicitado.';
         } else if (error.status === 409) {
-          message = apiMessage ?? 'La operación entra en conflicto con el estado actual de la ruta.';
+          message = apiMessage ?? 'La operación entra en conflicto con el estado actual del recurso.';
         } else if (error.status >= 500) {
           message = 'Error del servidor. Inténtalo de nuevo más tarde.';
         } else {

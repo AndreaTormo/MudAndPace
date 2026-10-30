@@ -62,30 +62,47 @@ import { formatDate, formatDistance, formatElevation, formatPrice } from '../../
       </div>
 
       <div class="flex flex-wrap items-center gap-2">
-        <button
-          type="button"
-          class="state-pill"
-          [class.state-pill-published]="event().status === 'published'"
-          [class.state-pill-draft]="event().status !== 'published'"
-          [disabled]="pending()"
-          [attr.aria-label]="publishActionLabel()"
-          [title]="publishActionLabel()"
-          (click)="togglePublished.emit(event())"
-        >
-          {{ publishLabel() }}
-        </button>
-        <button
-          type="button"
-          class="state-pill"
-          [class.state-pill-active]="event().isActive"
-          [class.state-pill-inactive]="!event().isActive"
-          [disabled]="pending()"
-          [attr.aria-label]="statusActionLabel()"
-          [title]="statusActionLabel()"
-          (click)="toggleStatus.emit(event())"
-        >
-          {{ statusLabel() }}
-        </button>
+        @if (canManage()) {
+          <button
+            type="button"
+            class="state-pill"
+            [class.state-pill-published]="event().status === 'published'"
+            [class.state-pill-draft]="event().status !== 'published'"
+            [disabled]="pending()"
+            [attr.aria-label]="publishActionLabel()"
+            [title]="publishActionLabel()"
+            (click)="togglePublished.emit(event())"
+          >
+            {{ publishLabel() }}
+          </button>
+          <button
+            type="button"
+            class="state-pill"
+            [class.state-pill-active]="event().isActive"
+            [class.state-pill-inactive]="!event().isActive"
+            [disabled]="pending()"
+            [attr.aria-label]="statusActionLabel()"
+            [title]="statusActionLabel()"
+            (click)="toggleStatus.emit(event())"
+          >
+            {{ statusLabel() }}
+          </button>
+        } @else {
+          <span
+            class="badge"
+            [class.badge-published]="event().status === 'published'"
+            [class.badge-draft]="event().status !== 'published'"
+          >
+            {{ publishLabel() }}
+          </span>
+          <span
+            class="badge"
+            [class.badge-active]="event().isActive"
+            [class.badge-inactive]="!event().isActive"
+          >
+            {{ statusLabel() }}
+          </span>
+        }
       </div>
 
       <div class="flex items-center gap-2 sm:justify-end">
@@ -110,13 +127,14 @@ import { formatDate, formatDistance, formatElevation, formatPrice } from '../../
           </svg>
         </a>
 
-        <button
-          type="button"
-          class="icon-button"
-          [attr.aria-label]="'Editar ' + event().name"
-          title="Editar"
-          (click)="edit.emit(event())"
-        >
+        @if (canManage()) {
+          <button
+            type="button"
+            class="icon-button"
+            [attr.aria-label]="'Editar ' + event().name"
+            title="Editar"
+            (click)="edit.emit(event())"
+          >
           <svg
             class="h-4 w-4"
             viewBox="0 0 24 24"
@@ -179,6 +197,7 @@ import { formatDate, formatDistance, formatElevation, formatPrice } from '../../
             </svg>
           </button>
         }
+        }
       </div>
     </div>
   `
@@ -186,6 +205,7 @@ import { formatDate, formatDistance, formatElevation, formatPrice } from '../../
 export class EventRow {
   event = input.required<Event>();
   pending = input(false);
+  canManage = input(false);
 
   edit = output<Event>();
   remove = output<Event>();

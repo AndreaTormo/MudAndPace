@@ -1,8 +1,11 @@
 const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
 const Host = require('../models/host.model');
 const Category = require('../models/category.model');
 const Location = require('../models/location.model');
 const Event = require('../models/event.model');
+const User = require('../models/user.model');
+const Profile = require('../models/profile.model');
 
 async function connectDatabase() {
   const uri = process.env.MONGODB_URI;
@@ -212,6 +215,7 @@ const events = [
     _id: oid('665a1b2c3d4e5f60718293e8'),
     name: 'Ultra Trail Vall de Boí 2027',
     slug: 'ultra-trail-vall-de-boi-2027',
+    sku: 'UTVB-2027',
     description: 'Carrera por los lagos de la Vall de Boí...',
     hostId: oid('665a1b2c3d4e5f60718293b5'),
     categoryId: oid('665a1b2c3d4e5f60718293c6'),
@@ -235,6 +239,7 @@ const events = [
     _id: oid('665a1b2c3d4e5f60718293e9'),
     name: 'Trail Cadí-Moixeró 2027',
     slug: 'trail-cadi-moixero-2027',
+    sku: 'TCM-2027',
     description: 'Recorrido por el macizo del Cadí...',
     hostId: oid('665a1b2c3d4e5f60718293b5'),
     categoryId: oid('665a1b2c3d4e5f60718293c7'),
@@ -258,6 +263,7 @@ const events = [
     _id: oid('665a1b2c3d4e5f60718293ea'),
     name: 'OCC Orsières-Champex-Chamonix 2027',
     slug: 'occ-2027',
+    sku: 'OCC-2027',
     description: 'Recorrido de 56 km por el corazón del Mont-Blanc, desde Orsières hasta Chamonix pasando por Champex-Lac.',
     hostId: oid('665a1b2c3d4e5f60718293b5'),
     categoryId: oid('665a1b2c3d4e5f60718293c6'),
@@ -281,6 +287,7 @@ const events = [
     _id: oid('665a1b2c3d4e5f60718293eb'),
     name: 'CCC Courmayeur-Champex-Chamonix 2027',
     slug: 'ccc-2027',
+    sku: 'CCC-2027',
     description: '101 km desde Courmayeur hasta Chamonix, recorriendo el Val Ferret y Champex-Lac.',
     hostId: oid('665a1b2c3d4e5f60718293b5'),
     categoryId: oid('665a1b2c3d4e5f60718293c6'),
@@ -304,6 +311,7 @@ const events = [
     _id: oid('665a1b2c3d4e5f60718293ec'),
     name: 'Zegama-Aizkorri 2027',
     slug: 'zegama-aizkorri-2027',
+    sku: 'ZEGAMA-2027',
     description: 'Maratón alpina por el macizo de Aizkorri, con 2.700 m de desnivel positivo.',
     hostId: oid('665a1b2c3d4e5f60718293b5'),
     categoryId: oid('665a1b2c3d4e5f60718293c7'),
@@ -327,6 +335,7 @@ const events = [
     _id: oid('665a1b2c3d4e5f60718293ed'),
     name: 'Sierre-Zinal 2027',
     slug: 'sierre-zinal-2027',
+    sku: 'SZ-2027',
     description: 'Una de las carreras de montaña más antiguas del mundo, desde Sierre hasta Zinal por los Alpes suizos.',
     hostId: oid('665a1b2c3d4e5f60718293b5'),
     categoryId: oid('665a1b2c3d4e5f60718293c7'),
@@ -350,6 +359,7 @@ const events = [
     _id: oid('665a1b2c3d4e5f60718293ee'),
     name: 'Pikes Peak Marathon 2027',
     slug: 'pikes-peak-marathon-2027',
+    sku: 'PPM-2027',
     description: 'Maratón alpina que asciende al Pikes Peak en Colorado, desde Manitou Springs hasta la cumbre.',
     hostId: oid('665a1b2c3d4e5f60718293b5'),
     categoryId: oid('665a1b2c3d4e5f60718293c7'),
@@ -373,6 +383,7 @@ const events = [
     _id: oid('665a1b2c3d4e5f60718293ef'),
     name: 'Western States 100 2027',
     slug: 'western-states-100-2027',
+    sku: 'WS100-2027',
     description: 'La ultra trail más famosa del mundo, 161 km desde Squaw Valley hasta Auburn.',
     hostId: oid('665a1b2c3d4e5f60718293b5'),
     categoryId: oid('665a1b2c3d4e5f60718293c6'),
@@ -396,6 +407,7 @@ const events = [
     _id: oid('665a1b2c3d4e5f60718293f0'),
     name: 'Hardrock 100 2027',
     slug: 'hardrock-100-2027',
+    sku: 'HR100-2027',
     description: '161 km por las Montañas Rocosas de Colorado con 10.000 m de desnivel, una de las carreras más duras del mundo.',
     hostId: oid('665a1b2c3d4e5f60718293b5'),
     categoryId: oid('665a1b2c3d4e5f60718293c6'),
@@ -419,6 +431,7 @@ const events = [
     _id: oid('665a1b2c3d4e5f60718293f1'),
     name: 'Diagonale des Fous 2027',
     slug: 'diagonale-des-fous-2027',
+    sku: 'DIAG-2027',
     description: "170 km por la isla de Réunion con 10.000 m de desnivel, apodada la 'Diagonal de los Locos'.",
     hostId: oid('665a1b2c3d4e5f60718293b5'),
     categoryId: oid('665a1b2c3d4e5f60718293c6'),
@@ -442,6 +455,7 @@ const events = [
     _id: oid('665a1b2c3d4e5f60718293f2'),
     name: 'Montgó Circular 2027',
     slug: 'montgo-circular-2027',
+    sku: 'MONTGO-2027',
     description: 'Ruta de montaña con vistas al Mediterráneo y tramos técnicos.',
     hostId: oid('665a1b2c3d4e5f60718293b5'),
     categoryId: oid('665a1b2c3d4e5f60718293c7'),
@@ -465,6 +479,7 @@ const events = [
     _id: oid('665a1b2c3d4e5f60718293f3'),
     name: 'Sierra Calderona Skyline 2027',
     slug: 'sierra-calderona-skyline-2027',
+    sku: 'SCS-2027',
     description: 'Recorrido largo por pistas y senderos de la Sierra Calderona.',
     hostId: oid('665a1b2c3d4e5f60718293b5'),
     categoryId: oid('665a1b2c3d4e5f60718293c7'),
@@ -514,6 +529,84 @@ const experienceImages = [
   }
 ];
 
+const users = [
+  {
+    name: 'Admin Mud and Pace',
+    email: 'admin@mudandpace.com',
+    password: 'Admin123!',
+    role: 'ADMIN',
+    profile: {
+      firstName: 'Admin',
+      lastName: 'Mud and Pace',
+      city: 'Barcelona',
+      country: 'España'
+    }
+  },
+  {
+    name: 'Admin Secundario',
+    email: 'admin2@mudandpace.com',
+    password: 'Admin123!',
+    role: 'ADMIN',
+    profile: {
+      firstName: 'Admin',
+      lastName: 'Secundario',
+      city: 'Valencia',
+      country: 'España'
+    }
+  },
+  {
+    name: 'Usuario Demo',
+    email: 'user@mudandpace.com',
+    password: 'User123!',
+    role: 'USER',
+    profile: {
+      firstName: 'Usuario',
+      lastName: 'Demo',
+      city: 'Alicante',
+      country: 'España'
+    }
+  }
+];
+
+async function seedUsers() {
+  for (const item of users) {
+    const passwordHash = await bcrypt.hash(item.password, 12);
+    const user = await User.findOneAndUpdate(
+      { email: item.email },
+      {
+        $set: {
+          name: item.name,
+          email: item.email,
+          passwordHash,
+          role: item.role,
+          status: 'active',
+          isActive: true,
+          emailVerified: true,
+          emailVerificationTokenHash: null,
+          emailVerificationExpiresAt: null,
+          passwordResetTokenHash: null,
+          passwordResetExpiresAt: null,
+          deleted_at: null
+        },
+        $unset: { role_id: '' },
+        $setOnInsert: { tokenVersion: 0 }
+      },
+      { new: true, upsert: true, runValidators: true, setDefaultsOnInsert: true }
+    );
+
+    await Profile.findOneAndUpdate(
+      { userId: user._id },
+      {
+        $set: { ...item.profile, deleted_at: null },
+        $setOnInsert: { userId: user._id }
+      },
+      { new: true, upsert: true, runValidators: true, setDefaultsOnInsert: true }
+    );
+  }
+
+  return users.length;
+}
+
 async function seedDatabase() {
   await Host.deleteMany({});
   await Category.deleteMany({});
@@ -524,6 +617,7 @@ async function seedDatabase() {
   await Category.insertMany(categories, { timestamps: false });
   await Location.insertMany(locations, { timestamps: false });
   await Event.insertMany(events, { timestamps: false });
+  const seededUsers = await seedUsers();
 
   const db = mongoose.connection.db;
   await db.collection('experiences').deleteMany({});
@@ -546,7 +640,9 @@ async function seedDatabase() {
     events: events.length,
     experiences: experiences.length,
     event_images: 0,
-    experience_images: experienceImages.length
+    experience_images: experienceImages.length,
+    users: seededUsers,
+    profiles: seededUsers
   };
 }
 

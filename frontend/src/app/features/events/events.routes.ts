@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { adminGuard } from '../../core/guards/auth.guard';
 
 export const EVENTS_ROUTES: Routes = [
   {
@@ -8,16 +9,19 @@ export const EVENTS_ROUTES: Routes = [
   },
   {
     path: 'trash',
+    canActivate: [adminGuard],
     loadComponent: () =>
       import('./pages/event-trash/event-trash').then((m) => m.EventTrash)
   },
   {
     path: 'create',
+    canActivate: [adminGuard],
     loadComponent: () =>
       import('./pages/event-create/event-create').then((m) => m.EventCreate)
   },
   {
     path: ':id/edit',
+    canActivate: [adminGuard],
     loadComponent: () =>
       import('./pages/event-edit/event-edit').then((m) => m.EventEdit)
   },

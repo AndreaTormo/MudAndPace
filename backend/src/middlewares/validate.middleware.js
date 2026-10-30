@@ -12,4 +12,15 @@ function validate(schema, target = 'body') {
   };
 }
 
+function notFound(req, res) {
+  res.status(404).json({
+    error: {
+      code: 'NOT_FOUND',
+      message: `Endpoint no encontrado: ${req.method} ${req.originalUrl}`
+    }
+  });
+}
+
+validate.notFound = notFound;
+
 module.exports = validate;

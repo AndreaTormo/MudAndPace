@@ -1,12 +1,13 @@
 # Mud and Pace — Frontend
 
-Aplicación Angular 18 para consultar y administrar eventos de trail running. Consume la API Express
-`trail-running-api_v3` (`http://localhost:3000/api/v1`).
+Aplicación Angular 18 para consultar y administrar eventos de trail running, con autenticación JWT,
+perfil de usuario y control de acceso por roles. Consume la API Express en
+`http://localhost:3000/api/v1`.
 
 ## Requisitos
 
 - Node.js 18 o superior con npm
-- La API y su MongoDB levantados en `http://localhost:3000` (ver `../trail-running-api_v3/trail-running-api`)
+- La API y MongoDB levantados en `http://localhost:3000` (ver `../backend`)
 
 ## Instalación
 
@@ -48,20 +49,45 @@ src/
 ├── styles.css               Tailwind + helpers (.form-*, .button-*, .badge*)
 └── app/
     ├── core/
-    │   ├── interceptors/    loading + error (SweetAlert2 en español)
-    │   ├── models/          interfaces Event, EventPayload, ApiResponse
-    │   ├── services/        ApiService (HTTP + timeout), EventService y ReferenceService (URLs)
-    │   └── stores/          EventsStore (signals; selectedEvent, loading, error, stale)
-    ├── features/events/
-    │   ├── components/      event-row, event-filters, event-form
-    │   ├── pages/           event-list, event-detail, event-create, event-edit, event-trash
-    │   └── events.routes.ts rutas: '' (lista), create, :id/edit, :id, trash
+    │   ├── guards/          authGuard, adminGuard, guestGuard
+    │   ├── interceptors/    loading + auth (Bearer) + error (SweetAlert2 en español)
+    │   ├── models/          interfaces de API, auth y eventos
+    │   ├── services/        ApiService, AuthService, UserService, EventService y ReferenceService
+    │   └── stores/          AuthStore, EventsStore y EventImagesStore (signals)
+    ├── features/
+    │   ├── auth/            layout, rutas y páginas de login/registro/verificación/reset
+    │   ├── events/          componentes y páginas de eventos
+    │   └── profile/         perfil del usuario autenticado
     ├── layouts/main-layout/ navbar + sidebar + <router-outlet>
-    └── shared/              navbar, sidebar, loader, skeleton, empty/error states, event-map, utils
+    └── shared/              componentes y utilidades compartidas
 ```
 
-Flujo de datos: página → store → `EventService` → `ApiService` → `HttpClient`; los componentes
-hijos solo reciben inputs/emiten outputs.
+Flujo de datos: página → store → service → `ApiService` → `HttpClient`; los componentes hijos solo
+reciben inputs/emiten outputs.
+
+## Rutas
+
+| Ruta | Acceso | Descripción |
+|---|---|---|
+| `/auth/login` | Público (`guestGuard`) | Login |
+| `/auth/register` | Público (`guestGuard`) | Registro |
+| `/auth/verify-email` | Público | Verificación de email |
+| `/auth/forgot-password` | Público (`guestGuard`) | Solicitar reset |
+| `/auth/reset-password` | Público | Nueva contraseña |
+| `/events` | Autenticado | Listado |
+| `/events/:id` | Autenticado | Detalle |
+| `/events/create` | `ADMIN` | Crear evento |
+| `/events/:id/edit` | `ADMIN` | Editar evento |
+| `/events/trash` | `ADMIN` | Papelera |
+| `/profile` | Autenticado | Perfil |
+
+## Autenticación
+
+- `AuthStore` persiste la sesión en `localStorage` (`mudandpace.auth`).
+- `authInterceptor` añade `Authorization: Bearer <token>` y redirige a login ante un 401 fuera de `/auth`.
+- `errorInterceptor` traduce los errores de la API al español.
+- `AuthStore.isAuthenticated()` comprueba además la expiración del token.
+- La UI oculta las acciones de administración a `USER`, pero la autorización real está en la API.
 
 ## Variables de entorno
 
@@ -76,17 +102,14 @@ hijos solo reciben inputs/emiten outputs.
 
 ## Funcionalidades
 
-- Listado con filtros (estado, categoría, ubicación, distancia, fechas) y búsqueda por ID hexadecimal
-  de 24 caracteres (validada con Reactive Forms).
-- Alta y edición de eventos con validación en cliente y mensajes accesibles (`role="alert"`,
-  `aria-invalid`/`aria-describedby`). Desde el dashboard solo se pueden editar `name`, `description`,
+- Login, registro, verificación de email, reenvío, olvido y reset de contraseña.
+- Perfil editable: nombre, datos personales, avatar y logout.
+- Listado de eventos con filtros (estado, categoría, ubicación, distancia, fechas) y búsqueda por ID
+  hexadecimal de 24 caracteres.
+- Alta y edición de eventos solo para `ADMIN`. Desde el dashboard solo se editan `name`, `description`,
   `categoryId`, `locationId`, `distanceKm` y `elevationGain`.
-- Detalle con caché: si el store ya tiene ese evento y no está desactualizado, no repite la petición.
-  Incluye mapa de ubicación (OpenStreetMap embebido, sin dependencias) y características técnicas
-  (dificultad, superficies, etiquetas, desnivel negativo, GPX).
-- Publicar/despublicar, borrado lógico (soft delete) y recuperación, con confirmación SweetAlert2 y
-  refresco de la lista. Papelera con restauración y eliminación definitiva.
-- Manejo de errores centralizado: el interceptor traduce los códigos de la API a mensajes en
-  español (incluye el desglose `details` de Zod en los 400) y `error.util` cubre errores no HTTP
-  (respuestas inválidas, timeouts).
+- Detalle con caché, mapa de ubicación (OpenStreetMap embebido) y características técnicas.
+- Publicar/despublicar, borrado lógico y recuperación, con confirmación SweetAlert2.
+- Papelera con restauración y eliminación definitiva, solo para `ADMIN`.
+- Manejo centralizado de errores, estados de carga, errores y resultados vacíos.
 - Todos los componentes usan `ChangeDetectionStrategy.OnPush` y signals.

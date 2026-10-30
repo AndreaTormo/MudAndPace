@@ -1,5 +1,6 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
+import { AuthStore } from '../../../core/stores/auth.store';
 
 @Component({
   selector: 'app-sidebar',
@@ -21,25 +22,47 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
                 Eventos
               </a>
             </li>
-          </ul>
-        </div>
-
-        <div>
-          <p class="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-gray-400">Administración</p>
-          <ul class="space-y-1">
             <li>
               <a
-                routerLink="/events/trash"
+                routerLink="/profile"
                 routerLinkActive="bg-brand/10 text-brand"
                 class="block rounded-lg px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100"
               >
-                Papelera de eventos
+                Mi perfil
               </a>
             </li>
           </ul>
         </div>
+
+        @if (isAdmin()) {
+          <div>
+            <p class="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-gray-400">Administración</p>
+            <ul class="space-y-1">
+              <li>
+                <a
+                  routerLink="/events/create"
+                  routerLinkActive="bg-brand/10 text-brand"
+                  class="block rounded-lg px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100"
+                >
+                  Nuevo evento
+                </a>
+              </li>
+              <li>
+                <a
+                  routerLink="/events/trash"
+                  routerLinkActive="bg-brand/10 text-brand"
+                  class="block rounded-lg px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100"
+                >
+                  Papelera de eventos
+                </a>
+              </li>
+            </ul>
+          </div>
+        }
       </nav>
     </aside>
   `
 })
-export class Sidebar {}
+export class Sidebar {
+  protected readonly isAdmin = inject(AuthStore).isAdmin;
+}

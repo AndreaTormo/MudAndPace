@@ -6,8 +6,12 @@ Crea un Environment en Postman con:
 
 ```text
 baseUrl = http://localhost:3000
-routeId =
-routeSlug = montgo-circular
+adminToken =
+userToken =
+eventId =
+userId =
+imageId =
+token =
 ```
 
 Todas las peticiones JSON deben usar:
@@ -15,6 +19,14 @@ Todas las peticiones JSON deben usar:
 ```text
 Content-Type: application/json
 ```
+
+Salvo `/health`, `/api/v1/auth/*` y `/uploads`, todas las peticiones requieren:
+
+```text
+Authorization: Bearer {{adminToken}}
+```
+
+Usa `{{userToken}}` para comprobar el acceso de un usuario normal.
 
 ---
 
@@ -37,307 +49,271 @@ Respuesta esperada:
 
 ---
 
-## 2. Listar rutas
+## 2. Login
 
-**GET**
+### Admin
 
-```text
-{{baseUrl}}/api/v1/routes
-```
-
-### Con filtros
-
-```text
-{{baseUrl}}/api/v1/routes?difficulty=hard&minDistance=10&maxDistance=50
-```
-
-Por defecto devuelve rutas activas e inactivas (no las borradas con el modelo antiguo). Filtro por estado:
-
-```text
-{{baseUrl}}/api/v1/routes?status=active
-{{baseUrl}}/api/v1/routes?status=inactive
-{{baseUrl}}/api/v1/routes?status=all
-```
-
----
-
-## 3. Obtener por slug
-
-**GET**
-
-```text
-{{baseUrl}}/api/v1/routes/slug/{{routeSlug}}
-```
-
----
-
-## 4. Crear ruta
-
-**POST**
-
-```text
-{{baseUrl}}/api/v1/routes
-```
-
-Body → raw → JSON:
+**POST** `{{baseUrl}}/api/v1/auth/login`
 
 ```json
 {
-  "name": "Aitana Summit Trail",
-  "description": "Ruta exigente de alta montaña.",
-  "location": {
-    "country": "España",
-    "region": "Comunitat Valenciana",
-    "province": "Alicante",
-    "municipality": "Confrides"
-  },
-  "startPoint": {
-    "type": "Point",
-    "coordinates": [-0.2717, 38.6556]
-  },
-  "distanceKm": 21.6,
-  "elevationGainM": 1320,
-  "elevationLossM": 1320,
-  "difficulty": "expert",
-  "surface": ["trail", "rock", "dirt"],
-  "tags": ["aitana", "summit", "mountain"],
-  "isPublished": true
+  "email": "admin@mudandpace.com",
+  "password": "Admin123!"
 }
 ```
 
-Después de crearla, copia `_id` a:
+Copia el `data.token` de la respuesta en `adminToken`.
 
-```text
-routeId
-```
+### Usuario normal
 
----
-
-## 5. Obtener por ID
-
-**GET**
-
-```text
-{{baseUrl}}/api/v1/routes/{{routeId}}
-```
-
----
-
-## 6. Actualizar ruta
-
-**PUT**
-
-```text
-{{baseUrl}}/api/v1/routes/{{routeId}}
-```
-
-Body:
+**POST** `{{baseUrl}}/api/v1/auth/login`
 
 ```json
 {
-  "description": "Ruta actualizada desde Postman.",
-  "tags": ["aitana", "summit", "updated"]
+  "email": "user@mudandpace.com",
+  "password": "User123!"
 }
 ```
 
----
+Copia el `data.token` en `userToken`.
 
-## 7. Buscar rutas cercanas
-
-**GET**
-
-```text
-{{baseUrl}}/api/v1/routes/nearby?longitude=0.1123&latitude=38.8027&radiusKm=25
-```
-
-El radio está expresado en kilómetros.
-
----
-
-## 8. Enviar ruta a la papelera (soft delete)
-
-**DELETE**
-
-```text
-{{baseUrl}}/api/v1/routes/{{routeId}}
-```
-
-Equivalente: **PATCH** `{{baseUrl}}/api/v1/routes/{{routeId}}/soft-delete`.
-
-Si la ruta está activa pasa a `isActive: false`, `status: "deleted"`, `deleted_at: <fecha>`.
-Si ya está en la papelera devuelve error 409.
-
-Respuesta esperada:
+La respuesta tiene esta forma:
 
 ```json
 {
+  "success": true,
+  "message": "Sesión iniciada correctamente",
   "data": {
-    "_id": "...",
-    "isActive": false,
-    "status": "deleted",
-    "deleted_at": "2026-10-17T10:00:00.000Z"
+    "token": "...",
+    "expiresAt": "...",
+    "user": { "_id": "...", "email": "...", "role": "ADMIN" }
   }
 }
 ```
 
----
-
-## 9. Restaurar ruta desde la papelera
-
-**PATCH**
-
-```text
-{{baseUrl}}/api/v1/routes/{{routeId}}/restore
-```
-
-Solo restaura rutas con `deleted_at` distinto de null. Devuelve `deleted_at: null`, `isActive: true`, `status: "active"`.
+Guarda `data.user._id` en `userId`.
 
 ---
 
-## 10. Listar papelera de rutas
+## 3. Registro y verificación
 
-**GET**
+### Registro
 
-```text
-{{baseUrl}}/api/v1/routes/deleted
-```
-
-Devuelve las rutas con `deleted_at` distinto de null, ordenadas por fecha de eliminación descendente.
-
----
-
-## 11. Eliminar definitivamente una ruta
-
-**DELETE**
-
-```text
-{{baseUrl}}/api/v1/routes/{{routeId}}/permanent
-```
-
-Solo funciona si la ruta está en la papelera. Si no, devuelve 409 `ROUTE_NOT_DELETED`.
-
----
-
-## 12. Activar / desactivar
-
-**PATCH**
-
-```text
-{{baseUrl}}/api/v1/routes/{{routeId}}/activate
-{{baseUrl}}/api/v1/routes/{{routeId}}/deactivate
-```
-
-Mismas precondiciones que restore/soft-delete: `activate` exige ruta inactiva y `deactivate` exige ruta activa.
-
----
-
-## Casos de error recomendados
-
-### ID inválido
-
-```text
-GET {{baseUrl}}/api/v1/routes/abc
-```
-
-Esperado:
+**POST** `{{baseUrl}}/api/v1/auth/register`
 
 ```json
 {
-  "error": {
-    "code": "INVALID_ID",
-    "message": "ID de ruta inválido"
-  }
+  "name": "Usuario Prueba",
+  "email": "prueba@example.com",
+  "password": "Prueba123!"
 }
 ```
 
-### Ruta inexistente
+La respuesta es `201` y el usuario queda con `emailVerified: false`.
 
-Usa un ObjectId válido que no exista en MongoDB:
+### Verificación
 
-```text
-GET {{baseUrl}}/api/v1/routes/507f1f77bcf86cd799439011
-```
+El token se imprime en la consola de la API. Después:
 
-Esperado:
+**POST** `{{baseUrl}}/api/v1/auth/verify-email`
 
 ```json
 {
-  "error": {
-    "code": "ROUTE_NOT_FOUND",
-    "message": "Ruta no encontrada"
-  }
+  "token": "{{token}}"
 }
 ```
 
-### Coordenadas inválidas
+### Reenviar verificación
 
-```text
-GET {{baseUrl}}/api/v1/routes/nearby?longitude=500&latitude=999&radiusKm=-1
-```
-
-Esperado:
+**POST** `{{baseUrl}}/api/v1/auth/resend-verification`
 
 ```json
 {
-  "error": {
-    "code": "INVALID_GEO_QUERY",
-    "message": "Coordenadas o radio inválidos"
-  }
+  "email": "prueba@example.com"
 }
 ```
 
-### Borrar una ruta ya inactiva
+### Olvido de contraseña
 
-```text
-DELETE {{baseUrl}}/api/v1/routes/{{routeId}}
-```
-
-(Con la ruta ya en estado inactivo.)
-
-Esperado:
+**POST** `{{baseUrl}}/api/v1/auth/forgot-password`
 
 ```json
 {
-  "error": {
-    "code": "ROUTE_ALREADY_INACTIVE",
-    "message": "La ruta ya está inactiva y no se puede volver a borrar"
-  }
+  "email": "prueba@example.com"
 }
 ```
 
-### Restaurar una ruta ya activa
+El enlace/token se imprime en la consola de la API.
 
-```text
-PATCH {{baseUrl}}/api/v1/routes/{{routeId}}/restore
-```
+### Reset de contraseña
 
-(Con la ruta ya en estado activo.)
-
-Esperado:
+**POST** `{{baseUrl}}/api/v1/auth/reset-password`
 
 ```json
 {
-  "error": {
-    "code": "ROUTE_ALREADY_ACTIVE",
-    "message": "La ruta ya está activa y no se puede restaurar"
-  }
+  "token": "{{token}}",
+  "password": "Nueva123!"
 }
 ```
 
 ---
 
-## Flujo completo
+## 4. Usuarios y perfil
 
-1. Arranca MongoDB.
-2. Ejecuta `npm install`.
-3. Copia `.env.example` a `.env`.
-4. Ejecuta `node src/seed.js`.
-5. Ejecuta `npm run dev`.
-6. Ejecuta el health check.
-7. Lista las rutas (prueba también `?status=inactive`).
-8. Busca una ruta por slug.
-9. Crea una ruta y guarda su `_id` en `routeId`.
-10. Actualízala.
-11. Prueba la búsqueda geográfica.
-12. Elimínala (pasa a inactiva) y vuelve a intentarlo (409).
-13. Restaurala y vuelve a intentarlo (409).
+Usa `{{adminToken}}` o `{{userToken}}`. Un `USER` solo puede acceder a su propio `userId`.
+
+### Obtener usuario
+
+**GET** `{{baseUrl}}/api/v1/users/{{userId}}`
+
+### Actualizar usuario
+
+**PATCH** `{{baseUrl}}/api/v1/users/{{userId}}`
+
+```json
+{
+  "name": "Nombre Actualizado"
+}
+```
+
+### Obtener perfil
+
+**GET** `{{baseUrl}}/api/v1/users/{{userId}}/profile`
+
+### Actualizar perfil
+
+**PATCH** `{{baseUrl}}/api/v1/users/{{userId}}/profile`
+
+```json
+{
+  "firstName": "Usuario",
+  "lastName": "Prueba",
+  "city": "Barcelona",
+  "country": "España"
+}
+```
+
+---
+
+## 5. Eventos
+
+### Listar
+
+**GET** `{{baseUrl}}/api/v1/events`
+
+Con filtros:
+
+```text
+{{baseUrl}}/api/v1/events?status=published&categoryId=ID&locationId=ID&minDistance=20&maxDistance=100
+```
+
+Filtros disponibles: `status` (`published`, `draft`, `all`), `categoryId`, `locationId`, `hostId`,
+`minDistance`, `maxDistance`, `fromDate`, `toDate`, `isActive`.
+
+### Detalle
+
+**GET** `{{baseUrl}}/api/v1/events/{{eventId}}`
+
+**GET** `{{baseUrl}}/api/v1/events/slug/montgo-circular`
+
+### Crear (solo ADMIN)
+
+**POST** `{{baseUrl}}/api/v1/events`
+
+```json
+{
+  "name": "Evento de prueba 2027",
+  "sku": "TEST-2027",
+  "description": "Evento creado desde Postman.",
+  "hostId": "665a1b2c3d4e5f60718293b5",
+  "categoryId": "665a1b2c3d4e5f60718293c6",
+  "locationId": "665a1b2c3d4e5f60718293d7",
+  "startDate": "2027-06-12T07:00:00.000Z",
+  "endDate": "2027-06-12T19:00:00.000Z",
+  "distanceKm": 42,
+  "elevationGain": 2500,
+  "price": 50,
+  "status": "draft"
+}
+```
+
+Guarda el `_id` devuelto en `eventId`.
+
+### Actualizar (solo ADMIN)
+
+**PUT** `{{baseUrl}}/api/v1/events/{{eventId}}`
+
+```json
+{
+  "name": "Evento de prueba actualizado",
+  "distanceKm": 45,
+  "elevationGain": 2700
+}
+```
+
+### Publicar / despublicar (solo ADMIN)
+
+**PATCH** `{{baseUrl}}/api/v1/events/{{eventId}}/publish`
+
+**PATCH** `{{baseUrl}}/api/v1/events/{{eventId}}/unpublish`
+
+### Papelera (solo ADMIN)
+
+**PATCH** `{{baseUrl}}/api/v1/events/{{eventId}}/soft-delete`
+
+o
+
+**DELETE** `{{baseUrl}}/api/v1/events/{{eventId}}`
+
+Listar papelera:
+
+**GET** `{{baseUrl}}/api/v1/events/deleted`
+
+Restaurar:
+
+**PATCH** `{{baseUrl}}/api/v1/events/{{eventId}}/restore`
+
+Eliminar definitivamente:
+
+**DELETE** `{{baseUrl}}/api/v1/events/{{eventId}}/permanent`
+
+### Imágenes (solo ADMIN)
+
+Listar:
+
+**GET** `{{baseUrl}}/api/v1/events/{{eventId}}/images`
+
+Subir (form-data, campo `images`, hasta 8):
+
+**POST** `{{baseUrl}}/api/v1/events/{{eventId}}/images`
+
+Marcar portada:
+
+**PATCH** `{{baseUrl}}/api/v1/events/{{eventId}}/images/{{imageId}}/cover`
+
+Eliminar:
+
+**DELETE** `{{baseUrl}}/api/v1/events/{{eventId}}/images/{{imageId}}`
+
+---
+
+## 6. Referencias
+
+Requieren token.
+
+**GET** `{{baseUrl}}/api/v1/references/categories`
+
+**GET** `{{baseUrl}}/api/v1/references/locations`
+
+**GET** `{{baseUrl}}/api/v1/references/hosts`
+
+---
+
+## 7. Comprobaciones de permisos
+
+- Sin token en `/api/v1/events` → `401 AUTHENTICATION_REQUIRED`.
+- `{{userToken}}` en `/api/v1/events/deleted` → `403 FORBIDDEN`.
+- `{{userToken}}` en `POST /api/v1/events` → `403 FORBIDDEN`.
+- `{{userToken}}` en `/api/v1/users/{{otroUserId}}` → `403 FORBIDDEN`.
+- Token manipulado o caducado → `401 INVALID_TOKEN` / `401 TOKEN_EXPIRED`.
+- Login de usuario no verificado → `403 EMAIL_NOT_VERIFIED`.
