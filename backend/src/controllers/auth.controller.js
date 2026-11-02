@@ -30,6 +30,20 @@ class AuthController {
       return next(error);
     }
   }
+
+  async me(req, res, next) {
+    try {
+      const user = await service.me(req.user.id);
+
+      return res.status(200).json({
+        success: true,
+        message: 'Usuario autenticado obtenido correctamente',
+        data: user
+      });
+    } catch (error) {
+      return next(error);
+    }
+  }
 }
 
 module.exports = new AuthController();

@@ -63,6 +63,22 @@ class AuthService {
       throw normalizeAppError(error);
     }
   }
+
+  async me(userId) {
+    try {
+      const user = await userRepository.findById(userId);
+
+      if (!user) {
+        throw new AppError('Authentication required', 401, 'AUTHENTICATION_REQUIRED');
+      }
+
+      const profile = await profileRepository.findByUserId(user._id);
+
+      return toPublicUser(user, profile);
+    } catch (error) {
+      throw normalizeAppError(error);
+    }
+  }
 }
 
 module.exports = new AuthService();

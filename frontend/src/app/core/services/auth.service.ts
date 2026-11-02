@@ -20,6 +20,12 @@ export class AuthService {
       .pipe(map((response) => response.data));
   }
 
+  me(): Observable<AuthUser> {
+    return this.api
+      .get<ApiResponse<AuthUser>>('auth/me')
+      .pipe(map((response) => response.data));
+  }
+
   logout(): Observable<void> {
     return this.api
       .post<ApiResponse<null>>('auth/logout', {})

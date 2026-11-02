@@ -4,7 +4,7 @@ import { Router, RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import Swal from 'sweetalert2';
 import { RegisterPayload } from '../../../../core/models/auth.model';
-import { AuthService } from '../../../../core/services/auth.service';
+import { AuthStore } from '../../../../core/stores/auth.store';
 import { isHttpError } from '../../../../shared/utils/error.util';
 import { passwordsMatchValidator } from '../../utils/password-match.validator';
 
@@ -124,7 +124,7 @@ const PASSWORD_PATTERN = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$/;
 })
 export class RegisterPage {
   private readonly fb = inject(FormBuilder);
-  private readonly auth = inject(AuthService);
+  private readonly auth = inject(AuthStore);
   private readonly router = inject(Router);
 
   protected readonly form = this.fb.nonNullable.group(

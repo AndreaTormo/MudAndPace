@@ -58,7 +58,7 @@ Respuesta esperada:
 ```json
 {
   "email": "admin@mudandpace.com",
-  "password": "Admin123!"
+  "password": "<TU_PASSWORD>"
 }
 ```
 
@@ -71,7 +71,7 @@ Copia el `data.token` de la respuesta en `adminToken`.
 ```json
 {
   "email": "user@mudandpace.com",
-  "password": "User123!"
+  "password": "<TU_PASSWORD>"
 }
 ```
 
@@ -105,7 +105,7 @@ Guarda `data.user._id` en `userId`.
 {
   "name": "Usuario Prueba",
   "email": "prueba@example.com",
-  "password": "Prueba123!"
+  "password": "<TU_PASSWORD>"
 }
 ```
 
@@ -152,7 +152,7 @@ El enlace/token se imprime en la consola de la API.
 ```json
 {
   "token": "{{token}}",
-  "password": "Nueva123!"
+  "password": "<TU_PASSWORD>"
 }
 ```
 

@@ -21,9 +21,17 @@ docker compose up -d             # mongo:8 en 27017, volumen mongodb_data
 npm install                      # en frontend/
 npm start                        # ng serve
 npm run build                    # typecheck + build de producción
+npm test                         # ng test (Karma + Jasmine; ver abajo)
 ```
 
-No hay tests automatizados en el repositorio. La verificación del frontend es `npm run build` sin errores; las pruebas del backend se hacen manualmente contra la API.
+Tests del frontend en `frontend/src/app/**/*.spec.ts` (Karma + Jasmine). Requieren un Chromium; en entornos sin Chrome se puede apuntar a Edge:
+
+```bash
+cd frontend
+CHROME_BIN="C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe" npx ng test --watch=false --browsers=ChromeHeadless
+```
+
+Cobertura actual: `AuthStore` (persistencia/expiración), guards (`auth`, `guest`, `admin`) e interceptores (`auth` y `error`). La verificación del backend sigue siendo manual contra la API.
 
 ## Base de datos y seed
 
@@ -38,10 +46,6 @@ npm run seed
 - No borra usuarios ni perfiles. Los usuarios demo se actualizan por email con `upsert`.
 - Deja 1 host, 2 categorías, 12 ubicaciones, 12 eventos, 1 experiencia y 1 imagen de experiencia.
 - Los eventos requieren `sku` único; ya está incluido en el seed. Si se añade un evento al seed sin `sku`, Mongoose falla con `Event validation failed: sku: Path \`sku\` is required.`
-- Credenciales demo (verificadas y activas):
-  - `admin@mudandpace.com` / `Admin123!` (`ADMIN`)
-  - `admin2@mudandpace.com` / `Admin123!` (`ADMIN`)
-  - `user@mudandpace.com` / `User123!` (`USER`)
 - Un volumen Docker nuevo queda vacío hasta ejecutar `npm run seed`.
 - Si el frontend muestra menos eventos de los esperados, comprueba `db.events.countDocuments({})` en MongoDB.
 
@@ -78,7 +82,7 @@ Flujo fijo: `routes/ → controllers/ → services/ → repositories/ → models
 - El rol es un campo simple en `User` (`role: 'USER' | 'ADMIN'`). Se valida en el login, se firma en el JWT y se vuelve a comprobar en `authenticate`.
 - `authorize.middleware.js` centraliza la autorización: `authorize()` exige `ADMIN`; `authorize('id')` permite el propio usuario o `ADMIN`. El 404 de rutas desconocidas vive en `validate.middleware.js` (`validate.notFound`).
 - Passwords con `bcryptjs`, 12 rondas. Reglas: 8–72 caracteres, mayúscula, minúscula y número.
-- No existe `GET /auth/me`: el frontend guarda el `_id` devuelto por login y usa `GET /profile/me` y `GET /users/:id`.
+- `GET /auth/me` (autenticado) devuelve el usuario del token para refrescar la sesión en el frontend; `GET /profile/me` sigue siendo el perfil editable.
 
 Endpoints de auth (`/api/v1/auth`):
 
@@ -86,6 +90,7 @@ Endpoints de auth (`/api/v1/auth`):
 |---|---|---|
 | POST | `/login` | Público |
 | POST | `/logout` | Autenticado |
+| GET | `/me` | Autenticado |
 
 Rate limiting: 30 peticiones/15 min por IP en auth; 10/15 min en login. Superarlo devuelve 429 `TOO_MANY_REQUESTS`.
 
@@ -151,9 +156,9 @@ Página → Store (signals) → Service (único que conoce la URL) → `ApiServi
 - Estado con Angular signals (sin NgRx), expuestos vía `.asReadonly()`.
 - Rutas lazy con `loadComponent`.
 - `app.config.ts` registra `withInterceptors([loadingInterceptor, authInterceptor, errorInterceptor])`.
-- `auth.interceptor.ts` añade el Bearer desde `AuthStore` y redirige a login en 401 fuera de `/auth`.
-- `error.interceptor.ts` muestra mensajes en español, incluidos 401/403 y el desglose `details` de Zod.
-- `AuthStore` persiste la sesión en `localStorage` (`mudandpace.auth`) y expone `user`, `role`, `isAdmin` y `isAuthenticated()`. `isAuthenticated` es un método porque comprueba la expiración con `Date.now()`.
+- `auth.interceptor.ts` añade el Bearer desde `AuthStore`. Antes de enviar aborta si el token ya caducó (clear + redirect sin popup). En un 401: en `auth/login` o `users/register` no hace nada (credenciales), en `auth/logout` solo limpia, y en el resto limpia y redirige a `/auth/login` con `returnUrl` (sin duplicar si ya está en `/auth`).
+- `error.interceptor.ts` muestra mensajes en español, incluidos 401/403, red (status 0), timeout, respuestas inválidas y el desglose `details` de Zod. En un 401 muestra además el popup de credenciales (el redirect lo hace el interceptor de auth).
+- `AuthStore` persiste token + usuario + `expiresAt` en `localStorage` (`mudandpace.auth`): la UI arranca rápido desde la caché y `MainLayout` refresca con `GET /auth/me`. Programa un timer de expiración que marca `sessionExpired` (el effect de `MainLayout` redirige con `returnUrl`). Expone `user`, `roles` (`[role]`), `isAdmin` e `isAuthenticated()`. `isAuthenticated` es un método porque comprueba la expiración con `Date.now()`.
 
 ### Rutas y guards
 
@@ -186,7 +191,7 @@ Página → Store (signals) → Service (único que conoce la URL) → `ApiServi
 - Campos del perfil: `firstName`, `lastName`, `phone`, `avatarUrl`, `city`, `country`, `birthDate`. El avatar es una URL opcional; si falta, la UI muestra la inicial del nombre.
 - `User.role` es un enum simple (`USER`/`ADMIN`); no existe colección ni módulo `Role`.
 - El login crea un documento en `sessions` con `jti`, `tokenHash` (SHA-256), `expiresAt`, `ip` y `userAgent`; el logout lo revoca y `authenticate` exige sesión activa.
-- El registro (`POST /users/register`) crea usuario + perfil. `auth.service.js` solo contiene `login` y `logout`.
+- El registro (`POST /users/register`) crea usuario + perfil. `auth.service.js` contiene `login`, `logout` y `me`.
 - Un usuario con soft-delete conserva su perfil (también soft-delete) y sus sesiones se revocan.
 
 ### Listados sin límite

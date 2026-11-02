@@ -4,7 +4,6 @@ import { Router } from '@angular/router';
 import { forkJoin, firstValueFrom } from 'rxjs';
 import Swal from 'sweetalert2';
 import { UpdateProfilePayload } from '../../core/models/auth.model';
-import { AuthService } from '../../core/services/auth.service';
 import { AuthStore } from '../../core/stores/auth.store';
 import { UserService } from '../../core/services/user.service';
 import { isHttpError, showUnexpectedError } from '../../shared/utils/error.util';
@@ -186,7 +185,6 @@ import { isHttpError, showUnexpectedError } from '../../shared/utils/error.util'
 export class ProfilePage implements OnInit {
   private readonly fb = inject(FormBuilder);
   private readonly auth = inject(AuthStore);
-  private readonly authService = inject(AuthService);
   private readonly users = inject(UserService);
   private readonly router = inject(Router);
 
@@ -288,11 +286,10 @@ export class ProfilePage implements OnInit {
 
   protected async logout(): Promise<void> {
     try {
-      await firstValueFrom(this.authService.logout());
+      await firstValueFrom(this.auth.logout());
     } catch {
-      // La sesión local se limpia igualmente aunque el servidor no responda.
+      // AuthStore limpia la sesión local aunque el servidor no responda.
     } finally {
-      this.auth.clear();
       await this.router.navigate(['/auth/login']);
     }
   }

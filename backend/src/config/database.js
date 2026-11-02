@@ -529,11 +529,27 @@ const experienceImages = [
   }
 ];
 
+const crypto = require('crypto');
+
+function generatePassword() {
+  const upper = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  const lower = 'abcdefghijklmnopqrstuvwxyz';
+  const digits = '0123456789';
+  const all = upper + lower + digits;
+  let password = upper[Math.floor(Math.random() * upper.length)] + 
+                 lower[Math.floor(Math.random() * lower.length)] + 
+                 digits[Math.floor(Math.random() * digits.length)];
+  for (let i = 0; i < 9; i++) {
+    password += all[Math.floor(Math.random() * all.length)];
+  }
+  return password.split('').sort(() => Math.random() - 0.5).join('').substring(0, 16);
+}
+
 const users = [
   {
     name: 'Admin Mud and Pace',
     email: 'admin@mudandpace.com',
-    password: 'Admin123!',
+    password: generatePassword(),
     role: 'ADMIN',
     profile: {
       firstName: 'Admin',
@@ -545,7 +561,7 @@ const users = [
   {
     name: 'Admin Secundario',
     email: 'admin2@mudandpace.com',
-    password: 'Admin123!',
+    password: generatePassword(),
     role: 'ADMIN',
     profile: {
       firstName: 'Admin',
@@ -557,7 +573,7 @@ const users = [
   {
     name: 'Usuario Demo',
     email: 'user@mudandpace.com',
-    password: 'User123!',
+    password: generatePassword(),
     role: 'USER',
     profile: {
       firstName: 'Usuario',

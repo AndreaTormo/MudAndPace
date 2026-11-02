@@ -2,7 +2,6 @@ import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/cor
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
-import { AuthService } from '../../../../core/services/auth.service';
 import { AuthStore } from '../../../../core/stores/auth.store';
 import { isHttpError } from '../../../../shared/utils/error.util';
 
@@ -73,8 +72,7 @@ import { isHttpError } from '../../../../shared/utils/error.util';
 })
 export class LoginPage {
   private readonly fb = inject(FormBuilder);
-  private readonly auth = inject(AuthService);
-  private readonly store = inject(AuthStore);
+  private readonly auth = inject(AuthStore);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
 
@@ -98,8 +96,7 @@ export class LoginPage {
     this.errorMessage.set(null);
 
     try {
-      const session = await firstValueFrom(this.auth.login(this.form.getRawValue()));
-      this.store.setSession(session);
+      await firstValueFrom(this.auth.login(this.form.getRawValue()));
       const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
       const target = returnUrl?.startsWith('/') ? returnUrl : '/events';
       await this.router.navigateByUrl(target);

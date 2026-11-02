@@ -1,7 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
-import { AuthService } from '../../../core/services/auth.service';
 import { AuthStore } from '../../../core/stores/auth.store';
 
 @Component({
@@ -161,7 +160,6 @@ import { AuthStore } from '../../../core/stores/auth.store';
 })
 export class Navbar {
   private readonly auth = inject(AuthStore);
-  private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
 
   protected readonly menuOpen = signal(false);
@@ -175,11 +173,10 @@ export class Navbar {
   protected async logout(): Promise<void> {
     this.menuOpen.set(false);
     try {
-      await firstValueFrom(this.authService.logout());
+      await firstValueFrom(this.auth.logout());
     } catch {
-      // La sesión local se limpia igualmente aunque el servidor no responda.
+      // AuthStore limpia la sesión local aunque el servidor no responda.
     } finally {
-      this.auth.clear();
       await this.router.navigate(['/auth/login']);
     }
   }

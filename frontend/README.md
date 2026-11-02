@@ -38,8 +38,13 @@ Los artefactos quedan en `dist/trail_running_frontend_v3/`.
 | --------------- | ---------------------------------------- |
 | `npm start`     | Servidor de desarrollo (`ng serve`)      |
 | `npm run build` | Build de producción (`ng build`)         |
+| `npm test`      | Tests Karma + Jasmine (`ng test`)        |
 
-No hay suite de tests: la verificación del proyecto es un `npm run build` sin errores.
+Tests en `src/app/**/*.spec.ts` (AuthStore, guards e interceptores). Sin Chrome en el sistema:
+
+```bash
+CHROME_BIN="C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe" npx ng test --watch=false --browsers=ChromeHeadless
+```
 
 ## Estructura
 
@@ -49,8 +54,8 @@ src/
 ├── styles.css               Tailwind + helpers (.form-*, .button-*, .badge*)
 └── app/
     ├── core/
-    │   ├── guards/          authGuard, adminGuard, guestGuard
-    │   ├── interceptors/    loading + auth (Bearer) + error (SweetAlert2 en español)
+    │   ├── guards/          auth.guard (authGuard + guestGuard) y admin.guard (adminGuard)
+    │   ├── interceptors/    loading + auth (Bearer, expiración, endpoints auth) + error (SweetAlert2 en español)
     │   ├── models/          interfaces de API, auth y eventos
     │   ├── services/        ApiService, AuthService, UserService, EventService y ReferenceService
     │   └── stores/          AuthStore, EventsStore y EventImagesStore (signals)
@@ -83,9 +88,10 @@ reciben inputs/emiten outputs.
 
 ## Autenticación
 
-- `AuthStore` persiste la sesión en `localStorage` (`mudandpace.auth`).
-- `authInterceptor` añade `Authorization: Bearer <token>` y redirige a login ante un 401 fuera de `/auth`.
-- `errorInterceptor` traduce los errores de la API al español.
+- `AuthStore` persiste token + usuario + `expiresAt` en `localStorage` (`mudandpace.auth`): la UI arranca rápido desde la caché y `MainLayout` refresca con `GET /auth/me`.
+- `authInterceptor` añade `Authorization: Bearer <token>`; si el token ya caducó aborta antes de enviar (clear + redirect sin popup). En un 401: login/registro no hacen nada (credenciales), logout solo limpia, el resto limpia y redirige a `/auth/login` con `returnUrl`.
+- Expiración por timer en cliente: marca `sessionExpired` y `MainLayout` redirige con `returnUrl`.
+- `errorInterceptor` traduce los errores de la API al español (401/403, red, timeout, respuestas inválidas, details de Zod).
 - `AuthStore.isAuthenticated()` comprueba además la expiración del token.
 - La UI oculta las acciones de administración a `USER`, pero la autorización real está en la API.
 

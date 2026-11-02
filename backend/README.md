@@ -125,13 +125,13 @@ npm run seed
 - Repuebla hosts (1), categorías (2), ubicaciones (12), eventos (12), experiencias (1) e imágenes.
 - Es destructivo para ese contenido: elimina y vuelve a insertar.
 - No borra usuarios ni perfiles; los actualiza por email con `upsert`.
-- Crea tres usuarios demo verificados:
+- Crea tres usuarios demo verificados (las contraseñas se generan al ejecutar el seed): 
 
-| Rol | Email | Contraseña |
-|---|---|---|
-| `ADMIN` | `admin@mudandpace.com` | `Admin123!` |
-| `ADMIN` | `admin2@mudandpace.com` | `Admin123!` |
-| `USER` | `user@mudandpace.com` | `User123!` |
+| Rol | Email |
+|---|---|
+| `ADMIN` | `admin@mudandpace.com` |
+| `ADMIN` | `admin2@mudandpace.com` |
+| `USER` | `user@mudandpace.com` |
 
 Los eventos requieren `sku` único; los datos del seed ya lo incluyen.
 

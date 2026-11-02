@@ -23,7 +23,7 @@ El proyecto está desarrollado con **Angular** para el frontend y una **API REST
 ### Frontend
 - Registro, login, verificación de email, reenvío, olvido y reset de contraseña.
 - Perfil editable con datos personales, avatar y logout.
-- Guards `authGuard`, `adminGuard` y `guestGuard`; interceptor que añade el Bearer y redirige ante 401.
+- Guards `authGuard`, `adminGuard` (fichero propio) y `guestGuard`; interceptor que añade el Bearer, detecta token caducado y redirige ante 401 con `returnUrl`.
 - Listado de eventos con filtros por estado, categoría, ubicación, distancia y fechas.
 - Búsqueda de eventos por su identificador.
 - Páginas de detalle con mapa de ubicación (OpenStreetMap) y características técnicas.
@@ -134,13 +134,13 @@ cd backend
 npm run seed
 ```
 
-El seed repuebla eventos, hosts, categorías, ubicaciones, experiencias e imágenes. No borra usuarios ni perfiles, pero sí el contenido existente. Crea estos usuarios verificados:
+El seed repuebla eventos, hosts, categorías, ubicaciones, experiencias e imágenes. No borra usuarios ni perfiles, pero sí el contenido existente. Crea estos usuarios verificados (las contraseñas se generan al ejecutar el seed): 
 
-| Rol | Email | Contraseña |
-|---|---|---|
-| `ADMIN` | `admin@mudandpace.com` | `Admin123!` |
-| `ADMIN` | `admin2@mudandpace.com` | `Admin123!` |
-| `USER` | `user@mudandpace.com` | `User123!` |
+| Rol | Email |
+|---|---|
+| `ADMIN` | `admin@mudandpace.com` |
+| `ADMIN` | `admin2@mudandpace.com` |
+| `USER` | `user@mudandpace.com` |
 
 ### 3. Frontend
 
@@ -269,7 +269,7 @@ La compilación de producción se genera en `dist/trail_running_frontend_v3/`.
 | `npm start` | Inicia la API con Node |
 | `npm run seed` | Carga los datos de ejemplo |
 
-No hay tests automatizados; la verificación del frontend es `npm run build` sin errores y la del backend se realiza manualmente contra la API.
+Tests del frontend (Karma + Jasmine) en `frontend/src/app/**/*.spec.ts`: `npm test` en `frontend/` (sin Chrome, apuntar `CHROME_BIN` a Edge y usar `--browsers=ChromeHeadless --watch=false`). La verificación del backend se realiza manualmente contra la API.
 
 ## 🤝 Contribuciones
 

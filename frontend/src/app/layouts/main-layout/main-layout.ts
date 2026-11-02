@@ -1,5 +1,6 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { ChangeDetectionStrategy, Component, effect, inject } from '@angular/core';
+import { Router, RouterOutlet } from '@angular/router';
+import { AuthStore } from '../../core/stores/auth.store';
 import { Navbar } from '../../shared/components/navbar/navbar';
 import { Sidebar } from '../../shared/components/sidebar/sidebar';
 import { Loader } from '../../shared/components/loader/loader';
@@ -26,4 +27,21 @@ import { Loader } from '../../shared/components/loader/loader';
     </div>
   `
 })
-export class MainLayout {}
+export class MainLayout {
+  private readonly auth = inject(AuthStore);
+  private readonly router = inject(Router);
+
+  constructor() {
+    if (this.auth.isAuthenticated()) {
+      this.auth.refreshMe().subscribe({ error: () => undefined });
+    }
+  }
+
+  private readonly redirectOnExpiry = effect(() => {
+    if (this.auth.sessionExpired() && !this.router.url.startsWith('/auth')) {
+      void this.router.navigate(['/auth/login'], {
+        queryParams: { returnUrl: this.router.url }
+      });
+    }
+  });
+}
