@@ -2,10 +2,56 @@ const Category = require('../models/category.model');
 const Location = require('../models/location.model');
 const Host = require('../models/host.model');
 const Event = require('../models/event.model');
-const { AppError } = require('../utils/appError');
+const repository = require('../repositories/reference.repository');
+const { AppError, normalizeAppError } = require('../utils/appError');
+const { validateService } = require('../utils/validation');
+const { buildMongoFilter, combineClauses, regexOr } = require('../utils/queryBuilder');
+const {
+  listCategoryQuerySchema,
+  listHostQuerySchema,
+  listLocationQuerySchema
+} = require('../validators/reference.validator');
 const mongoose = require('mongoose');
 
-const ACTIVE = { deleted_at: null, isActive: true };
+const CATEGORY_FILTERS = [
+  { param: 'search', build: (value) => ({ $text: { $search: value } }) },
+  { param: 'slug', build: (value) => ({ slug: value }) },
+  { param: 'status', build: (value) => ({ status: value }) },
+  { param: 'isActive', build: (value) => ({ isActive: value }) }
+];
+
+const HOST_FILTERS = CATEGORY_FILTERS;
+
+const LOCATION_FILTERS = [
+  ...CATEGORY_FILTERS,
+  { param: 'city', build: (value) => regexOr(['city'], value) },
+  { param: 'country', build: (value) => regexOr(['country'], value) }
+];
+
+function normalizeReferenceQuery(input) {
+  return {
+    ...input,
+    isActive: input.isActive !== undefined ? input.isActive : input.is_active,
+    status: input.status === 'all' ? undefined : input.status
+  };
+}
+
+function buildReferenceFilter(input, definitions) {
+  const normalized = normalizeReferenceQuery(input);
+  const explicitAudience = (
+    input.isActive !== undefined ||
+    input.is_active !== undefined ||
+    input.status !== undefined
+  );
+
+  const clauses = [];
+  if (!explicitAudience) {
+    clauses.push({ isActive: true }, { status: 'active' });
+  }
+  clauses.push(buildMongoFilter(normalized, definitions));
+
+  return combineClauses(clauses);
+}
 
 function validateId(id) {
   if (!mongoose.isValidObjectId(id)) throw new AppError('ID inválido', 400, 'INVALID_ID');
@@ -21,16 +67,25 @@ async function ensureNoActiveEvents(refField, id) {
 }
 
 class ReferenceService {
-  async listCategories() {
-    return Category.find(ACTIVE).select('name slug').sort({ name: 1 });
+  async listCategories(query = {}) {
+    try {
+      const input = validateService(listCategoryQuerySchema, query);
+      return await repository.findCategories(buildReferenceFilter(input, CATEGORY_FILTERS));
+    } catch (error) { throw normalizeAppError(error); }
   }
 
-  async listLocations() {
-    return Location.find(ACTIVE).select('name slug city coordinates').sort({ name: 1 });
+  async listLocations(query = {}) {
+    try {
+      const input = validateService(listLocationQuerySchema, query);
+      return await repository.findLocations(buildReferenceFilter(input, LOCATION_FILTERS));
+    } catch (error) { throw normalizeAppError(error); }
   }
 
-  async listHosts() {
-    return Host.find(ACTIVE).select('name slug').sort({ name: 1 });
+  async listHosts(query = {}) {
+    try {
+      const input = validateService(listHostQuerySchema, query);
+      return await repository.findHosts(buildReferenceFilter(input, HOST_FILTERS));
+    } catch (error) { throw normalizeAppError(error); }
   }
 
   async softDeleteHost(id) {

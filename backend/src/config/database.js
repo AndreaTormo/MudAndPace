@@ -1,11 +1,31 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
+const fs = require('fs');
+const path = require('path');
 const Host = require('../models/host.model');
 const Category = require('../models/category.model');
 const Location = require('../models/location.model');
 const Event = require('../models/event.model');
+const Departure = require('../models/departure.model');
 const User = require('../models/user.model');
 const Profile = require('../models/profile.model');
+const EventImage = require('../models/eventImage.model');
+const Session = require('../models/session.model');
+const { slugify } = require('../utils/slugify');
+
+async function ensureIndexes() {
+  await Promise.all([
+    Host.ensureIndexes(),
+    Category.ensureIndexes(),
+    Location.ensureIndexes(),
+    Event.ensureIndexes(),
+    Departure.ensureIndexes(),
+    User.ensureIndexes(),
+    Profile.ensureIndexes(),
+    EventImage.ensureIndexes(),
+    Session.ensureIndexes()
+  ]);
+}
 
 async function connectDatabase() {
   const uri = process.env.MONGODB_URI;
@@ -15,6 +35,7 @@ async function connectDatabase() {
   }
 
   await mongoose.connect(uri);
+  await ensureIndexes();
   console.log('MongoDB conectado');
 }
 
@@ -22,14 +43,60 @@ const oid = (id) => new mongoose.Types.ObjectId(id);
 
 const SEED_DATE = new Date('2026-10-16T10:00:00Z');
 
+const SEED_ASSETS_ROOT = path.join(__dirname, '..', '..', '..', 'carousel_images');
+const UPLOADS_ROOT = path.join(__dirname, '..', '..', 'uploads');
+
+const EVENT_IMAGE_FOLDERS = {
+  '665a1b2c3d4e5f60718293e8': 'Vall_Boí',
+  '665a1b2c3d4e5f60718293e9': 'Cadí-Moixeró',
+  '665a1b2c3d4e5f60718293ea': 'chamonix',
+  '665a1b2c3d4e5f60718293eb': 'val-daran',
+  '665a1b2c3d4e5f60718293ec': 'zegama',
+  '665a1b2c3d4e5f60718293ed': 'Zinal',
+  '665a1b2c3d4e5f60718293ee': 'Manitou_Springs',
+  '665a1b2c3d4e5f60718293ef': 'squaw-valley',
+  '665a1b2c3d4e5f60718293f0': 'Silverton',
+  '665a1b2c3d4e5f60718293f1': 'reunion',
+  '665a1b2c3d4e5f60718293f2': 'montgo',
+  '665a1b2c3d4e5f60718293f3': 'sierra-calderona'
+};
+
+function resetDirectory(targetDir) {
+  fs.rmSync(targetDir, { recursive: true, force: true });
+  fs.mkdirSync(targetDir, { recursive: true });
+}
+
+function copyFiles(sourceDir, targetDir) {
+  for (const entry of fs.readdirSync(sourceDir, { withFileTypes: true })) {
+    if (entry.isFile()) {
+      fs.copyFileSync(path.join(sourceDir, entry.name), path.join(targetDir, entry.name));
+    }
+  }
+}
+
 const hosts = [
   {
     _id: oid('665a1b2c3d4e5f60718293b5'),
-    name: 'Trail Muntanya SCCP',
-    description: 'Organizadores de carreras de montaña',
-    slug: 'trail-muntanya-sccp',
-    contactEmail: 'info@trailmuntanya.com',
-    website: 'https://trailmuntanya.com',
+    name: 'UTMB World Series',
+    description: 'Circuito mundial de ultra trail con grandes carreras como el UTMB de Chamonix.',
+    imageUrl: '/uploads/organizadores/utmb.jpg',
+    slug: 'utmb',
+    contactEmail: 'info@utmb.world',
+    website: 'https://utmb.world',
+    status: 'active',
+    isActive: true,
+    created_At: SEED_DATE,
+    updated_at: SEED_DATE,
+    deleted_at: null
+  },
+  {
+    _id: oid('665a1b2c3d4e5f60718293b6'),
+    name: 'Golden Trail World Series',
+    description: 'Serie mundial de carreras de trail cortas y técnicas, con pruebas como Zegama y Sierre-Zinal.',
+    imageUrl: '/uploads/organizadores/gtws.jpg',
+    slug: 'gtws',
+    contactEmail: 'info@goldentrailseries.com',
+    website: 'https://goldentrailseries.com',
     status: 'active',
     isActive: true,
     created_At: SEED_DATE,
@@ -44,6 +111,7 @@ const categories = [
     name: 'Ultra Trail',
     slug: 'ultra-trail',
     description: 'Carreras de más de 42 km',
+    imageUrl: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/4/45/Lavaredo_Ultra_Trail_2021-_gifts_for_those_who_finished_the_race_MTSC.jpg/1280px-Lavaredo_Ultra_Trail_2021-_gifts_for_those_who_finished_the_race_MTSC.jpg',
     status: 'active',
     isActive: true,
     created_At: SEED_DATE,
@@ -55,6 +123,7 @@ const categories = [
     name: 'Trail',
     slug: 'trail',
     description: 'Carreras entre 21 y 42 km',
+    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/b/bd/Trail_runner_at_the_Ullswater_Trail_Race_2011.jpg',
     status: 'active',
     isActive: true,
     created_At: SEED_DATE,
@@ -69,7 +138,9 @@ const locations = [
     name: 'Vall de Boí',
     slug: 'vall-de-boi',
     city: 'La Taüll',
+    country: 'España',
     coordinates: [0.8087, 42.5167],
+    imageUrl: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/7/7d/Sant_Maurici_lake%2C_Aig%C3%BCestortes_i_Estany_de_Sant_Maurici_National_Park%2C_Spain_-_Diliff.jpg/1280px-Sant_Maurici_lake%2C_Aig%C3%BCestortes_i_Estany_de_Sant_Maurici_National_Park%2C_Spain_-_Diliff.jpg',
     status: 'active',
     isActive: true,
     created_At: SEED_DATE,
@@ -81,7 +152,9 @@ const locations = [
     name: 'Cadí-Moixeró',
     slug: 'cadi-moixero',
     city: "La Seu d'Urgell",
+    country: 'España',
     coordinates: [1.4609, 42.3586],
+    imageUrl: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/9/98/Parc_cad%C3%AD_moixer%C3%B3_-_saldes_-_richard_martin.jpg/1280px-Parc_cad%C3%AD_moixer%C3%B3_-_saldes_-_richard_martin.jpg',
     status: 'active',
     isActive: true,
     created_At: SEED_DATE,
@@ -93,7 +166,9 @@ const locations = [
     name: 'Chamonix',
     slug: 'chamonix',
     city: 'Chamonix',
+    country: 'Francia',
     coordinates: [6.8694, 45.9237],
+    imageUrl: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/0/0c/PanoMontBlancHDR_edit_1.jpg/1280px-PanoMontBlancHDR_edit_1.jpg',
     status: 'active',
     isActive: true,
     created_At: SEED_DATE,
@@ -105,7 +180,9 @@ const locations = [
     name: 'Courmayeur',
     slug: 'courmayeur',
     city: 'Courmayeur',
+    country: 'Italia',
     coordinates: [6.9717, 45.7967],
+    imageUrl: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b5/Courmayeur.jpg/1280px-Courmayeur.jpg',
     status: 'active',
     isActive: true,
     created_At: SEED_DATE,
@@ -117,7 +194,9 @@ const locations = [
     name: 'Zegama',
     slug: 'zegama',
     city: 'Zegama',
+    country: 'España',
     coordinates: [-2.2596, 43.0375],
+    imageUrl: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/f/fe/Cara-norte-sierra-aizkorri.JPG/1280px-Cara-norte-sierra-aizkorri.JPG',
     status: 'active',
     isActive: true,
     created_At: SEED_DATE,
@@ -129,7 +208,9 @@ const locations = [
     name: 'Zinal',
     slug: 'zinal',
     city: 'Zinal',
+    country: 'Suiza',
     coordinates: [7.6167, 46.2167],
+    imageUrl: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/9/93/Zinal_from_Roc_de_la_Vache.jpg/1280px-Zinal_from_Roc_de_la_Vache.jpg',
     status: 'active',
     isActive: true,
     created_At: SEED_DATE,
@@ -141,7 +222,9 @@ const locations = [
     name: 'Manitou Springs',
     slug: 'manitou-springs',
     city: 'Manitou Springs',
+    country: 'Estados Unidos',
     coordinates: [-104.8436, 38.8578],
+    imageUrl: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d0/Pikes_Peak_by_David_Shankbone.jpg/1280px-Pikes_Peak_by_David_Shankbone.jpg',
     status: 'active',
     isActive: true,
     created_At: SEED_DATE,
@@ -153,7 +236,9 @@ const locations = [
     name: 'Squaw Valley',
     slug: 'squaw-valley',
     city: 'Squaw Valley',
+    country: 'Estados Unidos',
     coordinates: [-120.2367, 39.1969],
+    imageUrl: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/9/95/Squaw_Valley_in_the_morning.jpg/1280px-Squaw_Valley_in_the_morning.jpg',
     status: 'active',
     isActive: true,
     created_At: SEED_DATE,
@@ -165,7 +250,9 @@ const locations = [
     name: 'Silverton',
     slug: 'silverton',
     city: 'Silverton',
+    country: 'Estados Unidos',
     coordinates: [-107.6647, 37.8119],
+    imageUrl: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/9/97/Silverton.jpg/1280px-Silverton.jpg',
     status: 'active',
     isActive: true,
     created_At: SEED_DATE,
@@ -177,7 +264,9 @@ const locations = [
     name: 'Réunion',
     slug: 'reunion',
     city: 'Saint-Denis',
+    country: 'Francia',
     coordinates: [55.45, -20.8789],
+    imageUrl: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/0/0a/R%C3%A9union_PitonFournaise_Crat%C3%A8reRivals_surroundings2.JPG/1280px-R%C3%A9union_PitonFournaise_Crat%C3%A8reRivals_surroundings2.JPG',
     status: 'active',
     isActive: true,
     created_At: SEED_DATE,
@@ -189,7 +278,9 @@ const locations = [
     name: 'Dénia',
     slug: 'denia',
     city: 'Dénia',
+    country: 'España',
     coordinates: [0.1123, 38.8027],
+    imageUrl: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/5/5a/El_Montg%C3%B3_i_la_mar.JPG/1280px-El_Montg%C3%B3_i_la_mar.JPG',
     status: 'active',
     isActive: true,
     created_At: SEED_DATE,
@@ -201,7 +292,23 @@ const locations = [
     name: 'Sierra Calderona',
     slug: 'sierra-calderona',
     city: 'Serra',
+    country: 'España',
     coordinates: [-0.4332, 39.6831],
+    imageUrl: 'https://upload.wikimedia.org/wikipedia/commons/b/bd/Vista_desde_Valencia_de_la_Sierra_Calderona_02.jpg',
+    status: 'active',
+    isActive: true,
+    created_At: SEED_DATE,
+    updated_at: SEED_DATE,
+    deleted_at: null
+  },
+  {
+    _id: oid('665a1b2c3d4e5f60718293e3'),
+    name: 'Val d\'Aran',
+    slug: 'val-daran',
+    city: 'Vielha',
+    country: 'España',
+    coordinates: [0.7956, 42.7025],
+    imageUrl: 'https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d3/VIELHA_-_VAL_D%27ARAN_-_IB-399.JPG/1280px-VIELHA_-_VAL_D%27ARAN_-_IB-399.JPG',
     status: 'active',
     isActive: true,
     created_At: SEED_DATE,
@@ -229,6 +336,11 @@ const events = [
     surface: ['trail', 'rock', 'mixed'],
     tags: ['pirineos', 'lagos', 'circular'],
     price: 85.0,
+    variants: [
+      { name: '20K', distanceKm: 20.0, elevationGain: 1200, price: 35.0 },
+      { name: '50K', distanceKm: 50.0, elevationGain: 2800, price: 65.0 },
+      { name: '100K', distanceKm: 100.0, elevationGain: 5200, price: 110.0 }
+    ],
     status: 'published',
     isActive: true,
     created_At: SEED_DATE,
@@ -241,7 +353,7 @@ const events = [
     slug: 'trail-cadi-moixero-2027',
     sku: 'TCM-2027',
     description: 'Recorrido por el macizo del Cadí...',
-    hostId: oid('665a1b2c3d4e5f60718293b5'),
+    hostId: oid('665a1b2c3d4e5f60718293b6'),
     categoryId: oid('665a1b2c3d4e5f60718293c7'),
     locationId: oid('665a1b2c3d4e5f60718293d8'),
     startDate: new Date('2027-05-20T08:00:00Z'),
@@ -253,6 +365,11 @@ const events = [
     surface: ['trail', 'rock', 'mixed'],
     tags: ['pirineos', 'travesia', 'crestas'],
     price: 55.0,
+    variants: [
+      { name: '10K', distanceKm: 10.0, elevationGain: 700, price: 25.0 },
+      { name: '21K', distanceKm: 21.0, elevationGain: 1400, price: 40.0 },
+      { name: '32K', distanceKm: 32.0, elevationGain: 2100, price: 55.0 }
+    ],
     status: 'draft',
     isActive: true,
     created_At: SEED_DATE,
@@ -261,22 +378,27 @@ const events = [
   },
   {
     _id: oid('665a1b2c3d4e5f60718293ea'),
-    name: 'OCC Orsières-Champex-Chamonix 2027',
-    slug: 'occ-2027',
-    sku: 'OCC-2027',
-    description: 'Recorrido de 56 km por el corazón del Mont-Blanc, desde Orsières hasta Chamonix pasando por Champex-Lac.',
+    name: 'UTMB Mont-Blanc 2027',
+    slug: 'utmb-mont-blanc-2027',
+    sku: 'UTMB-2027',
+    description: 'La gran cita del trail mundial alrededor del macizo del Mont-Blanc, con las modalidades OCC, CCC y UTMB.',
     hostId: oid('665a1b2c3d4e5f60718293b5'),
     categoryId: oid('665a1b2c3d4e5f60718293c6'),
     locationId: oid('665a1b2c3d4e5f60718293d9'),
-    startDate: new Date('2027-08-28T05:00:00Z'),
-    endDate: new Date('2027-08-28T18:00:00Z'),
-    distanceKm: 56.0,
-    elevationGain: 3500,
-    elevationLossM: 1100,
-    difficulty: 'hard',
-    surface: ['trail', 'dirt', 'mixed'],
-    tags: ['alpes', 'glaciares', 'vallon'],
-    price: 120.0,
+    startDate: new Date('2027-08-27T05:00:00Z'),
+    endDate: new Date('2027-08-29T18:00:00Z'),
+    distanceKm: 174.0,
+    elevationGain: 9900,
+    elevationLossM: 9900,
+    difficulty: 'expert',
+    surface: ['trail', 'rock', 'mixed'],
+    tags: ['alpes', 'glaciares', 'utmb'],
+    price: 250.0,
+    variants: [
+      { name: 'OCC', distanceKm: 60.0, elevationGain: 3500, price: 120.0 },
+      { name: 'CCC', distanceKm: 101.0, elevationGain: 6050, price: 180.0 },
+      { name: 'UTMB', distanceKm: 174.0, elevationGain: 9900, price: 250.0 }
+    ],
     status: 'published',
     isActive: true,
     created_At: SEED_DATE,
@@ -285,22 +407,27 @@ const events = [
   },
   {
     _id: oid('665a1b2c3d4e5f60718293eb'),
-    name: 'CCC Courmayeur-Champex-Chamonix 2027',
-    slug: 'ccc-2027',
-    sku: 'CCC-2027',
-    description: '101 km desde Courmayeur hasta Chamonix, recorriendo el Val Ferret y Champex-Lac.',
+    name: 'Val d\'Aran by UTMB 2027',
+    slug: 'val-daran-by-utmb-2027',
+    sku: 'VDA-2027',
+    description: 'Carrera del Pirineo central con modalidades de 20K, 50K y 100K por los valles de la Val d\'Aran.',
     hostId: oid('665a1b2c3d4e5f60718293b5'),
     categoryId: oid('665a1b2c3d4e5f60718293c6'),
-    locationId: oid('665a1b2c3d4e5f60718293da'),
-    startDate: new Date('2027-08-28T12:00:00Z'),
-    endDate: new Date('2027-08-29T04:00:00Z'),
-    distanceKm: 101.0,
-    elevationGain: 6100,
-    elevationLossM: 1300,
+    locationId: oid('665a1b2c3d4e5f60718293e3'),
+    startDate: new Date('2027-07-09T06:00:00Z'),
+    endDate: new Date('2027-07-11T18:00:00Z'),
+    distanceKm: 100.0,
+    elevationGain: 6400,
+    elevationLossM: 6400,
     difficulty: 'hard',
-    surface: ['trail', 'mixed', 'dirt'],
-    tags: ['alpes', 'skyline', 'italia'],
-    price: 180.0,
+    surface: ['trail', 'rock', 'mixed'],
+    tags: ['pirineos', 'aran', 'utmb'],
+    price: 135.0,
+    variants: [
+      { name: '20K', distanceKm: 20.0, elevationGain: 900, price: 55.0 },
+      { name: '50K', distanceKm: 50.0, elevationGain: 3300, price: 135.0 },
+      { name: '100K', distanceKm: 100.0, elevationGain: 6400, price: 224.0 }
+    ],
     status: 'published',
     isActive: true,
     created_At: SEED_DATE,
@@ -313,7 +440,7 @@ const events = [
     slug: 'zegama-aizkorri-2027',
     sku: 'ZEGAMA-2027',
     description: 'Maratón alpina por el macizo de Aizkorri, con 2.700 m de desnivel positivo.',
-    hostId: oid('665a1b2c3d4e5f60718293b5'),
+    hostId: oid('665a1b2c3d4e5f60718293b6'),
     categoryId: oid('665a1b2c3d4e5f60718293c7'),
     locationId: oid('665a1b2c3d4e5f60718293db'),
     startDate: new Date('2027-05-30T08:00:00Z'),
@@ -325,6 +452,11 @@ const events = [
     surface: ['trail', 'dirt', 'rock'],
     tags: ['ascension', 'cumbre', 'pastos'],
     price: 65.0,
+    variants: [
+      { name: '10K', distanceKm: 10.0, elevationGain: 500, price: 20.0 },
+      { name: '21K', distanceKm: 21.0, elevationGain: 1200, price: 35.0 },
+      { name: '42K', distanceKm: 42.0, elevationGain: 2700, price: 65.0 }
+    ],
     status: 'published',
     isActive: true,
     created_At: SEED_DATE,
@@ -337,7 +469,7 @@ const events = [
     slug: 'sierre-zinal-2027',
     sku: 'SZ-2027',
     description: 'Una de las carreras de montaña más antiguas del mundo, desde Sierre hasta Zinal por los Alpes suizos.',
-    hostId: oid('665a1b2c3d4e5f60718293b5'),
+    hostId: oid('665a1b2c3d4e5f60718293b6'),
     categoryId: oid('665a1b2c3d4e5f60718293c7'),
     locationId: oid('665a1b2c3d4e5f60718293dc'),
     startDate: new Date('2027-08-15T07:00:00Z'),
@@ -349,6 +481,11 @@ const events = [
     surface: ['trail', 'mixed', 'rock'],
     tags: ['alpes', 'lagos', 'suiza'],
     price: 75.0,
+    variants: [
+      { name: '10K', distanceKm: 10.0, elevationGain: 600, price: 25.0 },
+      { name: '21K', distanceKm: 21.0, elevationGain: 1300, price: 45.0 },
+      { name: '31K', distanceKm: 31.0, elevationGain: 2200, price: 75.0 }
+    ],
     status: 'published',
     isActive: true,
     created_At: SEED_DATE,
@@ -361,7 +498,7 @@ const events = [
     slug: 'pikes-peak-marathon-2027',
     sku: 'PPM-2027',
     description: 'Maratón alpina que asciende al Pikes Peak en Colorado, desde Manitou Springs hasta la cumbre.',
-    hostId: oid('665a1b2c3d4e5f60718293b5'),
+    hostId: oid('665a1b2c3d4e5f60718293b6'),
     categoryId: oid('665a1b2c3d4e5f60718293c7'),
     locationId: oid('665a1b2c3d4e5f60718293dd'),
     startDate: new Date('2027-09-20T07:00:00Z'),
@@ -373,6 +510,11 @@ const events = [
     surface: ['trail', 'rock', 'dirt'],
     tags: ['ascension', 'colorado', 'altitude'],
     price: 95.0,
+    variants: [
+      { name: '10K', distanceKm: 10.0, elevationGain: 600, price: 30.0 },
+      { name: '21K', distanceKm: 21.0, elevationGain: 1200, price: 50.0 },
+      { name: '42K', distanceKm: 42.0, elevationGain: 2400, price: 95.0 }
+    ],
     status: 'published',
     isActive: true,
     created_At: SEED_DATE,
@@ -397,6 +539,11 @@ const events = [
     surface: ['trail', 'dirt', 'gravel'],
     tags: ['bosque', 'california', 'foothills'],
     price: 350.0,
+    variants: [
+      { name: '50K', distanceKm: 50.0, elevationGain: 1500, price: 100.0 },
+      { name: '50M', distanceKm: 80.5, elevationGain: 3000, price: 200.0 },
+      { name: '100M', distanceKm: 161.0, elevationGain: 5500, price: 350.0 }
+    ],
     status: 'published',
     isActive: true,
     created_At: SEED_DATE,
@@ -421,6 +568,11 @@ const events = [
     surface: ['trail', 'mixed', 'rock'],
     tags: ['rocosas', 'travesia', 'cumbres'],
     price: 400.0,
+    variants: [
+      { name: '50K', distanceKm: 50.0, elevationGain: 3000, price: 150.0 },
+      { name: '50M', distanceKm: 80.5, elevationGain: 6000, price: 250.0 },
+      { name: '100M', distanceKm: 161.0, elevationGain: 10000, price: 400.0 }
+    ],
     status: 'published',
     isActive: true,
     created_At: SEED_DATE,
@@ -445,6 +597,11 @@ const events = [
     surface: ['rock', 'mixed', 'trail'],
     tags: ['volcan', 'tropical', 'isla'],
     price: 250.0,
+    variants: [
+      { name: '50K', distanceKm: 50.0, elevationGain: 3000, price: 80.0 },
+      { name: '100K', distanceKm: 100.0, elevationGain: 6000, price: 150.0 },
+      { name: '170K', distanceKm: 170.0, elevationGain: 10000, price: 250.0 }
+    ],
     status: 'published',
     isActive: true,
     created_At: SEED_DATE,
@@ -457,7 +614,7 @@ const events = [
     slug: 'montgo-circular-2027',
     sku: 'MONTGO-2027',
     description: 'Ruta de montaña con vistas al Mediterráneo y tramos técnicos.',
-    hostId: oid('665a1b2c3d4e5f60718293b5'),
+    hostId: oid('665a1b2c3d4e5f60718293b6'),
     categoryId: oid('665a1b2c3d4e5f60718293c7'),
     locationId: oid('665a1b2c3d4e5f60718293e1'),
     startDate: new Date('2027-04-18T08:00:00Z'),
@@ -469,6 +626,11 @@ const events = [
     surface: ['trail', 'rock', 'dirt'],
     tags: ['mediterraneo', 'montana', 'circular'],
     price: 25.0,
+    variants: [
+      { name: '5K', distanceKm: 5.0, elevationGain: 250, price: 10.0 },
+      { name: '10K', distanceKm: 10.0, elevationGain: 500, price: 18.0 },
+      { name: '14K', distanceKm: 14.8, elevationGain: 720, price: 25.0 }
+    ],
     status: 'published',
     isActive: true,
     created_At: SEED_DATE,
@@ -481,7 +643,7 @@ const events = [
     slug: 'sierra-calderona-skyline-2027',
     sku: 'SCS-2027',
     description: 'Recorrido largo por pistas y senderos de la Sierra Calderona.',
-    hostId: oid('665a1b2c3d4e5f60718293b5'),
+    hostId: oid('665a1b2c3d4e5f60718293b6'),
     categoryId: oid('665a1b2c3d4e5f60718293c7'),
     locationId: oid('665a1b2c3d4e5f60718293e2'),
     startDate: new Date('2027-03-21T08:00:00Z'),
@@ -493,6 +655,11 @@ const events = [
     surface: ['trail', 'dirt', 'gravel'],
     tags: ['skyline', 'larga-distancia', 'bosque'],
     price: 35.0,
+    variants: [
+      { name: '10K', distanceKm: 10.0, elevationGain: 400, price: 15.0 },
+      { name: '21K', distanceKm: 21.0, elevationGain: 900, price: 25.0 },
+      { name: '28K', distanceKm: 28.4, elevationGain: 1180, price: 35.0 }
+    ],
     status: 'published',
     isActive: true,
     created_At: SEED_DATE,
@@ -500,6 +667,38 @@ const events = [
     deleted_at: null
   }
 ];
+
+function buildDepartures() {
+  return events.flatMap((event) => {
+    const variants = Array.isArray(event.variants) ? event.variants : [];
+
+    return variants.map((variant, index) => {
+      const startDatetime = new Date(event.startDate.getTime() + index * 2 * 60 * 60 * 1000);
+      const durationHours = Math.max(2, Math.ceil(variant.distanceKm / 10));
+      const endDatetime = new Date(startDatetime.getTime() + durationHours * 60 * 60 * 1000);
+      const capacity = 120 + index * 60;
+      const occupancy = [0.2, 0.45, 0.7][index] ?? 0.3;
+      const bookedParticipants = Math.round(capacity * occupancy);
+
+      return {
+        eventId: event._id,
+        slug: `${event.slug}-${slugify(variant.name)}-${startDatetime.toISOString().slice(0, 10)}`,
+        startDatetime,
+        endDatetime,
+        capacity,
+        price: variant.price,
+        bookedParticipants,
+        status: 'scheduled',
+        isActive: true,
+        created_At: SEED_DATE,
+        updated_at: SEED_DATE,
+        deleted_at: null
+      };
+    });
+  });
+}
+
+const departures = buildDepartures();
 
 const experiences = [
   {
@@ -545,11 +744,14 @@ function generatePassword() {
   return password.split('').sort(() => Math.random() - 0.5).join('').substring(0, 16);
 }
 
+const demoAdminEmail = process.env.DEMO_ADMIN_EMAIL || 'admin@mudandpace.com';
+const demoAdminPassword = process.env.DEMO_ADMIN_PASSWORD;
+
 const users = [
   {
     name: 'Admin Mud and Pace',
-    email: 'admin@mudandpace.com',
-    password: generatePassword(),
+    email: demoAdminEmail,
+    password: demoAdminPassword || generatePassword(),
     role: 'ADMIN',
     profile: {
       firstName: 'Admin',
@@ -628,19 +830,70 @@ async function seedDatabase() {
   await Category.deleteMany({});
   await Location.deleteMany({});
   await Event.deleteMany({});
+  await Departure.deleteMany({});
 
   await Host.insertMany(hosts, { timestamps: false });
   await Category.insertMany(categories, { timestamps: false });
   await Location.insertMany(locations, { timestamps: false });
   await Event.insertMany(events, { timestamps: false });
+  await Departure.insertMany(departures, { timestamps: false });
   const seededUsers = await seedUsers();
 
   const db = mongoose.connection.db;
+
+  const eventImages = [];
+  if (fs.existsSync(SEED_ASSETS_ROOT)) {
+    for (const [eventId, folder] of Object.entries(EVENT_IMAGE_FOLDERS)) {
+      const sourceDir = path.join(SEED_ASSETS_ROOT, folder);
+      if (!fs.existsSync(sourceDir)) {
+        continue;
+      }
+
+      const targetDir = path.join(UPLOADS_ROOT, 'events', eventId);
+      resetDirectory(targetDir);
+      copyFiles(sourceDir, targetDir);
+
+      const files = fs.readdirSync(targetDir).sort();
+      files.forEach((filename, index) => {
+        eventImages.push({
+          eventId: oid(eventId),
+          url: `/uploads/events/${eventId}/${filename}`,
+          filename,
+          originalName: filename,
+          mimeType: 'image/jpeg',
+          size: fs.statSync(path.join(targetDir, filename)).size,
+          alt: '',
+          isCover: index === 0,
+          order: index + 1,
+          created_At: SEED_DATE,
+          updated_at: SEED_DATE
+        });
+      });
+    }
+
+    const carouselSource = path.join(SEED_ASSETS_ROOT, 'carousel_shop');
+    if (fs.existsSync(carouselSource)) {
+      const carouselTarget = path.join(UPLOADS_ROOT, 'carousel');
+      resetDirectory(carouselTarget);
+      copyFiles(carouselSource, carouselTarget);
+    }
+
+    const organizersSource = path.join(SEED_ASSETS_ROOT, 'organizadores');
+    if (fs.existsSync(organizersSource)) {
+      const organizersTarget = path.join(UPLOADS_ROOT, 'organizadores');
+      resetDirectory(organizersTarget);
+      copyFiles(organizersSource, organizersTarget);
+    }
+  }
+
   await db.collection('experiences').deleteMany({});
   await db.collection('event_images').deleteMany({});
   await db.collection('experience_images').deleteMany({});
   await db.collection('experiences').insertMany(experiences);
   await db.collection('experience_images').insertMany(experienceImages);
+  if (eventImages.length) {
+    await db.collection('event_images').insertMany(eventImages);
+  }
 
   await db.collection('experiences').createIndex({ eventId: 1 });
   await db.collection('experiences').createIndex({ slug: 1 }, { unique: true, partialFilterExpression: { deleted_at: null } });
@@ -654,8 +907,9 @@ async function seedDatabase() {
     categories: categories.length,
     locations: locations.length,
     events: events.length,
+    departures: departures.length,
     experiences: experiences.length,
-    event_images: 0,
+    event_images: eventImages.length,
     experience_images: experienceImages.length,
     users: seededUsers,
     profiles: seededUsers

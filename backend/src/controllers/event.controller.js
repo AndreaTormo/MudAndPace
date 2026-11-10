@@ -3,8 +3,13 @@ const service = require('../services/event.service');
 class EventController {
   async list(req, res, next) {
     try {
-      const events = await service.list(req.query);
-      return res.status(200).json({ success: true, message: 'Eventos obtenidos correctamente', data: events });
+      const result = await service.list(req.query);
+      return res.status(200).json({
+        success: true,
+        message: 'Eventos obtenidos correctamente',
+        data: result.data,
+        pagination: result.pagination
+      });
     } catch (error) { return next(error); }
   }
 

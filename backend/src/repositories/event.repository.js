@@ -9,9 +9,20 @@ const POPULATE = [
 ];
 
 class EventRepository {
-  async findAll(filters = {}, { includeDeleted = false } = {}) {
+  async findAll(filters = {}, { includeDeleted = false, page = 1, pageSize = 20 } = {}) {
     const query = includeDeleted ? filters : { ...NOT_DELETED, ...filters };
-    return Event.find(query).populate(POPULATE).sort({ startDate: 1 });
+    const skip = (page - 1) * pageSize;
+
+    const [data, total] = await Promise.all([
+      Event.find(query)
+        .populate(POPULATE)
+        .sort({ startDate: 1, _id: 1 })
+        .skip(skip)
+        .limit(pageSize),
+      Event.countDocuments(query)
+    ]);
+
+    return { data, total };
   }
 
   async findById(id, { includeDeleted = false } = {}) {

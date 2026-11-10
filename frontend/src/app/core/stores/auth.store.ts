@@ -1,5 +1,5 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
-import { Observable, finalize, map, of } from 'rxjs';
+import { Observable, finalize, map } from 'rxjs';
 import {
   AuthSession,
   AuthUser,
@@ -9,11 +9,11 @@ import {
 } from '../models/auth.model';
 import { AuthService } from '../services/auth.service';
 
-const STORAGE_KEY = 'mudandpace.auth';
+const STORAGE_KEY = 'mudandpace.session';
+const LEGACY_STORAGE_KEY = 'mudandpace.auth';
 const MAX_TIMEOUT = 2_147_483_647;
 
 interface StoredSession {
-  token: string;
   expiresAt: string;
   user: AuthUser;
 }
@@ -23,12 +23,11 @@ export class AuthStore {
   private readonly authService = inject(AuthService);
   private expiryTimer: ReturnType<typeof setTimeout> | null = null;
 
-  private readonly _token = signal<string | null>(null);
   private readonly _user = signal<AuthUser | null>(null);
   private readonly _expiresAt = signal<number | null>(null);
   private readonly _sessionExpired = signal(false);
+  private userRevision = 0;
 
-  readonly token = this._token.asReadonly();
   readonly user = this._user.asReadonly();
   readonly expiresAt = this._expiresAt.asReadonly();
   readonly sessionExpired = this._sessionExpired.asReadonly();
@@ -45,9 +44,9 @@ export class AuthStore {
   }
 
   isAuthenticated(): boolean {
-    const token = this._token();
+    const user = this._user();
     const expiresAt = this._expiresAt();
-    return Boolean(token && expiresAt && expiresAt > Date.now());
+    return Boolean(user && expiresAt && expiresAt > Date.now());
   }
 
   hasRole(role: string): boolean {
@@ -68,32 +67,31 @@ export class AuthStore {
   }
 
   refreshMe(): Observable<AuthUser> {
+    const revision = this.userRevision;
+
     return this.authService.me().pipe(
       map((user) => {
-        this.updateUser(user);
+        if (revision === this.userRevision) {
+          this.updateUser(user);
+        }
         return user;
       })
     );
   }
 
   logout(): Observable<void> {
-    if (!this._token()) {
-      this.clear();
-      return of(undefined);
-    }
-
     return this.authService.logout().pipe(finalize(() => this.clear()));
   }
 
   setSession(session: AuthSession): void {
     const expiresAt = new Date(session.expiresAt).getTime();
-    if (!session.token || !session.user || !Number.isFinite(expiresAt) || expiresAt <= Date.now()) {
+    if (!session.user || !Number.isFinite(expiresAt) || expiresAt <= Date.now()) {
       this.clear();
       return;
     }
 
+    this.userRevision += 1;
     this._sessionExpired.set(false);
-    this._token.set(session.token);
     this._user.set(session.user);
     this._expiresAt.set(expiresAt);
     this.persist();
@@ -101,20 +99,22 @@ export class AuthStore {
   }
 
   updateUser(user: AuthUser): void {
+    this.userRevision += 1;
     this._user.set(user);
-    if (this._token()) {
+    if (this._expiresAt()) {
       this.persist();
     }
   }
 
   clear(): void {
+    this.userRevision += 1;
     this.cancelExpiry();
-    this._token.set(null);
     this._user.set(null);
     this._expiresAt.set(null);
     this._sessionExpired.set(false);
     try {
       localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(LEGACY_STORAGE_KEY);
     } catch {
       // Almacenamiento no disponible.
     }
@@ -122,17 +122,18 @@ export class AuthStore {
 
   private restore(): void {
     try {
+      localStorage.removeItem(LEGACY_STORAGE_KEY);
+
       const raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) return;
 
       const session = JSON.parse(raw) as StoredSession;
       const expiresAt = new Date(session.expiresAt).getTime();
-      if (!session.token || !session.user || !Number.isFinite(expiresAt) || expiresAt <= Date.now()) {
+      if (!session.user || !Number.isFinite(expiresAt) || expiresAt <= Date.now()) {
         this.clear();
         return;
       }
 
-      this._token.set(session.token);
       this._user.set(session.user);
       this._expiresAt.set(expiresAt);
       this.scheduleExpiry();
@@ -142,19 +143,18 @@ export class AuthStore {
   }
 
   private persist(): void {
-    const token = this._token();
     const user = this._user();
     const expiresAt = this._expiresAt();
-    if (!token || !user || !expiresAt) return;
+    if (!user || !expiresAt) return;
 
     const session: StoredSession = {
-      token,
       user,
       expiresAt: new Date(expiresAt).toISOString()
     };
 
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(session));
+      localStorage.removeItem(LEGACY_STORAGE_KEY);
     } catch {
       // Almacenamiento no disponible.
     }

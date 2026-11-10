@@ -1,15 +1,32 @@
 import { ChangeDetectionStrategy, Component, effect, inject, input, output } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  FormArray,
+  FormBuilder,
+  FormControl,
+  FormGroup,
+  ReactiveFormsModule,
+  ValidationErrors,
+  Validators
+} from '@angular/forms';
 import {
   Event,
   EventCategory,
   EventFormValue,
   EventHost,
   EventLocation,
-  EventStatus
+  EventStatus,
+  EventVariant,
+  MIN_EVENT_VARIANTS
 } from '../../../../core/models/event.model';
 import { toDateInputValue } from '../../../../shared/utils/format.util';
 import { EDITABLE_FIELDS } from '../../utils/event-payload.util';
+
+type VariantFormGroup = FormGroup<{
+  name: FormControl<string>;
+  distanceKm: FormControl<number | null>;
+  elevationGain: FormControl<number | null>;
+  price: FormControl<number | null>;
+}>;
 
 @Component({
   selector: 'app-event-form',
@@ -227,6 +244,157 @@ import { EDITABLE_FIELDS } from '../../utils/event-payload.util';
         </div>
       </section>
 
+      <section class="space-y-4" formArrayName="variants">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 class="text-base font-semibold text-gray-900">Modalidades</h2>
+            <p class="mt-0.5 text-sm text-gray-500">
+              El evento debe tener al menos {{ minVariants }} distancias o carreras.
+            </p>
+          </div>
+          <button type="button" class="button-secondary" (click)="addVariant()">
+            + Añadir modalidad
+          </button>
+        </div>
+
+        @if (variants.length < minVariants) {
+          <p class="form-error" role="alert">
+            Añade al menos {{ minVariants }} modalidades.
+          </p>
+        }
+
+        @if (variants.length === 0) {
+          <p class="rounded-xl border border-dashed border-gray-200 px-4 py-5 text-sm text-gray-400">
+            Sin modalidades. Añade al menos {{ minVariants }} para guardar el evento.
+          </p>
+        } @else {
+          <div class="space-y-3">
+            @for (variant of variants.controls; track variant; let i = $index) {
+              <div class="rounded-xl border border-gray-200 bg-white p-4" [formGroupName]="i">
+                <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                  <div>
+                    <label class="form-label" [attr.for]="'variant-' + i + '-name'">Nombre *</label>
+                    <input
+                      [attr.id]="'variant-' + i + '-name'"
+                      type="text"
+                      class="form-input"
+                      formControlName="name"
+                      placeholder="Ej.: OCC"
+                      [attr.aria-invalid]="variantError(i, 'name') ? true : null"
+                      [attr.aria-describedby]="
+                        variantError(i, 'name') ? 'variant-' + i + '-name-error' : null
+                      "
+                    />
+                    @if (variantError(i, 'name'); as message) {
+                      <p
+                        [attr.id]="'variant-' + i + '-name-error'"
+                        class="form-error"
+                        role="alert"
+                      >
+                        {{ message }}
+                      </p>
+                    }
+                  </div>
+
+                  <div>
+                    <label class="form-label" [attr.for]="'variant-' + i + '-distance'">
+                      Distancia (km) *
+                    </label>
+                    <input
+                      [attr.id]="'variant-' + i + '-distance'"
+                      type="number"
+                      step="0.1"
+                      class="form-input"
+                      formControlName="distanceKm"
+                      [attr.aria-invalid]="variantError(i, 'distanceKm') ? true : null"
+                      [attr.aria-describedby]="
+                        variantError(i, 'distanceKm')
+                          ? 'variant-' + i + '-distance-error'
+                          : null
+                      "
+                    />
+                    @if (variantError(i, 'distanceKm'); as message) {
+                      <p
+                        [attr.id]="'variant-' + i + '-distance-error'"
+                        class="form-error"
+                        role="alert"
+                      >
+                        {{ message }}
+                      </p>
+                    }
+                  </div>
+
+                  <div>
+                    <label class="form-label" [attr.for]="'variant-' + i + '-elevation'">
+                      Desnivel + (m) *
+                    </label>
+                    <input
+                      [attr.id]="'variant-' + i + '-elevation'"
+                      type="number"
+                      step="1"
+                      class="form-input"
+                      formControlName="elevationGain"
+                      [attr.aria-invalid]="variantError(i, 'elevationGain') ? true : null"
+                      [attr.aria-describedby]="
+                        variantError(i, 'elevationGain')
+                          ? 'variant-' + i + '-elevation-error'
+                          : null
+                      "
+                    />
+                    @if (variantError(i, 'elevationGain'); as message) {
+                      <p
+                        [attr.id]="'variant-' + i + '-elevation-error'"
+                        class="form-error"
+                        role="alert"
+                      >
+                        {{ message }}
+                      </p>
+                    }
+                  </div>
+
+                  <div>
+                    <label class="form-label" [attr.for]="'variant-' + i + '-price'">
+                      Precio (€) *
+                    </label>
+                    <input
+                      [attr.id]="'variant-' + i + '-price'"
+                      type="number"
+                      step="0.01"
+                      class="form-input"
+                      formControlName="price"
+                      [attr.aria-invalid]="variantError(i, 'price') ? true : null"
+                      [attr.aria-describedby]="
+                        variantError(i, 'price') ? 'variant-' + i + '-price-error' : null
+                      "
+                    />
+                    @if (variantError(i, 'price'); as message) {
+                      <p
+                        [attr.id]="'variant-' + i + '-price-error'"
+                        class="form-error"
+                        role="alert"
+                      >
+                        {{ message }}
+                      </p>
+                    }
+                  </div>
+                </div>
+
+                <div class="mt-3 flex justify-end">
+                  <button
+                    type="button"
+                    class="text-xs font-medium text-red-600 hover:underline disabled:cursor-not-allowed disabled:text-gray-400 disabled:no-underline"
+                    [disabled]="variants.length <= minVariants"
+                    (click)="removeVariant(i)"
+                  >
+                    Eliminar modalidad
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      </section>
+
       <div class="flex justify-end gap-3 border-t border-gray-100 pt-4">
         <button type="button" class="button-secondary" (click)="cancelled.emit()">Cancelar</button>
         <button type="submit" class="button-primary" [disabled]="form.invalid">
@@ -247,6 +415,13 @@ export class EventForm {
   formSubmit = output<EventFormValue>();
   cancelled = output<void>();
 
+  protected readonly minVariants = MIN_EVENT_VARIANTS;
+
+  protected readonly variants: FormArray<VariantFormGroup> = this.fb.array<VariantFormGroup>(
+    [],
+    [Validators.minLength(MIN_EVENT_VARIANTS)]
+  );
+
   protected readonly form = this.fb.nonNullable.group({
     name: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(120)]],
     description: ['', [Validators.maxLength(3000)]],
@@ -258,6 +433,7 @@ export class EventForm {
     distanceKm: [null as number | null, [Validators.required, Validators.min(0.1)]],
     elevationGain: [null as number | null, [Validators.required, Validators.min(0)]],
     price: [null as number | null, [Validators.required, Validators.min(0)]],
+    variants: this.variants,
     status: this.fb.nonNullable.control<EventStatus>('draft'),
     isActive: [true]
   });
@@ -277,6 +453,15 @@ export class EventForm {
       }
 
       const event = this.event();
+      this.variants.clear();
+
+      for (const variant of event?.variants ?? []) {
+        this.variants.push(this.createVariantGroup(variant));
+      }
+      while (this.variants.length < MIN_EVENT_VARIANTS) {
+        this.variants.push(this.createVariantGroup());
+      }
+
       if (!event) {
         return;
       }
@@ -312,10 +497,51 @@ export class EventForm {
   protected submit(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
+      this.variants.markAsTouched();
       return;
     }
 
     this.formSubmit.emit(this.form.getRawValue());
+  }
+
+  protected addVariant(): void {
+    this.variants.push(this.createVariantGroup());
+  }
+
+  protected removeVariant(index: number): void {
+    if (this.variants.length <= MIN_EVENT_VARIANTS) {
+      return;
+    }
+    this.variants.removeAt(index);
+  }
+
+  protected variantError(index: number, controlName: string): string | null {
+    const control = this.variants.at(index)?.get(controlName);
+    if (!control || control.valid || (!control.touched && !control.dirty)) {
+      return null;
+    }
+    return this.messageForErrors(control.errors);
+  }
+
+  private createVariantGroup(variant?: EventVariant): VariantFormGroup {
+    return this.fb.group({
+      name: this.fb.nonNullable.control(variant?.name ?? '', [
+        Validators.required,
+        Validators.maxLength(80)
+      ]),
+      distanceKm: this.fb.control<number | null>(variant?.distanceKm ?? null, [
+        Validators.required,
+        Validators.min(0.1)
+      ]),
+      elevationGain: this.fb.control<number | null>(variant?.elevationGain ?? null, [
+        Validators.required,
+        Validators.min(0)
+      ]),
+      price: this.fb.control<number | null>(variant?.price ?? null, [
+        Validators.required,
+        Validators.min(0)
+      ])
+    });
   }
 
   protected errorFor(controlName: string): string | null {
@@ -323,8 +549,10 @@ export class EventForm {
     if (!control || control.valid || (!control.touched && !control.dirty)) {
       return null;
     }
+    return this.messageForErrors(control.errors);
+  }
 
-    const errors = control.errors;
+  private messageForErrors(errors: ValidationErrors | null): string | null {
     if (!errors) {
       return null;
     }

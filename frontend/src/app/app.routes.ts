@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { adminGuard } from './core/guards/admin.guard';
 import { authGuard } from './core/guards/auth.guard';
 import { MainLayout } from './layouts/main-layout/main-layout';
 
@@ -20,9 +21,22 @@ export const routes: Routes = [
           import('./features/profile/profile').then((m) => m.ProfilePage)
       },
       {
+        path: 'admin/profiles',
+        canActivate: [adminGuard],
+        loadComponent: () =>
+          import('./features/admin/pages/admin-profiles/admin-profiles').then(
+            (m) => m.AdminProfilesPage
+          )
+      },
+      {
         path: 'events',
         loadChildren: () =>
           import('./features/events/events.routes').then((m) => m.EVENTS_ROUTES)
+      },
+      {
+        path: 'shop',
+        loadChildren: () =>
+          import('./features/shop/shop.routes').then((m) => m.SHOP_ROUTES)
       }
     ]
   },

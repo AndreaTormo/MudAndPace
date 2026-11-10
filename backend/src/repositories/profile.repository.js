@@ -5,6 +5,14 @@ class ProfileRepository {
     return Profile.findOne({ userId, deleted_at: null });
   }
 
+  async findByUserIds(userIds) {
+    if (!Array.isArray(userIds) || userIds.length === 0) {
+      return [];
+    }
+
+    return Profile.find({ userId: { $in: userIds }, deleted_at: null });
+  }
+
   async create(data) {
     return Profile.create(data);
   }

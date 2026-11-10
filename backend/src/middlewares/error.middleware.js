@@ -1,6 +1,9 @@
 const fs = require('fs');
 
 function uploadedFiles(req) {
+  if (req.file) {
+    return [req.file];
+  }
   if (Array.isArray(req.files)) {
     return req.files;
   }
@@ -18,13 +21,15 @@ function cleanupUploads(req) {
   }
 }
 
-function multerMessage(code) {
+function multerMessage(code, req) {
   switch (code) {
     case 'LIMIT_FILE_SIZE':
       return 'Cada imagen no puede superar los 5 MB';
     case 'LIMIT_FILE_COUNT':
     case 'LIMIT_UNEXPECTED_FILE':
-      return 'Puedes subir como máximo 8 fotos por evento';
+      return req.originalUrl?.includes('/avatar')
+        ? 'Solo puedes subir una imagen de avatar'
+        : 'Puedes subir como máximo 8 fotos por evento';
     default:
       return 'No se pudo subir la imagen';
   }
@@ -39,7 +44,7 @@ function errorMiddleware(err, req, res, next) {
     cleanupUploads(req);
     statusCode = 400;
     code = err.code;
-    message = multerMessage(err.code);
+    message = multerMessage(err.code, req);
   }
 
   if (statusCode >= 500) console.error(err);

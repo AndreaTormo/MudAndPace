@@ -22,13 +22,14 @@ El proyecto está desarrollado con **Angular** para el frontend y una **API REST
 
 ### Frontend
 - Registro, login, verificación de email, reenvío, olvido y reset de contraseña.
-- Perfil editable con datos personales, avatar y logout.
+- Perfil editable con datos personales, avatar por URL o subida de foto y logout.
 - Guards `authGuard`, `adminGuard` (fichero propio) y `guestGuard`; interceptor que añade el Bearer, detecta token caducado y redirige ante 401 con `returnUrl`.
 - Listado de eventos con filtros por estado, categoría, ubicación, distancia y fechas.
 - Búsqueda de eventos por su identificador.
-- Páginas de detalle con mapa de ubicación (OpenStreetMap) y características técnicas.
+- Eventos con al menos 3 modalidades propias (por ejemplo, `OCC`, `CCC`, `UTMB` o `20K`, `50K`, `100K`) con distancia, desnivel y precio.
+- Páginas de detalle con mapa de ubicación (OpenStreetMap), características técnicas y modalidades.
 - Formularios para crear y editar eventos con validaciones en el cliente, solo para `ADMIN`.
-- Edición desde el dashboard limitada a `name`, `description`, `categoryId`, `locationId`, `distanceKm` y `elevationGain`.
+- Edición desde el dashboard limitada a `name`, `description`, `categoryId`, `locationId`, `distanceKm`, `elevationGain` y `variants`.
 - Gestión de eventos: publicar/despublicar y borrado lógico con recuperación.
 - Papelera de eventos con restauración y eliminación definitiva, solo para `ADMIN`.
 - Navbar/sidebar con secciones de administración visibles solo para `ADMIN`.
@@ -39,7 +40,7 @@ El proyecto está desarrollado con **Angular** para el frontend y una **API REST
 ### Backend
 - Autenticación JWT con verificación de email y reset de contraseña.
 - RBAC (`USER`/`ADMIN`) y ABAC para usuarios y perfiles.
-- API REST para eventos: listado con filtros, detalle, creación, edición, publicación, imágenes y borrado lógico.
+- API REST para eventos: listado con filtros, detalle, creación, edición, publicación, imágenes, modalidades embebidas y borrado lógico.
 - Modelos de usuario, perfil, organizador, categoría y ubicación.
 - Validación de datos con Zod y esquemas de Mongoose.
 - Rate limiting en auth y login.
@@ -134,13 +135,7 @@ cd backend
 npm run seed
 ```
 
-El seed repuebla eventos, hosts, categorías, ubicaciones, experiencias e imágenes. No borra usuarios ni perfiles, pero sí el contenido existente. Crea estos usuarios verificados (las contraseñas se generan al ejecutar el seed): 
-
-| Rol | Email |
-|---|---|
-| `ADMIN` | `admin@mudandpace.com` |
-| `ADMIN` | `admin2@mudandpace.com` |
-| `USER` | `user@mudandpace.com` |
+El seed repuebla eventos, hosts, categorías, ubicaciones, experiencias e imágenes. No borra usuarios ni perfiles, pero sí el contenido existente. Deja 12 eventos y 13 ubicaciones; todos los eventos incluyen al menos 3 modalidades. `UTMB Mont-Blanc 2027` usa `OCC`, `CCC` y `UTMB`, y `Val d'Aran by UTMB 2027` usa `20K`, `50K` y `100K`.
 
 ### 3. Frontend
 
@@ -180,6 +175,16 @@ Todo requiere autenticación salvo `/auth/*`, `/health` y `/uploads`. Envía el 
 | `GET` | `/users/:id/profile` | Propio usuario o `ADMIN` |
 | `PATCH` | `/users/:id/profile` | Propio usuario o `ADMIN` |
 
+### Perfil
+
+| Método | Endpoint | Acceso / Descripción |
+|---|---|---|
+| `GET` | `/profile/me` | Autenticado |
+| `PATCH` | `/profile/me` | Autenticado |
+| `POST` | `/profile/me/avatar` | Autenticado; multipart con campo `avatar` (JPG/PNG/WebP, 5 MB) |
+| `GET` | `/profile/:userId` | Propio usuario o `ADMIN` |
+| `PATCH` | `/profile/:userId` | Propio usuario o `ADMIN` |
+
 ### Eventos
 
 | Método | Endpoint | Acceso / Descripción |
@@ -202,6 +207,8 @@ Todo requiere autenticación salvo `/auth/*`, `/health` y `/uploads`. Envía el 
 | `DELETE` | `/events/:id/images/:imageId` | Solo `ADMIN`; elimina imagen |
 
 Filtros de listado: `status` (`published`, `draft`, `all`), `categoryId`, `locationId`, `hostId`, `minDistance`, `maxDistance`, `fromDate`, `toDate`, `isActive`.
+
+Las modalidades se guardan en el array embebido `variants` de cada evento, con `name`, `distanceKm`, `elevationGain` y `price`. Cada evento debe tener al menos 3 modalidades. No hay endpoints propios de modalidades. Los filtros `minDistance`/`maxDistance` tienen en cuenta tanto la distancia principal como las modalidades.
 
 ### Referencias
 
@@ -230,14 +237,6 @@ GET http://localhost:3000/health
 ### Backend
 
 Configura las variables necesarias en `.env`:
-
-```env
-MONGODB_URI=mongodb://localhost:27017/trail_running
-JWT_SECRET=change-me-with-a-long-random-secret
-JWT_EXPIRES_IN=1h
-APP_URL=http://localhost:4200
-CORS_ORIGIN=http://localhost:3000,http://localhost:4200
-```
 
 Los orígenes permitidos para CORS se definen con `CORS_ORIGIN`; se pueden separar varios mediante comas.
 
@@ -269,7 +268,7 @@ La compilación de producción se genera en `dist/trail_running_frontend_v3/`.
 | `npm start` | Inicia la API con Node |
 | `npm run seed` | Carga los datos de ejemplo |
 
-Tests del frontend (Karma + Jasmine) en `frontend/src/app/**/*.spec.ts`: `npm test` en `frontend/` (sin Chrome, apuntar `CHROME_BIN` a Edge y usar `--browsers=ChromeHeadless --watch=false`). La verificación del backend se realiza manualmente contra la API.
+No hay tests automatizados; la verificación se realiza manualmente contra la API y la app.
 
 ## 🤝 Contribuciones
 

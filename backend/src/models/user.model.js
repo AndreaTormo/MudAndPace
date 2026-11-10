@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const userSchema = new mongoose.Schema(
   {
     name: { type: String, required: true, trim: true, minlength: 2, maxlength: 120 },
-    email: { type: String, required: true, unique: true, lowercase: true, trim: true, index: true },
+    email: { type: String, required: true, lowercase: true, trim: true },
     passwordHash: { type: String, required: true, select: false },
     role: {
       type: String,
@@ -45,6 +45,11 @@ userSchema.set('toJSON', {
   }
 });
 
+userSchema.index(
+  { email: 1 },
+  { unique: true, partialFilterExpression: { deleted_at: null } }
+);
 userSchema.index({ email: 1, deleted_at: 1 });
+userSchema.index({ deleted_at: 1, role: 1, status: 1, isActive: 1, created_At: -1 });
 
 module.exports = mongoose.model('User', userSchema);

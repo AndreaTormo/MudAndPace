@@ -20,6 +20,28 @@ export function formatDate(iso: string | undefined): string {
   });
 }
 
+export function formatDateLong(iso: string | undefined): string {
+  if (!iso) {
+    return '-';
+  }
+  return new Date(iso).toLocaleDateString('es-ES', {
+    weekday: 'short',
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric'
+  });
+}
+
+export function formatTime(iso: string | undefined): string {
+  if (!iso) {
+    return '-';
+  }
+  return new Date(iso).toLocaleTimeString('es-ES', {
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+}
+
 export function formatPrice(amount: number | undefined | null): string {
   if (amount === undefined || amount === null) {
     return '-';

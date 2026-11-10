@@ -7,6 +7,7 @@ const {
   idParamsSchema,
   updateUserSchema,
   createUserSchema,
+  listUserQuerySchema,
   activationSchema
 } = require('../validators/user.validator');
 const { registerSchema } = require('../validators/auth.validator');
@@ -18,7 +19,7 @@ router.post('/register', validate(registerSchema), controller.register);
 router.use(authenticate);
 
 router.post('/', authorize(), validate(createUserSchema), controller.create);
-router.get('/', authorize(), controller.getAll);
+router.get('/', authorize(), validate(listUserQuerySchema, 'query'), controller.getAll);
 router.get('/:id', validate(idParamsSchema, 'params'), authorize('id'), controller.getById);
 router.patch(
   '/:id',

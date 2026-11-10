@@ -28,19 +28,14 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   if (!isPublicAuth && !isLogout) {
     const expiresAt = auth.expiresAt();
-    if (auth.token() && expiresAt !== null && expiresAt <= Date.now()) {
+    if (expiresAt !== null && expiresAt <= Date.now()) {
       auth.clear();
       redirectToLogin(router);
       return throwError(() => new HttpErrorResponse({ status: 401, url: req.url }));
     }
   }
 
-  const token = isPublicAuth ? null : auth.token();
-  const request = token
-    ? req.clone({ setHeaders: { Authorization: `Bearer ${token}` } })
-    : req;
-
-  return next(request).pipe(
+  return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
       if (error.status === 401) {
         if (isPublicAuth) {

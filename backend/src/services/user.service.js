@@ -5,9 +5,15 @@ const sessionRepository = require('../repositories/session.repository');
 const profileService = require('./profile.service');
 const { AppError, normalizeAppError } = require('../utils/appError');
 const { toPublicUser } = require('../utils/publicUser');
+const { buildUserFilter } = require('../utils/userQuery');
 const { validateService } = require('../utils/validation');
 const { registerSchema } = require('../validators/auth.validator');
-const { createUserSchema, updateUserSchema, objectIdSchema, roleValues } = require('../validators/user.validator');
+const {
+  createUserSchema,
+  updateUserSchema,
+  objectIdSchema,
+  listUserQuerySchema
+} = require('../validators/user.validator');
 const { profileFieldKeys } = require('../validators/profile.validator');
 
 const BCRYPT_ROUNDS = 12;
@@ -113,13 +119,10 @@ class UserService {
     }
   }
 
-  async getAllUsers(filters = {}) {
+  async getAllUsers(query = {}) {
     try {
-      if (filters.role && !roleValues.includes(filters.role)) {
-        throw new AppError('Rol inválido', 400, 'INVALID_ROLE');
-      }
-
-      const users = await userRepository.findAll(filters);
+      const input = validateService(listUserQuerySchema, query);
+      const users = await userRepository.findAll(buildUserFilter(input));
       return users.map((user) => toPublicUser(user));
     } catch (error) {
       throw normalizeAppError(error);

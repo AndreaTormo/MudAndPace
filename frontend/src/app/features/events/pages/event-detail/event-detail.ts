@@ -15,6 +15,8 @@ import { EmptyState } from '../../../../shared/components/empty-state/empty-stat
 import { ErrorState } from '../../../../shared/components/error-state/error-state';
 import { SkeletonLoader } from '../../../../shared/components/skeleton-loader/skeleton-loader';
 import { EventMap } from '../../../../shared/components/event-map/event-map';
+import { EventImages } from '../../components/event-images/event-images';
+import { EventGallery } from '../../components/event-gallery/event-gallery';
 import { formatDate, formatDistance, formatElevation, formatPrice } from '../../../../shared/utils/format.util';
 import { isValidObjectId } from '../../../../shared/utils/object-id.util';
 import { isHttpError, showUnexpectedError } from '../../../../shared/utils/error.util';
@@ -23,7 +25,7 @@ import { isHttpError, showUnexpectedError } from '../../../../shared/utils/error
   selector: 'app-event-detail',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, EmptyState, ErrorState, SkeletonLoader, EventMap],
+  imports: [RouterLink, EmptyState, ErrorState, SkeletonLoader, EventMap, EventImages, EventGallery],
   template: `
     <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       @if (loading()) {
@@ -66,6 +68,8 @@ import { isHttpError, showUnexpectedError } from '../../../../shared/utils/error
               <p class="mt-1 text-sm text-gray-500">{{ locationText() }}</p>
             </div>
 
+            <app-event-gallery [eventId]="event()!._id" />
+
             <section class="rounded-2xl border border-gray-200 bg-white/80 backdrop-blur-sm p-5">
               <h2 class="mb-3 text-base font-semibold text-gray-900">Descripción</h2>
               @if (event()!.description) {
@@ -76,6 +80,10 @@ import { isHttpError, showUnexpectedError } from '../../../../shared/utils/error
                 <p class="text-sm text-gray-400">Este evento no tiene descripción.</p>
               }
             </section>
+
+            @if (isAdmin()) {
+              <app-event-images [eventId]="event()!._id" />
+            }
 
             <section class="grid grid-cols-2 gap-4 sm:grid-cols-3">
               <div class="rounded-2xl border border-gray-200 bg-white/80 backdrop-blur-sm p-4 text-center">
@@ -107,6 +115,45 @@ import { isHttpError, showUnexpectedError } from '../../../../shared/utils/error
                 <p class="text-xs text-gray-500">Categoría</p>
               </div>
             </section>
+
+            @if (event()!.variants?.length) {
+              <section class="rounded-2xl border border-gray-200 bg-white/80 backdrop-blur-sm p-5">
+                <div class="mb-3 flex items-center justify-between gap-3">
+                  <h2 class="text-base font-semibold text-gray-900">Modalidades</h2>
+                  <span class="text-xs font-medium uppercase tracking-wide text-gray-400">
+                    {{ event()!.variants!.length }}
+                    {{ event()!.variants!.length === 1 ? 'modalidad' : 'modalidades' }}
+                  </span>
+                </div>
+                <div class="grid gap-3 sm:grid-cols-2">
+                  @for (variant of event()!.variants!; track variant) {
+                    <div class="rounded-xl border border-gray-100 bg-gradient-to-br from-green-50 to-white p-4">
+                      <p class="font-semibold text-gray-900">{{ variant.name }}</p>
+                      <dl class="mt-2 grid grid-cols-3 gap-2 text-sm">
+                        <div>
+                          <dt class="text-xs text-gray-500">Distancia</dt>
+                          <dd class="font-medium text-gray-800">
+                            {{ formatDistance(variant.distanceKm) }}
+                          </dd>
+                        </div>
+                        <div>
+                          <dt class="text-xs text-gray-500">Desnivel +</dt>
+                          <dd class="font-medium text-gray-800">
+                            {{ formatElevation(variant.elevationGain) }}
+                          </dd>
+                        </div>
+                        <div>
+                          <dt class="text-xs text-gray-500">Precio</dt>
+                          <dd class="font-medium text-gray-800">
+                            {{ formatPrice(variant.price) }}
+                          </dd>
+                        </div>
+                      </dl>
+                    </div>
+                  }
+                </div>
+              </section>
+            }
 
             <section class="rounded-2xl border border-gray-200 bg-white/80 backdrop-blur-sm p-5">
               <div class="mb-3 flex items-center justify-between gap-3">

@@ -29,8 +29,12 @@ export interface AuthUser {
   updated_at?: string;
 }
 
+export interface AdminProfile {
+  user: AuthUser;
+  profile: UserProfile | null;
+}
+
 export interface AuthSession {
-  token: string;
   expiresAt: string;
   user: AuthUser;
 }

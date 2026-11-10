@@ -25,4 +25,6 @@ const profileSchema = new mongoose.Schema(
   }
 );
 
+profileSchema.index({ userId: 1, deleted_at: 1 });
+
 module.exports = mongoose.model('Profile', profileSchema);

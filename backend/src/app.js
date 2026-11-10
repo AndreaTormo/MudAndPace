@@ -3,6 +3,7 @@ require('express-async-errors');
 
 const express = require('express');
 const cors = require('cors');
+const cookieParser = require('cookie-parser');
 const helmet = require('helmet');
 const morgan = require('morgan');
 const path = require('path');
@@ -11,15 +12,24 @@ const authRoutes = require('./routes/auth.routes');
 const userRoutes = require('./routes/user.routes');
 const profileRoutes = require('./routes/profile.routes');
 const eventRoutes = require('./routes/event.routes');
+const { router: departureRoutes, eventRouter: eventDepartureRoutes } = require('./routes/departure.routes');
 const referenceRoutes = require('./routes/reference.routes');
+const shopRoutes = require('./routes/shop.routes');
 const validate = require('./middlewares/validate.middleware');
 const errorMiddleware = require('./middlewares/error.middleware');
 
 const app = express();
-const allowedOrigins = process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',').map((origin) => origin.trim()) : true;
+const allowedOrigins = process.env.CORS_ORIGIN
+  ? process.env.CORS_ORIGIN.split(',').map((origin) => origin.trim()).filter(Boolean)
+  : (process.env.NODE_ENV === 'production' ? [] : ['http://localhost:4200']);
+
+if (process.env.NODE_ENV === 'production' && allowedOrigins.length === 0) {
+  throw new Error('CORS_ORIGIN no está definida');
+}
 
 app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
 app.use(cors({ origin: allowedOrigins, credentials: true }));
+app.use(cookieParser());
 app.use(express.json({ limit: '2mb' }));
 app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
 
@@ -28,8 +38,11 @@ app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads'), { maxA
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/users', userRoutes);
 app.use('/api/v1/profile', profileRoutes);
+app.use('/api/v1/events/:eventId/departures', eventDepartureRoutes);
 app.use('/api/v1/events', eventRoutes);
+app.use('/api/v1/departures', departureRoutes);
 app.use('/api/v1/references', referenceRoutes);
+app.use('/api/v1/shop', shopRoutes);
 app.use(validate.notFound);
 app.use(errorMiddleware);
 

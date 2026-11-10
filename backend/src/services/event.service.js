@@ -1,12 +1,71 @@
 const mongoose = require('mongoose');
 const repository = require('../repositories/event.repository');
+const referenceRepository = require('../repositories/reference.repository');
 const eventImageService = require('./eventImage.service');
 const { AppError, normalizeAppError } = require('../utils/appError');
+const { buildMongoFilter, mergeValues } = require('../utils/queryBuilder');
 const { slugify } = require('../utils/slugify');
 const { generateUniqueSku } = require('../utils/sku');
 const {
-  eventPayloadSchema, updateEventSchema, objectIdSchema, slugSchema, listQuerySchema
+  eventPayloadSchema, updateEventSchema, objectIdSchema, slugSchema, listQuerySchema, MIN_EVENT_VARIANTS
 } = require('../validators/event.validator');
+
+const DEFAULT_PAGE = 1;
+const DEFAULT_PAGE_SIZE = 20;
+
+const atLeast = (field) => (value) => ({
+  $or: [
+    { [field]: { $gte: value } },
+    { [`variants.${field}`]: { $gte: value } }
+  ]
+});
+
+const atMost = (field) => (value) => ({
+  $or: [
+    { [field]: { $lte: value } },
+    { [`variants.${field}`]: { $lte: value } }
+  ]
+});
+
+const EVENT_FILTERS = [
+  { param: 'status', build: (value) => ({ status: value }) },
+  { param: 'isActive', build: (value) => ({ isActive: value }) },
+  { param: 'categorySlug', build: (value, context) => ({ categoryId: { $in: context.categoryIds } }) },
+  { param: 'hostSlug', build: (value, context) => ({ hostId: { $in: context.hostIds } }) },
+  { param: 'locationSlug', build: (value, context) => ({ locationId: { $in: context.locationIds } }) },
+  { param: 'difficulty', build: (value) => ({ difficulty: { $in: value } }) },
+  { param: 'surface', build: (value) => ({ surface: { $in: value } }) },
+  { param: 'tags', build: (value) => ({ tags: { $in: value } }) },
+  { param: 'minDistance', build: atLeast('distanceKm') },
+  { param: 'maxDistance', build: atMost('distanceKm') },
+  { param: 'minElevationGain', build: atLeast('elevationGain') },
+  { param: 'maxElevationGain', build: atMost('elevationGain') },
+  { param: 'minPrice', build: atLeast('price') },
+  { param: 'maxPrice', build: atMost('price') },
+  { param: 'fromDate', build: (value) => ({ startDate: { $gte: value } }) },
+  { param: 'toDate', build: (value) => ({ startDate: { $lte: value } }) },
+  { param: 'search', build: (value) => ({ $text: { $search: value } }) }
+];
+
+function normalizeEventQuery(input) {
+  return {
+    ...input,
+    categorySlug: mergeValues(input.categorySlug, input.category_slug),
+    hostSlug: mergeValues(input.hostSlug, input.host_slug),
+    locationSlug: mergeValues(input.locationSlug, input.location_slug),
+    status: input.status === 'all' ? undefined : input.status,
+    isActive: input.isActive !== undefined ? input.isActive : input.is_active
+  };
+}
+
+function paginationMeta(total, page, pageSize) {
+  return {
+    total,
+    page,
+    pageSize,
+    totalPages: total === 0 ? 0 : Math.ceil(total / pageSize)
+  };
+}
 
 function validateService(schema, value) {
   const result = schema.safeParse(value);
@@ -41,8 +100,62 @@ function validateBusinessRules(payload) {
     }
   }
 
+  if (payload.variants !== undefined) {
+    if (!Array.isArray(payload.variants)) {
+      details.push({ path: 'variants', message: 'variants debe ser un array' });
+    } else {
+      payload.variants.forEach((variant, index) => {
+        if (!variant || typeof variant !== 'object') {
+          details.push({ path: `variants.${index}`, message: 'La modalidad no es válida' });
+          return;
+        }
+        if (
+          typeof variant.distanceKm !== 'number' ||
+          !Number.isFinite(variant.distanceKm) ||
+          variant.distanceKm <= 0
+        ) {
+          details.push({
+            path: `variants.${index}.distanceKm`,
+            message: 'distanceKm debe ser un número mayor que 0'
+          });
+        }
+        if (
+          typeof variant.elevationGain !== 'number' ||
+          !Number.isFinite(variant.elevationGain) ||
+          variant.elevationGain < 0
+        ) {
+          details.push({
+            path: `variants.${index}.elevationGain`,
+            message: 'elevationGain debe ser un número mayor o igual que 0'
+          });
+        }
+        if (
+          typeof variant.price !== 'number' ||
+          !Number.isFinite(variant.price) ||
+          variant.price < 0
+        ) {
+          details.push({
+            path: `variants.${index}.price`,
+            message: 'price debe ser un número mayor o igual que 0'
+          });
+        }
+      });
+    }
+  }
+
   if (details.length) throw new AppError('Datos de negocio inválidos', 400, 'VALIDATION_ERROR', details);
   return payload;
+}
+
+function validateVariantsCount(variants) {
+  if (!Array.isArray(variants) || variants.length < MIN_EVENT_VARIANTS) {
+    throw new AppError('Datos de negocio inválidos', 400, 'VALIDATION_ERROR', [
+      {
+        path: 'variants',
+        message: `El evento debe tener al menos ${MIN_EVENT_VARIANTS} modalidades`
+      }
+    ]);
+  }
 }
 
 class EventService {
@@ -76,29 +189,40 @@ class EventService {
 
   async list(query = {}) {
     try {
-      const input = validateService(listQuerySchema, query);
-      const {
-        status, categoryId, locationId, hostId, minDistance, maxDistance, fromDate, toDate, isActive
-      } = input;
+      const input = normalizeEventQuery(validateService(listQuerySchema, query));
+      const page = input.page ?? DEFAULT_PAGE;
+      const pageSize = input.pageSize ?? DEFAULT_PAGE_SIZE;
 
-      const filters = {};
-      if (categoryId) filters.categoryId = categoryId;
-      if (locationId) filters.locationId = locationId;
-      if (hostId) filters.hostId = hostId;
-      if (minDistance !== undefined || maxDistance !== undefined) {
-        filters.distanceKm = {};
-        if (minDistance !== undefined) filters.distanceKm.$gte = minDistance;
-        if (maxDistance !== undefined) filters.distanceKm.$lte = maxDistance;
-      }
-      if (fromDate !== undefined || toDate !== undefined) {
-        filters.startDate = {};
-        if (fromDate !== undefined) filters.startDate.$gte = fromDate;
-        if (toDate !== undefined) filters.startDate.$lte = toDate;
-      }
-      if (isActive !== undefined) filters.isActive = isActive;
-      if (status === 'published' || status === 'draft') filters.status = status;
+      const [categoryIds, hostIds, locationIds] = await Promise.all([
+        input.categorySlug
+          ? referenceRepository.findCategoryIdsBySlugs(input.categorySlug)
+          : null,
+        input.hostSlug
+          ? referenceRepository.findHostIdsBySlugs(input.hostSlug)
+          : null,
+        input.locationSlug
+          ? referenceRepository.findLocationIdsBySlugs(input.locationSlug)
+          : null
+      ]);
 
-      return await repository.findAll(filters);
+      const missingReference = (
+        (input.categorySlug && categoryIds.length === 0) ||
+        (input.hostSlug && hostIds.length === 0) ||
+        (input.locationSlug && locationIds.length === 0)
+      );
+
+      if (missingReference) {
+        return { data: [], pagination: paginationMeta(0, page, pageSize) };
+      }
+
+      const filters = buildMongoFilter(input, EVENT_FILTERS, {
+        categoryIds,
+        hostIds,
+        locationIds
+      });
+      const { data, total } = await repository.findAll(filters, { page, pageSize });
+
+      return { data, pagination: paginationMeta(total, page, pageSize) };
     } catch (error) { throw normalizeAppError(error); }
   }
 
@@ -146,6 +270,7 @@ class EventService {
         deleted_at: null
       };
       validateBusinessRules(payload);
+      validateVariantsCount(payload.variants);
       return await repository.create(payload);
     } catch (error) { throw normalizeAppError(error); }
   }
@@ -178,6 +303,7 @@ class EventService {
       }
 
       validateBusinessRules(payload);
+      validateVariantsCount(payload.variants ?? existing.variants ?? []);
 
       const event = await repository.updateById(id, payload);
       if (!event) throw new AppError('Evento no encontrado', 404, 'EVENT_NOT_FOUND');

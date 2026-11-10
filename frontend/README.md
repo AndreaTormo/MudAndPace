@@ -38,13 +38,6 @@ Los artefactos quedan en `dist/trail_running_frontend_v3/`.
 | --------------- | ---------------------------------------- |
 | `npm start`     | Servidor de desarrollo (`ng serve`)      |
 | `npm run build` | Build de producción (`ng build`)         |
-| `npm test`      | Tests Karma + Jasmine (`ng test`)        |
-
-Tests en `src/app/**/*.spec.ts` (AuthStore, guards e interceptores). Sin Chrome en el sistema:
-
-```bash
-CHROME_BIN="C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe" npx ng test --watch=false --browsers=ChromeHeadless
-```
 
 ## Estructura
 
@@ -109,7 +102,7 @@ reciben inputs/emiten outputs.
 ## Funcionalidades
 
 - Login, registro, verificación de email, reenvío, olvido y reset de contraseña.
-- Perfil editable: nombre, datos personales, avatar y logout.
+- Perfil editable: nombre, datos personales, avatar por URL o subida de foto y logout. El navbar y el perfil reflejan el cambio al instante.
 - Listado de eventos con filtros (estado, categoría, ubicación, distancia, fechas) y búsqueda por ID
   hexadecimal de 24 caracteres.
 - Alta y edición de eventos solo para `ADMIN`. Desde el dashboard solo se editan `name`, `description`,

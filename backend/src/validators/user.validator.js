@@ -1,5 +1,6 @@
 const { z } = require('zod');
 const { profileFields } = require('./profile.validator');
+const { booleanParam, stringParam } = require('./query.validator');
 
 const objectIdSchema = z.string().regex(/^[a-f\d]{24}$/i, 'ID de usuario inválido');
 
@@ -7,6 +8,14 @@ const idParamsSchema = z.object({ id: objectIdSchema });
 
 const statusValues = ['active', 'inactive', 'blocked'];
 const roleValues = ['USER', 'ADMIN'];
+
+const listUserQuerySchema = z.object({
+  search: stringParam(z.string().trim().min(1).max(120)),
+  role: stringParam(z.enum([...roleValues, 'all'])),
+  status: stringParam(z.enum([...statusValues, 'all'])),
+  isActive: booleanParam,
+  is_active: booleanParam
+}).strict();
 
 const passwordSchema = z
   .string()
@@ -51,6 +60,7 @@ module.exports = {
   idParamsSchema,
   updateUserSchema,
   createUserSchema,
+  listUserQuerySchema,
   activationSchema,
   statusValues,
   roleValues

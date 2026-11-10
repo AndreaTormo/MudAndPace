@@ -6,7 +6,16 @@ const birthDateSchema = z.preprocess(emptyToUndefined, z.coerce.date().optional(
 
 const avatarUrlSchema = z.preprocess(
   (value) => (typeof value === 'string' ? value.trim() : value),
-  z.union([z.literal(''), z.string().url('La URL del avatar no es válida').max(500)]).optional()
+  z
+    .union([
+      z.literal(''),
+      z.url({ protocol: /^https?$/i, error: 'La URL del avatar no es válida' }).max(500),
+      z
+        .string()
+        .regex(/^\/uploads\/avatars\/[a-f\d]{24}\/[A-Za-z0-9._-]+$/, 'La URL del avatar no es válida')
+        .max(500)
+    ])
+    .optional()
 );
 
 const profileFields = {

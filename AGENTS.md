@@ -21,17 +21,9 @@ docker compose up -d             # mongo:8 en 27017, volumen mongodb_data
 npm install                      # en frontend/
 npm start                        # ng serve
 npm run build                    # typecheck + build de producción
-npm test                         # ng test (Karma + Jasmine; ver abajo)
 ```
 
-Tests del frontend en `frontend/src/app/**/*.spec.ts` (Karma + Jasmine). Requieren un Chromium; en entornos sin Chrome se puede apuntar a Edge:
-
-```bash
-cd frontend
-CHROME_BIN="C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe" npx ng test --watch=false --browsers=ChromeHeadless
-```
-
-Cobertura actual: `AuthStore` (persistencia/expiración), guards (`auth`, `guest`, `admin`) e interceptores (`auth` y `error`). La verificación del backend sigue siendo manual contra la API.
+La verificación es manual contra la API y la app; no hay tests automatizados.
 
 ## Base de datos y seed
 
@@ -44,22 +36,11 @@ npm run seed
 
 - Es destructivo para hosts, categorías, ubicaciones, eventos, experiencias e imágenes: ejecuta `deleteMany` y vuelve a insertar los datos de ejemplo.
 - No borra usuarios ni perfiles. Los usuarios demo se actualizan por email con `upsert`.
-- Deja 1 host, 2 categorías, 12 ubicaciones, 12 eventos, 1 experiencia y 1 imagen de experiencia.
+- Deja 1 host, 2 categorías, 13 ubicaciones, 12 eventos, 1 experiencia y 1 imagen de experiencia.
+- Todos los eventos del seed incluyen al menos 3 modalidades en `variants`. `UTMB Mont-Blanc 2027` usa `OCC`, `CCC` y `UTMB`; `Val d'Aran by UTMB 2027` usa `20K`, `50K` y `100K`; el resto usa distancias adaptadas a su tipo de carrera.
 - Los eventos requieren `sku` único; ya está incluido en el seed. Si se añade un evento al seed sin `sku`, Mongoose falla con `Event validation failed: sku: Path \`sku\` is required.`
 - Un volumen Docker nuevo queda vacío hasta ejecutar `npm run seed`.
 - Si el frontend muestra menos eventos de los esperados, comprueba `db.events.countDocuments({})` en MongoDB.
-
-Variables relevantes en `backend/.env`:
-
-```env
-MONGODB_URI=mongodb://localhost:27017/trail_running
-JWT_SECRET=change-me-with-a-long-random-secret
-JWT_EXPIRES_IN=1h
-APP_URL=http://localhost:4200
-CORS_ORIGIN=http://localhost:3000,http://localhost:4200
-```
-
-`JWT_SECRET` es obligatorio: `app.js` no arranca sin él.
 
 ## Arquitectura de la API
 
@@ -70,6 +51,7 @@ Flujo fijo: `routes/ → controllers/ → services/ → repositories/ → models
 - `express-async-errors` está importado en `app.js`.
 - Validación doble: `validate.middleware.js` (body/params/query) y de nuevo en el servicio. Ambos deben actualizarse para un campo nuevo.
 - Los esquemas Zod son `.strict()`: cualquier clave desconocida devuelve 400 `VALIDATION_ERROR`.
+- Los query params se validan con `validators/query.validator.js` y se convierten a filtros Mongo con `utils/queryBuilder.js`. Los valores vacíos se ignoran; los filtros se combinan con `$and`. Los servicios pueden reutilizar `utils/userQuery.js` para usuarios/perfiles.
 - Los errores de auth y permisos usan mensajes en inglés; el frontend los traduce al español.
 
 ### Autenticación y autorización
@@ -110,8 +92,10 @@ Endpoints de perfil (`/api/v1/profile`, requieren autenticación):
 
 | Método | Endpoint | Acceso |
 |---|---|---|
+| GET | `/` | Solo `ADMIN` (listado de usuarios con su perfil) |
 | GET | `/me` | Autenticado |
 | PATCH | `/me` | Autenticado |
+| POST | `/me/avatar` | Autenticado (multipart, campo `avatar`; JPG/PNG/WebP, 5 MB) |
 | GET | `/:userId` | El propio usuario o `ADMIN` |
 | PATCH | `/:userId` | El propio usuario o `ADMIN` |
 
@@ -128,7 +112,9 @@ Endpoints de eventos (`/api/v1/events`, requieren autenticación):
 | DELETE | `/:id`, `/:id/permanent` | Solo `ADMIN` |
 | POST/PATCH/DELETE | `/:id/images/*` | Solo `ADMIN` |
 
-Referencias (`/api/v1/references/categories`, `/locations`, `/hosts`) requieren autenticación.
+`GET /events` acepta filtros combinables por `categorySlug`, `hostSlug`, `locationSlug` (y alias `*_slug`), `status`, `isActive`, `difficulty`, `surface`, `tags`, `minDistance`, `maxDistance`, `minElevationGain`, `maxElevationGain`, `minPrice`, `maxPrice`, `fromDate`, `toDate` y `search`. La paginación es explícita con `page` y `pageSize` (máximo 100); la respuesta mantiene `data` como array y añade `pagination: { total, page, pageSize, totalPages }`.
+
+Referencias (`/api/v1/references/categories`, `/locations`, `/hosts`) requieren autenticación. Aceptan `search`, `slug`, `status`, `isActive` e `is_active`; ubicaciones además `city` y `country`. Los listados de usuarios y perfiles aceptan `search`, `role`, `status`, `isActive` e `is_active`.
 
 ### Papelera (borrado lógico)
 
@@ -142,11 +128,13 @@ Referencias (`/api/v1/references/categories`, `/locations`, `/hosts`) requieren 
 
 ### Convenciones de la API
 
-- `slug` único e indexado. Operaciones internas por ID, no por slug.
+- `slug` único (índice único parcial con `deleted_at: null`) e indexado. Operaciones internas por ID, no por slug.
 - Timestamps: `created_At` / `updated_at` (con mayúscula en `created_At`, no es un error). `versionKey: false`.
 - Índice `2dsphere` en `coordinates` de `Location` (mapa de ubicación).
+- `connectDatabase()` ejecuta `ensureIndexes()`; los índices compuestos cubren los filtros de home/listados y hay índices de texto para búsquedas de eventos, categorías, hosts y ubicaciones.
 - `status: published/draft` (eventos) es un dominio separado del borrado.
 - `sku` de eventos es obligatorio y único.
+- `variants` es un array embebido en `Event`; cada modalidad tiene `name`, `distanceKm`, `elevationGain` y `price`. Es obligatorio y debe tener al menos 3 elementos. No hay colección ni endpoints propios.
 
 ## Arquitectura del frontend
 
@@ -165,12 +153,13 @@ Página → Store (signals) → Service (único que conoce la URL) → `ApiServi
 - `/auth` → `AuthLayout` con login y registro.
 - `/` → `MainLayout` protegido por `authGuard`; redirige a `/events`.
 - `/profile` → perfil del usuario autenticado.
+- `/admin/profiles` → listado de perfiles para `ADMIN`, protegido por `adminGuard`.
 - `/events` → lista; `/events/:id` → detalle; `/events/create`, `/events/:id/edit` y `/events/trash` protegidos por `adminGuard`.
 - `guestGuard` evita que un usuario autenticado vuelva a login/registro/olvido.
 
 ### UI por rol
 
-- `navbar` y `sidebar` leen `AuthStore`; solo muestran crear evento, papelera y sección de administración a `ADMIN`.
+- `navbar` y `sidebar` leen `AuthStore`; solo muestran perfiles de usuarios, crear evento, papelera y sección de administración a `ADMIN`.
 - `event-row` recibe `canManage`; las acciones de administración no se renderizan para `USER`.
 - `event-list` y `event-detail` ocultan crear/editar/eliminar/activar para `USER`.
 - La autorización real siempre está en la API; el ocultado de UI es solo experiencia de usuario.
@@ -179,24 +168,27 @@ Página → Store (signals) → Service (único que conoce la URL) → `ApiServi
 
 - Módulo único de contenido. El antiguo módulo `trailRoute` (rutas) se eliminó y sus campos propios (`difficulty`, `surface`, `tags`, `elevationLossM`, `gpxUrl`) se migraron al modelo `Event`.
 - `buildUniqueSlug(name, excludeId)` en `event.service.js` deriva el slug del nombre con `utils/slugify.js` y resuelve colisiones con sufijos `-2`, `-3`… En `update` se ignora el propio evento.
-- Reglas de negocio numéricas: `distanceKm > 0`, `elevationGain >= 0`, `price >= 0`.
-- Edición desde el dashboard (`/events/:id/edit`): el formulario solo permite modificar `name`, `description`, `categoryId`, `locationId`, `distanceKm` y `elevationGain`. El resto de campos se conservan (actualización parcial).
+- Reglas de negocio numéricas: `distanceKm > 0`, `elevationGain >= 0`, `price >= 0`; se aplican también a cada elemento de `variants`. El evento debe tener al menos 3 modalidades, también al actualizar sin enviar `variants`.
+- Las modalidades se gestionan dentro del formulario de evento y se muestran en el detalle; el listado resume sus nombres. Los filtros de distancia consideran tanto la distancia principal como las modalidades.
+- Edición desde el dashboard (`/events/:id/edit`): el formulario solo permite modificar `name`, `description`, `categoryId`, `locationId`, `distanceKm`, `elevationGain` y `variants`. El resto de campos se conservan (actualización parcial).
 - `slugify` vive en `src/utils/slugify.js`; `utils/appError.js` lo reexporta por compatibilidad.
 - No se implementa módulo `Experience` ni reservas.
 
 ### Perfil, roles y sesiones
 
 - `profile.service.js` recibe `userId` (nunca `req`); el controller lo obtiene de `req.user.id`.
+- `GET /profile` es solo `ADMIN` y devuelve todos los usuarios no borrados con su perfil asociado (`profile: null` si no existe).
 - `/profile/me` (GET/PATCH) opera sobre el usuario autenticado; `/profile/:userId` exige self o `ADMIN`.
-- Campos del perfil: `firstName`, `lastName`, `phone`, `avatarUrl`, `city`, `country`, `birthDate`. El avatar es una URL opcional; si falta, la UI muestra la inicial del nombre.
+- Campos del perfil: `firstName`, `lastName`, `phone`, `avatarUrl`, `city`, `country`, `birthDate`. El avatar admite una URL externa o una imagen subida con `POST /profile/me/avatar`, que se guarda en `/uploads/avatars/<userId>/`. Si falta o no carga, la UI muestra la inicial del nombre.
+- El navbar y la cabecera de `/profile` leen `AuthStore.user`; al subir o cambiar el avatar se actualizan al instante, sin recargar la página.
 - `User.role` es un enum simple (`USER`/`ADMIN`); no existe colección ni módulo `Role`.
 - El login crea un documento en `sessions` con `jti`, `tokenHash` (SHA-256), `expiresAt`, `ip` y `userAgent`; el logout lo revoca y `authenticate` exige sesión activa.
 - El registro (`POST /users/register`) crea usuario + perfil. `auth.service.js` contiene `login`, `logout` y `me`.
 - Un usuario con soft-delete conserva su perfil (también soft-delete) y sus sesiones se revocan.
 
-### Listados sin límite
+### Listados y paginación
 
-No introducir límites fijos (`limit`, `slice`, etc.) en los listados. Si se añade paginación en el futuro, debe ser explícita (`page`/`pageSize` + total) y no ocultar elementos silenciosamente.
+`GET /events` usa paginación explícita (`page`/`pageSize` + `pagination.total`) con `pageSize` máximo 100. El resto de listados (referencias, usuarios y perfiles) se devuelven completos. No introducir límites fijos (`limit`, `slice`, etc.) que oculten elementos silenciosamente.
 
 ## Convenios
 

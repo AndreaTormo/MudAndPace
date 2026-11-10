@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { Observable, map } from 'rxjs';
 import { ApiResponse } from '../models/api.model';
 import {
+  AdminProfile,
   AuthUser,
   UpdateProfilePayload,
   UpdateUserPayload,
@@ -25,6 +26,12 @@ export class UserService {
       .pipe(map((response) => response.data));
   }
 
+  getAllProfiles(): Observable<AdminProfile[]> {
+    return this.api
+      .get<ApiResponse<AdminProfile[]>>('profile')
+      .pipe(map((response) => response.data));
+  }
+
   getProfile(): Observable<UserProfile> {
     return this.api
       .get<ApiResponse<UserProfile>>('profile/me')
@@ -34,6 +41,15 @@ export class UserService {
   updateProfile(payload: UpdateProfilePayload): Observable<UserProfile> {
     return this.api
       .patch<ApiResponse<UserProfile>>('profile/me', payload)
+      .pipe(map((response) => response.data));
+  }
+
+  uploadAvatar(file: File): Observable<UserProfile> {
+    const body = new FormData();
+    body.append('avatar', file);
+
+    return this.api
+      .postFormData<ApiResponse<UserProfile>>('profile/me/avatar', body)
       .pipe(map((response) => response.data));
   }
 

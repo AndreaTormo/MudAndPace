@@ -2,18 +2,22 @@ const mongoose = require('mongoose');
 const userRepository = require('../repositories/user.repository');
 const sessionRepository = require('../repositories/session.repository');
 const { AppError } = require('../utils/appError');
+const { ACCESS_COOKIE_NAME, clearAccessCookieOptions } = require('../utils/authCookie');
 const { verifyAccessToken, normalizeRole } = require('../utils/jwt');
 
 async function authenticate(req, res, next) {
   try {
+    const cookieToken = req.cookies?.[ACCESS_COOKIE_NAME];
     const header = req.headers.authorization || '';
     const match = header.match(/^Bearer\s+(.+)$/i);
+    const token = typeof cookieToken === 'string' && cookieToken.trim()
+      ? cookieToken.trim()
+      : (match ? match[1].trim() : null);
 
-    if (!match) {
+    if (!token) {
       throw new AppError('Authentication required', 401, 'AUTHENTICATION_REQUIRED');
     }
 
-    const token = match[1].trim();
     const payload = verifyAccessToken(token);
 
     if (!payload.sub || !mongoose.isValidObjectId(payload.sub) || !payload.jti) {
@@ -46,10 +50,17 @@ async function authenticate(req, res, next) {
       status: user.status,
       tokenVersion: user.tokenVersion
     };
-    req.auth = { jti: payload.jti, token };
+    req.auth = {
+      jti: payload.jti,
+      token,
+      source: typeof cookieToken === 'string' && cookieToken.trim() ? 'cookie' : 'bearer'
+    };
 
     next();
   } catch (error) {
+    if (req.cookies?.[ACCESS_COOKIE_NAME]) {
+      res.clearCookie(ACCESS_COOKIE_NAME, clearAccessCookieOptions());
+    }
     next(error);
   }
 }

@@ -4,21 +4,7 @@ const NOT_DELETED = { deleted_at: null };
 
 class UserRepository {
   async findAll(filters = {}) {
-    const query = { ...NOT_DELETED };
-
-    if (typeof filters.isActive === 'boolean') {
-      query.isActive = filters.isActive;
-    }
-
-    if (filters.status) {
-      query.status = filters.status;
-    }
-
-    if (filters.role) {
-      query.role = filters.role;
-    }
-
-    return User.find(query).sort({ created_At: -1 });
+    return User.find({ ...NOT_DELETED, ...filters }).sort({ created_At: -1 });
   }
 
   async findByEmail(email, options = {}) {

@@ -35,6 +35,7 @@ src/
 │   ├── event.repository.js
 │   ├── eventImage.repository.js
 │   ├── profile.repository.js
+│   ├── reference.repository.js
 │   └── user.repository.js
 ├── routes/
 │   ├── auth.routes.js
@@ -54,14 +55,18 @@ src/
 │   ├── appError.js
 │   ├── jwt.js
 │   ├── publicUser.js
+│   ├── queryBuilder.js
 │   ├── sku.js
 │   ├── slugify.js
 │   ├── token.js
+│   ├── userQuery.js
 │   └── validation.js
 ├── validators/
 │   ├── auth.validator.js
 │   ├── event.validator.js
 │   ├── profile.validator.js
+│   ├── query.validator.js
+│   ├── reference.validator.js
 │   └── user.validator.js
 ├── app.js
 └── seed.js
@@ -122,7 +127,7 @@ El seed está en `src/config/database.js` y se ejecuta con:
 npm run seed
 ```
 
-- Repuebla hosts (1), categorías (2), ubicaciones (12), eventos (12), experiencias (1) e imágenes.
+- Repuebla hosts (1), categorías (2), ubicaciones (13), eventos (12), experiencias (1) e imágenes.
 - Es destructivo para ese contenido: elimina y vuelve a insertar.
 - No borra usuarios ni perfiles; los actualiza por email con `upsert`.
 - Crea tres usuarios demo verificados (las contraseñas se generan al ejecutar el seed): 
@@ -168,6 +173,18 @@ Los eventos requieren `sku` único; los datos del seed ya lo incluyen.
 
 No existe `GET /me`; el frontend usa el `_id` devuelto en login.
 
+### Perfil (`/api/v1/profile`, autenticado)
+
+| Método | Endpoint | Acceso / Descripción |
+|---|---|---|
+| GET | `/me` | Perfil del usuario autenticado |
+| PATCH | `/me` | Actualiza el perfil del usuario autenticado |
+| POST | `/me/avatar` | Sube avatar (multipart, campo `avatar`; JPG/PNG/WebP, 5 MB) |
+| GET | `/:userId` | Propio usuario o `ADMIN` |
+| PATCH | `/:userId` | Propio usuario o `ADMIN` |
+
+El avatar se guarda en `uploads/avatars/<userId>/` y se sirve desde `/uploads`.
+
 ### Eventos (`/api/v1/events`, autenticado)
 
 | Método | Endpoint | Acceso / Descripción |
@@ -189,16 +206,51 @@ No existe `GET /me`; el frontend usa el `_id` devuelto en login.
 | PATCH | `/:id/images/:imageId/cover` | Solo `ADMIN`; marca portada |
 | DELETE | `/:id/images/:imageId` | Solo `ADMIN`; elimina imagen |
 
-Filtros de listado: `status` (`published`, `draft`, `all`), `categoryId`, `locationId`, `hostId`,
-`minDistance`, `maxDistance`, `fromDate`, `toDate`, `isActive`.
+Filtros de listado (todos opcionales y combinables):
+
+| Query param | Valores / ejemplo | Descripción |
+|---|---|---|
+| `categorySlug` | `ultra-trail` o `ultra-trail,trail` | Categoría por slug; acepta alias `category_slug` |
+| `hostSlug` | `trail-muntanya-sccp` | Organizador por slug; acepta alias `host_slug` |
+| `locationSlug` | `chamonix` | Ubicación por slug; acepta alias `location_slug` |
+| `status` | `published`, `draft`, `all` | Estado del evento |
+| `isActive` | `true` / `false` | Activo/inactivo; acepta alias `is_active` |
+| `difficulty` | `hard,expert` | Dificultad; admite varios valores |
+| `surface` | `trail,rock` | Superficie; admite varios valores |
+| `tags` | `pirineos,utmb` | Etiquetas; admite varios valores |
+| `minDistance` / `maxDistance` | `20` / `100` | Distancia principal o de cualquier modalidad |
+| `minElevationGain` / `maxElevationGain` | `1000` / `5000` | Desnivel positivo |
+| `minPrice` / `maxPrice` | `30` / `200` | Precio del evento o de cualquier modalidad |
+| `fromDate` / `toDate` | `2027-01-01` / `2027-12-31` | Rango de fecha de inicio |
+| `search` | `UTMB` | Búsqueda de texto |
+| `page` | `1` | Página; por defecto `1` |
+| `pageSize` | `20` | Tamaño de página; por defecto `20`, máximo `100` |
+
+Los valores vacíos se ignoran y cualquier parámetro desconocido devuelve `400 VALIDATION_ERROR`.
+La respuesta mantiene `data` como array y añade `pagination: { total, page, pageSize, totalPages }`.
 
 ### Referencias (`/api/v1/references`, autenticado)
 
 | Método | Endpoint | Descripción |
 |---|---|---|
-| GET | `/categories` | Lista categorías activas |
-| GET | `/locations` | Lista ubicaciones activas |
-| GET | `/hosts` | Lista organizadores activos |
+| GET | `/categories` | Lista categorías activas; filtros `search`, `slug`, `status`, `isActive` |
+| GET | `/locations` | Lista ubicaciones activas; filtros `search`, `slug`, `city`, `country`, `status`, `isActive` |
+| GET | `/hosts` | Lista organizadores activos; filtros `search`, `slug`, `status`, `isActive` |
+
+Los listados de referencias mantienen el comportamiento activo por defecto, pero permiten consultar
+inactivos mediante `isActive=false` o `status=inactive`.
+
+### Usuarios y perfiles
+
+`GET /api/v1/users` y `GET /api/v1/profile` (solo `ADMIN`) aceptan `search`, `role`, `status`,
+`isActive` e `is_active`. Los listados no están paginados.
+
+### Índices
+
+`connectDatabase()` ejecuta `ensureIndexes()` para los modelos principales. Los índices compuestos
+cubren los filtros de eventos por fecha, categoría, host, ubicación, estado, distancia, precio y
+dificultad, además de índices de texto para las búsquedas de eventos, categorías, hosts y
+ubicaciones.
 
 ### Health
 

@@ -1,4 +1,9 @@
 const service = require('../services/auth.service');
+const {
+  ACCESS_COOKIE_NAME,
+  accessCookieOptions,
+  clearAccessCookieOptions
+} = require('../utils/authCookie');
 
 class AuthController {
   async login(req, res, next) {
@@ -7,6 +12,8 @@ class AuthController {
         ip: req.ip,
         userAgent: req.get('user-agent')
       });
+
+      res.cookie(ACCESS_COOKIE_NAME, session.token, accessCookieOptions(session.expiresAt));
 
       return res.status(200).json({
         success: true,
@@ -21,12 +28,14 @@ class AuthController {
   async logout(req, res, next) {
     try {
       const result = await service.logout(req.auth?.jti);
+      res.clearCookie(ACCESS_COOKIE_NAME, clearAccessCookieOptions());
 
       return res.status(200).json({
         success: true,
         message: result.message
       });
     } catch (error) {
+      res.clearCookie(ACCESS_COOKIE_NAME, clearAccessCookieOptions());
       return next(error);
     }
   }

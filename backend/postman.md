@@ -233,11 +233,16 @@ Filtros disponibles: `status` (`published`, `draft`, `all`), `categoryId`, `loca
   "distanceKm": 42,
   "elevationGain": 2500,
   "price": 50,
+  "variants": [
+    { "name": "20K", "distanceKm": 20, "elevationGain": 1200, "price": 35 },
+    { "name": "50K", "distanceKm": 50, "elevationGain": 2800, "price": 65 },
+    { "name": "100K", "distanceKm": 100, "elevationGain": 5200, "price": 110 }
+  ],
   "status": "draft"
 }
 ```
 
-Guarda el `_id` devuelto en `eventId`.
+`variants` es obligatorio, se guarda dentro del evento y debe tener al menos 3 modalidades. Guarda el `_id` devuelto en `eventId`.
 
 ### Actualizar (solo ADMIN)
 

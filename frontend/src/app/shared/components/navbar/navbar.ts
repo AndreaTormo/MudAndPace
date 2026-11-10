@@ -1,13 +1,14 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { AuthStore } from '../../../core/stores/auth.store';
+import { UserAvatar } from '../user-avatar/user-avatar';
 
 @Component({
   selector: 'app-navbar',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, RouterLinkActive],
+  imports: [RouterLink, RouterLinkActive, UserAvatar],
   template: `
     <header class="sticky top-0 z-40 border-b border-gray-200 bg-white/90 backdrop-blur">
       <nav
@@ -34,7 +35,21 @@ import { AuthStore } from '../../../core/stores/auth.store';
           >
             Eventos
           </a>
+          <a
+            routerLink="/shop"
+            routerLinkActive="text-brand"
+            class="rounded-full px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100 hover:text-gray-900"
+          >
+            Shop
+          </a>
           @if (isAdmin()) {
+            <a
+              routerLink="/admin/profiles"
+              routerLinkActive="text-brand"
+              class="rounded-full px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100 hover:text-gray-900"
+            >
+              Perfiles
+            </a>
             <a routerLink="/events/create" class="button-primary">+ Nuevo evento</a>
           }
           @if (user(); as currentUser) {
@@ -44,12 +59,10 @@ import { AuthStore } from '../../../core/stores/auth.store';
               class="flex items-center gap-2 rounded-full px-2 py-1.5 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100"
               [attr.aria-label]="'Ver perfil de ' + currentUser.name"
             >
-              <span
-                class="grid h-8 w-8 place-items-center rounded-full bg-brand text-xs font-bold text-white"
-                aria-hidden="true"
-              >
-                {{ initial() }}
-              </span>
+              <app-user-avatar
+                [name]="currentUser.name"
+                [avatarUrl]="currentUser.profile?.avatarUrl ?? null"
+              />
               <span class="hidden max-w-[9rem] truncate md:inline">{{ currentUser.name }}</span>
               @if (isAdmin()) {
                 <span class="badge bg-brand/10 text-brand">Admin</span>
@@ -106,9 +119,15 @@ import { AuthStore } from '../../../core/stores/auth.store';
       @if (menuOpen()) {
         <div id="mobile-menu" class="space-y-1 border-t border-gray-100 px-4 py-3 sm:hidden">
           @if (user(); as currentUser) {
-            <div class="mb-3 rounded-xl bg-gray-50 px-3 py-2">
-              <p class="truncate text-sm font-semibold text-gray-900">{{ currentUser.name }}</p>
-              <p class="truncate text-xs text-gray-500">{{ currentUser.email }}</p>
+            <div class="mb-3 flex items-center gap-3 rounded-xl bg-gray-50 px-3 py-2">
+              <app-user-avatar
+                [name]="currentUser.name"
+                [avatarUrl]="currentUser.profile?.avatarUrl ?? null"
+              />
+              <div class="min-w-0">
+                <p class="truncate text-sm font-semibold text-gray-900">{{ currentUser.name }}</p>
+                <p class="truncate text-xs text-gray-500">{{ currentUser.email }}</p>
+              </div>
             </div>
           }
           <a
@@ -120,7 +139,23 @@ import { AuthStore } from '../../../core/stores/auth.store';
           >
             Eventos
           </a>
+          <a
+            routerLink="/shop"
+            routerLinkActive="bg-gray-100 text-brand"
+            class="block rounded-lg px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100"
+            (click)="menuOpen.set(false)"
+          >
+            Shop
+          </a>
           @if (isAdmin()) {
+            <a
+              routerLink="/admin/profiles"
+              routerLinkActive="bg-gray-100 text-brand"
+              class="block rounded-lg px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100"
+              (click)="menuOpen.set(false)"
+            >
+              Perfiles de usuarios
+            </a>
             <a
               routerLink="/events/create"
               routerLinkActive="bg-gray-100 text-brand"
@@ -165,10 +200,6 @@ export class Navbar {
   protected readonly menuOpen = signal(false);
   protected readonly user = this.auth.user;
   protected readonly isAdmin = this.auth.isAdmin;
-  protected readonly initial = computed(() => {
-    const name = this.user()?.name?.trim();
-    return name ? name.charAt(0).toUpperCase() : '?';
-  });
 
   protected async logout(): Promise<void> {
     this.menuOpen.set(false);

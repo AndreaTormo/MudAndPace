@@ -4,16 +4,20 @@ export type Difficulty = 'easy' | 'moderate' | 'hard' | 'expert';
 
 export type Surface = 'trail' | 'rock' | 'dirt' | 'gravel' | 'asphalt' | 'mixed';
 
+export const MIN_EVENT_VARIANTS = 3;
+
 export interface EventHost {
   _id: string;
   name: string;
   slug: string;
+  imageUrl?: string;
 }
 
 export interface EventCategory {
   _id: string;
   name: string;
   slug: string;
+  imageUrl?: string;
 }
 
 export interface EventLocation {
@@ -22,6 +26,29 @@ export interface EventLocation {
   slug: string;
   city?: string;
   coordinates?: [number, number] | null;
+  imageUrl?: string;
+}
+
+export interface EventVariant {
+  _id?: string;
+  name: string;
+  distanceKm: number;
+  elevationGain: number;
+  price: number;
+}
+
+export interface EventVariantPayload {
+  name: string;
+  distanceKm: number;
+  elevationGain: number;
+  price: number;
+}
+
+export interface EventVariantFormValue {
+  name: string;
+  distanceKm: number | null;
+  elevationGain: number | null;
+  price: number | null;
 }
 
 export interface EventImage {
@@ -57,6 +84,7 @@ export interface Event {
   tags?: string[];
   gpxUrl?: string;
   price: number;
+  variants?: EventVariant[];
   status: EventStatus;
   isActive: boolean;
   deleted_at?: string | null;
@@ -84,6 +112,7 @@ export interface EventPayload {
   tags?: string[];
   gpxUrl?: string;
   price: number;
+  variants: EventVariantPayload[];
   status?: EventStatus;
   isActive?: boolean;
 }
@@ -95,6 +124,7 @@ export interface EventEditPayload {
   locationId: string;
   distanceKm: number;
   elevationGain: number;
+  variants: EventVariantPayload[];
 }
 
 export interface EventFilters {
@@ -119,6 +149,7 @@ export interface EventFormValue {
   distanceKm: number | null;
   elevationGain: number | null;
   price: number | null;
+  variants: EventVariantFormValue[];
   status: EventStatus;
   isActive: boolean;
 }

@@ -29,25 +29,7 @@ class UserController {
 
   async getAll(req, res, next) {
     try {
-      const filters = {};
-
-      if (typeof req.query.is_active !== 'undefined') {
-        filters.isActive = req.query.is_active === 'true';
-      }
-
-      if (typeof req.query.isActive !== 'undefined') {
-        filters.isActive = req.query.isActive === 'true';
-      }
-
-      if (req.query.status) {
-        filters.status = req.query.status;
-      }
-
-      if (req.query.role) {
-        filters.role = req.query.role;
-      }
-
-      const users = await userService.getAllUsers(filters);
+      const users = await userService.getAllUsers(req.query);
 
       return res.status(200).json({
         success: true,

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { forkJoin, firstValueFrom } from 'rxjs';
@@ -6,13 +6,17 @@ import Swal from 'sweetalert2';
 import { UpdateProfilePayload } from '../../core/models/auth.model';
 import { AuthStore } from '../../core/stores/auth.store';
 import { UserService } from '../../core/services/user.service';
+import { UserAvatar } from '../../shared/components/user-avatar/user-avatar';
 import { isHttpError, showUnexpectedError } from '../../shared/utils/error.util';
+
+const MAX_AVATAR_SIZE = 5 * 1024 * 1024;
+const AVATAR_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
 
 @Component({
   selector: 'app-profile-page',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, UserAvatar],
   template: `
     <div class="mx-auto max-w-3xl px-4 py-8 sm:px-6 lg:px-8">
       <div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -26,12 +30,11 @@ import { isHttpError, showUnexpectedError } from '../../shared/utils/error.util'
       @if (user(); as currentUser) {
         <section class="glass-panel mb-6 rounded-2xl p-5">
           <div class="flex flex-col gap-4 sm:flex-row sm:items-center">
-            <div
-              class="grid h-16 w-16 shrink-0 place-items-center rounded-2xl bg-brand text-2xl font-bold text-white"
-              aria-hidden="true"
-            >
-              {{ initial() }}
-            </div>
+            <app-user-avatar
+              size="lg"
+              [name]="currentUser.name"
+              [avatarUrl]="currentUser.profile?.avatarUrl ?? null"
+            />
             <div class="min-w-0 flex-1">
               <p class="truncate text-lg font-semibold text-gray-900">{{ currentUser.name }}</p>
               <p class="truncate text-sm text-gray-500">{{ currentUser.email }}</p>
@@ -164,6 +167,29 @@ import { isHttpError, showUnexpectedError } from '../../shared/utils/error.util'
                 <p class="form-error">Introduce una URL válida o deja el campo vacío.</p>
               }
             </div>
+            <div class="mt-6 rounded-xl border border-dashed border-gray-300 p-4">
+              <p class="text-sm font-semibold text-gray-900">Subir foto</p>
+              <p class="mt-1 text-xs text-gray-500">JPG, PNG o WebP. Máximo 5 MB.</p>
+              <div class="mt-3 flex flex-wrap items-center gap-3">
+                <label
+                  class="button-secondary cursor-pointer"
+                  [class.pointer-events-none]="uploadingAvatar()"
+                  [class.opacity-60]="uploadingAvatar()"
+                >
+                  {{ uploadingAvatar() ? 'Subiendo...' : 'Seleccionar foto' }}
+                  <input
+                    type="file"
+                    class="hidden"
+                    accept="image/jpeg,image/png,image/webp"
+                    [disabled]="uploadingAvatar()"
+                    (change)="onAvatarSelected($event)"
+                  />
+                </label>
+                @if (avatarError(); as message) {
+                  <p class="text-sm text-red-600" role="alert">{{ message }}</p>
+                }
+              </div>
+            </div>
           </section>
 
           @if (errorMessage(); as message) {
@@ -173,7 +199,11 @@ import { isHttpError, showUnexpectedError } from '../../shared/utils/error.util'
           }
 
           <div class="flex justify-end">
-            <button type="submit" class="button-primary" [disabled]="saving()">
+            <button
+              type="submit"
+              class="button-primary"
+              [disabled]="saving() || uploadingAvatar()"
+            >
               {{ saving() ? 'Guardando...' : 'Guardar cambios' }}
             </button>
           </div>
@@ -190,11 +220,10 @@ export class ProfilePage implements OnInit {
 
   protected readonly user = this.auth.user;
   protected readonly saving = signal(false);
+  protected readonly uploadingAvatar = signal(false);
   protected readonly errorMessage = signal<string | null>(null);
-  protected readonly initial = computed(() => {
-    const name = this.user()?.name?.trim();
-    return name ? name.charAt(0).toUpperCase() : '?';
-  });
+  protected readonly avatarError = signal<string | null>(null);
+  private profileLoadId = 0;
 
   protected readonly form = this.fb.nonNullable.group({
     name: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(120)]],
@@ -204,7 +233,14 @@ export class ProfilePage implements OnInit {
     birthDate: [''],
     city: ['', [Validators.maxLength(120)]],
     country: ['', [Validators.maxLength(120)]],
-    avatarUrl: ['', [Validators.pattern(/^$|^https?:\/\/.+/)]]
+    avatarUrl: [
+      '',
+      [
+        Validators.pattern(
+          /^$|^https?:\/\/[^\s]+$|^\/uploads\/avatars\/[a-f\d]{24}\/[A-Za-z0-9._-]+$/
+        )
+      ]
+    ]
   });
 
   ngOnInit(): void {
@@ -215,10 +251,13 @@ export class ProfilePage implements OnInit {
     const currentUser = this.user();
     if (!currentUser) return;
 
+    const loadId = ++this.profileLoadId;
     this.form.controls.name.setValue(currentUser.name);
 
     try {
       const profile = await firstValueFrom(this.users.getProfile());
+      if (loadId !== this.profileLoadId) return;
+
       this.form.patchValue({
         firstName: profile.firstName ?? '',
         lastName: profile.lastName ?? '',
@@ -228,7 +267,7 @@ export class ProfilePage implements OnInit {
         country: profile.country ?? '',
         avatarUrl: profile.avatarUrl ?? ''
       });
-      this.auth.updateUser({ ...currentUser, profile });
+      this.auth.updateUser({ ...(this.user() ?? currentUser), profile });
     } catch (error) {
       if (!isHttpError(error)) {
         showUnexpectedError(error);
@@ -237,7 +276,7 @@ export class ProfilePage implements OnInit {
   }
 
   protected async onSubmit(): Promise<void> {
-    if (this.saving()) return;
+    if (this.saving() || this.uploadingAvatar()) return;
 
     const currentUser = this.user();
     if (!currentUser) return;
@@ -260,6 +299,7 @@ export class ProfilePage implements OnInit {
 
     this.saving.set(true);
     this.errorMessage.set(null);
+    this.profileLoadId += 1;
 
     try {
       const [updatedUser, updatedProfile] = await firstValueFrom(
@@ -281,6 +321,53 @@ export class ProfilePage implements OnInit {
       }
     } finally {
       this.saving.set(false);
+    }
+  }
+
+  protected async onAvatarSelected(event: Event): Promise<void> {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = '';
+
+    if (!file || this.uploadingAvatar() || this.saving()) return;
+
+    this.avatarError.set(null);
+
+    if (!AVATAR_TYPES.has(file.type)) {
+      this.avatarError.set('Formato no válido. Usa JPG, PNG o WebP.');
+      return;
+    }
+
+    if (file.size > MAX_AVATAR_SIZE) {
+      this.avatarError.set('La imagen no puede superar los 5 MB.');
+      return;
+    }
+
+    const currentUser = this.user();
+    if (!currentUser) return;
+
+    this.uploadingAvatar.set(true);
+    this.profileLoadId += 1;
+
+    try {
+      const updatedProfile = await firstValueFrom(this.users.uploadAvatar(file));
+      this.auth.updateUser({
+        ...(this.user() ?? currentUser),
+        profile: updatedProfile
+      });
+      this.form.controls.avatarUrl.setValue(updatedProfile.avatarUrl ?? '');
+      void Swal.fire({
+        icon: 'success',
+        title: 'Avatar actualizado',
+        timer: 1500,
+        showConfirmButton: false
+      });
+    } catch (error) {
+      if (!isHttpError(error)) {
+        this.avatarError.set('No se pudo subir la foto. Inténtalo de nuevo.');
+      }
+    } finally {
+      this.uploadingAvatar.set(false);
     }
   }
 

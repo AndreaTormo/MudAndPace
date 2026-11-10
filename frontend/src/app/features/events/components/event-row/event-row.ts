@@ -34,6 +34,11 @@ import { formatDate, formatDistance, formatElevation, formatPrice } from '../../
           <p class="text-sm text-gray-500">
             {{ locationText() }}
           </p>
+          @if (event().variants?.length) {
+            <p class="text-xs text-gray-500">
+              Modalidades: <span class="font-medium text-gray-700">{{ variantNames() }}</span>
+            </p>
+          }
           <div class="mt-1 flex flex-wrap gap-x-4 gap-y-0.5 text-xs text-gray-500">
             <span>
               <strong class="font-semibold text-gray-900">
@@ -227,6 +232,10 @@ export class EventRow {
   });
 
   protected readonly initial = computed(() => this.event().name.trim().charAt(0).toUpperCase());
+
+  protected readonly variantNames = computed(
+    () => this.event().variants?.map((variant) => variant.name).join(' · ') ?? ''
+  );
 
   protected readonly locationText = computed(() => {
     const location = this.event().location;
