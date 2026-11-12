@@ -4,6 +4,8 @@ import { EventCategory, EventHost, EventLocation } from '../models/event.model';
 import {
   DEFAULT_SHOP_FILTERS,
   SHOP_DEFAULT_LIMIT,
+  SHOP_MAX_PRICE,
+  SHOP_MIN_PRICE,
   ShopCatalogue,
   ShopEvent,
   ShopFilters,
@@ -25,6 +27,11 @@ export class ShopStore {
   private readonly _catalogueLoading = signal(false);
   private readonly _catalogueError = signal<string | null>(null);
   private readonly _catalogueLoaded = signal(false);
+
+  private readonly _featuredEvents = signal<ShopEvent[]>([]);
+  private readonly _featuredLoading = signal(false);
+  private readonly _featuredError = signal<string | null>(null);
+  private readonly _featuredLoaded = signal(false);
 
   private readonly _events = signal<ShopEvent[]>([]);
   private readonly _pagination = signal<ShopPagination>(EMPTY_PAGINATION);
@@ -49,6 +56,11 @@ export class ShopStore {
   readonly catalogueLoading = this._catalogueLoading.asReadonly();
   readonly catalogueError = this._catalogueError.asReadonly();
   readonly catalogueLoaded = this._catalogueLoaded.asReadonly();
+
+  readonly featuredEvents = this._featuredEvents.asReadonly();
+  readonly featuredLoading = this._featuredLoading.asReadonly();
+  readonly featuredError = this._featuredError.asReadonly();
+  readonly featuredLoaded = this._featuredLoaded.asReadonly();
 
   readonly events = this._events.asReadonly();
   readonly pagination = this._pagination.asReadonly();
@@ -88,6 +100,8 @@ export class ShopStore {
       filters.hostSlug ||
       filters.locationSlug ||
       filters.distanceSlug ||
+      (filters.minPrice ?? SHOP_MIN_PRICE) > SHOP_MIN_PRICE ||
+      (filters.maxPrice ?? SHOP_MAX_PRICE) < SHOP_MAX_PRICE ||
       filters.search?.trim()
     );
   });
@@ -108,6 +122,23 @@ export class ShopStore {
   setCatalogueError(value: string | null): void {
     this._catalogueError.set(value);
     this._catalogueLoading.set(false);
+  }
+
+  setFeaturedEvents(events: ShopEvent[]): void {
+    this._featuredEvents.set(events);
+    this._featuredLoaded.set(true);
+    this._featuredLoading.set(false);
+    this._featuredError.set(null);
+  }
+
+  setFeaturedLoading(value: boolean): void {
+    this._featuredLoading.set(value);
+  }
+
+  setFeaturedError(value: string | null): void {
+    this._featuredError.set(value);
+    this._featuredLoading.set(false);
+    this._featuredLoaded.set(true);
   }
 
   setEvents(events: ShopEvent[]): void {
@@ -205,6 +236,10 @@ export class ShopStore {
     this._catalogueLoading.set(false);
     this._catalogueError.set(null);
     this._catalogueLoaded.set(false);
+    this._featuredEvents.set([]);
+    this._featuredLoading.set(false);
+    this._featuredError.set(null);
+    this._featuredLoaded.set(false);
     this._events.set([]);
     this._pagination.set({ ...EMPTY_PAGINATION });
     this._filters.set({ ...DEFAULT_SHOP_FILTERS });

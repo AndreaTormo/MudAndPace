@@ -58,7 +58,8 @@ const EVENT_IMAGE_FOLDERS = {
   '665a1b2c3d4e5f60718293f0': 'Silverton',
   '665a1b2c3d4e5f60718293f1': 'reunion',
   '665a1b2c3d4e5f60718293f2': 'montgo',
-  '665a1b2c3d4e5f60718293f3': 'sierra-calderona'
+  '665a1b2c3d4e5f60718293f3': 'sierra-calderona',
+  '665a1b2c3d4e5f60718293f4': 'courmayeur'
 };
 
 function resetDirectory(targetDir) {
@@ -659,6 +660,35 @@ const events = [
       { name: '10K', distanceKm: 10.0, elevationGain: 400, price: 15.0 },
       { name: '21K', distanceKm: 21.0, elevationGain: 900, price: 25.0 },
       { name: '28K', distanceKm: 28.4, elevationGain: 1180, price: 35.0 }
+    ],
+    status: 'published',
+    isActive: true,
+    created_At: SEED_DATE,
+    updated_at: SEED_DATE,
+    deleted_at: null
+  },
+  {
+    _id: oid('665a1b2c3d4e5f60718293f4'),
+    name: 'Courmayeur Trail 2027',
+    slug: 'courmayeur-trail-2027',
+    sku: 'CT-2027',
+    description: 'Carrera por los senderos del Mont-Blanc italiano, con salida y llegada en Courmayeur y vistas al macizo.',
+    hostId: oid('665a1b2c3d4e5f60718293b5'),
+    categoryId: oid('665a1b2c3d4e5f60718293c6'),
+    locationId: oid('665a1b2c3d4e5f60718293da'),
+    startDate: new Date('2027-09-05T06:00:00Z'),
+    endDate: new Date('2027-09-05T20:00:00Z'),
+    distanceKm: 100.0,
+    elevationGain: 6500,
+    elevationLossM: 6500,
+    difficulty: 'hard',
+    surface: ['trail', 'rock', 'mixed'],
+    tags: ['alpes', 'courmayeur', 'mont-blanc'],
+    price: 140.0,
+    variants: [
+      { name: '30K', distanceKm: 30.0, elevationGain: 2000, price: 55.0 },
+      { name: '60K', distanceKm: 60.0, elevationGain: 3800, price: 95.0 },
+      { name: '100K', distanceKm: 100.0, elevationGain: 6500, price: 140.0 }
     ],
     status: 'published',
     isActive: true,

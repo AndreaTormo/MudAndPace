@@ -36,7 +36,7 @@ npm run seed
 
 - Es destructivo para hosts, categorías, ubicaciones, eventos, experiencias e imágenes: ejecuta `deleteMany` y vuelve a insertar los datos de ejemplo.
 - No borra usuarios ni perfiles. Los usuarios demo se actualizan por email con `upsert`.
-- Deja 1 host, 2 categorías, 13 ubicaciones, 12 eventos, 1 experiencia y 1 imagen de experiencia.
+- Deja 1 host, 2 categorías, 13 ubicaciones, 13 eventos, 1 experiencia y 1 imagen de experiencia.
 - Todos los eventos del seed incluyen al menos 3 modalidades en `variants`. `UTMB Mont-Blanc 2027` usa `OCC`, `CCC` y `UTMB`; `Val d'Aran by UTMB 2027` usa `20K`, `50K` y `100K`; el resto usa distancias adaptadas a su tipo de carrera.
 - Los eventos requieren `sku` único; ya está incluido en el seed. Si se añade un evento al seed sin `sku`, Mongoose falla con `Event validation failed: sku: Path \`sku\` is required.`
 - Un volumen Docker nuevo queda vacío hasta ejecutar `npm run seed`.

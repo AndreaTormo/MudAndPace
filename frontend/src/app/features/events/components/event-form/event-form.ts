@@ -37,7 +37,7 @@ type VariantFormGroup = FormGroup<{
     <form
       [formGroup]="form"
       (ngSubmit)="submit()"
-      class="space-y-8 rounded-2xl border border-gray-200 bg-white/80 backdrop-blur-sm p-6"
+      class="space-y-8 rounded-2xl border border-gray-200 bg-surface/80 backdrop-blur-sm p-6"
     >
       <section class="space-y-4">
         <h2 class="text-base font-semibold text-gray-900">Datos generales</h2>
@@ -270,7 +270,7 @@ type VariantFormGroup = FormGroup<{
         } @else {
           <div class="space-y-3">
             @for (variant of variants.controls; track variant; let i = $index) {
-              <div class="rounded-xl border border-gray-200 bg-white p-4" [formGroupName]="i">
+              <div class="rounded-xl border border-gray-200 bg-surface p-4" [formGroupName]="i">
                 <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                   <div>
                     <label class="form-label" [attr.for]="'variant-' + i + '-name'">Nombre *</label>

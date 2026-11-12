@@ -75,7 +75,7 @@ import { AdminProfileRow } from '../../components/admin-profile-row/admin-profil
           message="Los usuarios registrados aparecerán aquí con sus datos personales."
         />
       } @else {
-        <div class="divide-y divide-gray-100 overflow-hidden rounded-2xl border border-gray-200 bg-white/80 backdrop-blur-sm shadow-sm">
+        <div class="divide-y divide-gray-100 overflow-hidden rounded-2xl border border-gray-200 bg-surface/80 backdrop-blur-sm shadow-sm">
           @for (item of store.profiles(); track item.user._id) {
             <app-admin-profile-row [profile]="item" />
           }

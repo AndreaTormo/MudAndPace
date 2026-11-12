@@ -5,7 +5,7 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <div class="rounded-2xl border border-dashed border-gray-300 bg-white/80 backdrop-blur-sm px-6 py-16 text-center">
+    <div class="rounded-2xl border border-dashed border-gray-300 bg-surface/80 backdrop-blur-sm px-6 py-16 text-center">
       <h2 class="text-lg font-semibold text-gray-900">{{ title() }}</h2>
       <p class="mx-auto mt-1 max-w-md text-sm text-gray-500">{{ message() }}</p>
       <div class="mt-6"><ng-content /></div>

@@ -12,7 +12,7 @@ import { ShopPagination } from '../../../core/models/shop.model';
           type="button"
           [disabled]="pagination().page <= 1"
           (click)="pageChange.emit(pagination().page - 1)"
-          class="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
+          class="rounded-lg border border-gray-300 bg-surface px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
         >
           ← Anterior
         </button>
@@ -35,7 +35,7 @@ import { ShopPagination } from '../../../core/models/shop.model';
           type="button"
           [disabled]="pagination().page >= pagination().totalPages"
           (click)="pageChange.emit(pagination().page + 1)"
-          class="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
+          class="rounded-lg border border-gray-300 bg-surface px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
         >
           Siguiente →
         </button>
@@ -87,6 +87,6 @@ export class Pagination {
     if (page === current) {
       return `${base} border border-brand bg-brand text-white`;
     }
-    return `${base} border border-gray-300 bg-white text-gray-700 hover:bg-gray-50`;
+    return `${base} border border-gray-300 bg-surface text-gray-700 hover:bg-gray-50`;
   }
 }

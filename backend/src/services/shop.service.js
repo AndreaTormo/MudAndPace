@@ -122,6 +122,8 @@ class ShopService {
       if (input.hostSlug) clauses.push({ hostId: { $in: hostIds } });
       if (input.locationSlug) clauses.push({ locationId: { $in: locationIds } });
       if (input.distanceSlug) clauses.push(distanceClause(input.distanceSlug));
+      if (input.minPrice !== undefined) clauses.push({ price: { $gte: input.minPrice } });
+      if (input.maxPrice !== undefined) clauses.push({ price: { $lte: input.maxPrice } });
       if (input.search) clauses.push({ $text: { $search: input.search } });
 
       const { data, total } = await repository.findPublishedEvents(

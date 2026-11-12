@@ -23,7 +23,7 @@ const ALLOWED_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [EventImagesStore],
   template: `
-    <section class="rounded-2xl border border-gray-200 bg-white/80 p-6 backdrop-blur-sm">
+    <section class="rounded-2xl border border-gray-200 bg-surface/80 p-6 backdrop-blur-sm">
       <div class="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h2 class="text-base font-semibold text-gray-900">Fotos del evento</h2>
@@ -53,7 +53,7 @@ const ALLOWED_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
         @if (images().length) {
           <div class="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
             @for (image of images(); track image._id) {
-              <figure class="overflow-hidden rounded-xl border border-gray-200 bg-white">
+              <figure class="overflow-hidden rounded-xl border border-gray-200 bg-surface">
                 <div class="relative">
                   <img
                     [src]="assetUrl(image.url)"

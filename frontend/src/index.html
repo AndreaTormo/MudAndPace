@@ -7,6 +7,22 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" type="image/png" href="logo.png">
   <link rel="apple-touch-icon" href="logo.png">
+  <script>
+    (function () {
+      try {
+        var stored = localStorage.getItem('mudandpace.theme');
+        var dark =
+          stored === 'dark' ||
+          (!stored && window.matchMedia('(prefers-color-scheme: dark)').matches);
+        if (dark) {
+          document.documentElement.classList.add('dark');
+        }
+        document.documentElement.style.colorScheme = dark ? 'dark' : 'light';
+      } catch (error) {
+        // Si localStorage no está disponible, se usa el tema claro.
+      }
+    })();
+  </script>
 </head>
 <body>
   <app-root></app-root>

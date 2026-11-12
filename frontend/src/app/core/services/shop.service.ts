@@ -10,6 +10,8 @@ import {
 } from '../models/event.model';
 import { Departure } from '../models/departure.model';
 import {
+  SHOP_MAX_PRICE,
+  SHOP_MIN_PRICE,
   ShopCatalogue,
   ShopEvent,
   ShopEventsResponse,
@@ -64,6 +66,12 @@ export class ShopService {
     if (filters.distanceSlug) {
       params = params.set('distanceSlug', filters.distanceSlug);
     }
+    if (filters.minPrice !== undefined && filters.minPrice !== null && filters.minPrice > SHOP_MIN_PRICE) {
+      params = params.set('minPrice', filters.minPrice);
+    }
+    if (filters.maxPrice !== undefined && filters.maxPrice !== null && filters.maxPrice < SHOP_MAX_PRICE) {
+      params = params.set('maxPrice', filters.maxPrice);
+    }
     if (filters.search?.trim()) {
       params = params.set('search', filters.search.trim());
     }
@@ -75,7 +83,7 @@ export class ShopService {
     }
 
     return this.api
-      .get<ShopEventsResponse>('shop/experiences', params)
+      .get<ShopEventsResponse>('shop/events', params)
       .pipe(map((response) => extractEvents(response)));
   }
 
@@ -83,9 +91,15 @@ export class ShopService {
     return this.listExperiences(filters);
   }
 
+  getFeaturedEvents(limit = 6): Observable<ShopEvent[]> {
+    return this.listExperiences({ page: 1, limit }).pipe(
+      map((response) => response.data)
+    );
+  }
+
   getExperienceBySlug(slug: string): Observable<ShopEvent> {
     return this.api
-      .get<ApiResponse<ShopEvent>>(`shop/experiences/${encodeURIComponent(slug)}`)
+      .get<ApiResponse<ShopEvent>>(`shop/events/${encodeURIComponent(slug)}`)
       .pipe(map((response) => extractData<ShopEvent>(response, isShopEvent)));
   }
 
@@ -96,7 +110,7 @@ export class ShopService {
   listDeparturesByExperienceSlug(slug: string): Observable<Departure[]> {
     return this.api
       .get<ApiResponse<Departure[]>>(
-        `shop/experiences/${encodeURIComponent(slug)}/departures`
+        `shop/events/${encodeURIComponent(slug)}/departures`
       )
       .pipe(map((response) => extractData<Departure[]>(response, Array.isArray)));
   }

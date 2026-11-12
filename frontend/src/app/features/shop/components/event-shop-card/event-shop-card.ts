@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
+import { NgClass } from '@angular/common';
+import { ChangeDetectionStrategy, Component, computed, effect, input, output, signal } from '@angular/core';
 import { ShopEvent } from '../../../../core/models/shop.model';
 import { resolveAssetUrl } from '../../../../shared/utils/asset.util';
 import {
@@ -12,18 +13,23 @@ import {
   selector: 'app-event-shop-card',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [NgClass],
   template: `
     <button
       type="button"
       (click)="selected.emit(event())"
-      class="group flex h-full w-full flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white text-left shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
+      class="group flex h-full w-full flex-col overflow-hidden rounded-2xl border border-gray-100 bg-surface text-left shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md"
     >
-      <div class="relative h-44 shrink-0 overflow-hidden bg-gradient-to-br from-brand/10 to-brand/25">
-        @if (imageUrl(); as url) {
+      <div
+        class="relative shrink-0 overflow-hidden bg-gradient-to-br from-brand/10 to-brand/25"
+        [ngClass]="featured() ? 'h-56 sm:h-64' : 'h-44'"
+      >
+        @if (showImage(); as url) {
           <img
             [src]="url"
             [alt]="event().name"
             loading="lazy"
+            (error)="imageFailed.set(true)"
             class="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
           />
         } @else {
@@ -35,16 +41,23 @@ import {
         }
 
         @if (event().category; as category) {
-          <span class="absolute left-3 top-3 rounded-full bg-white/90 px-2 py-0.5 text-xs font-medium text-brand shadow-sm">
+          <span class="absolute left-3 top-3 rounded-full bg-surface/90 px-2 py-0.5 text-xs font-medium text-brand shadow-sm">
             {{ category.name }}
           </span>
         }
       </div>
 
-      <div class="flex flex-1 flex-col p-4">
-        <h3 class="line-clamp-2 text-base font-semibold leading-snug text-gray-900 transition-colors group-hover:text-brand">
+      <div class="flex flex-1 flex-col" [ngClass]="featured() ? 'p-5 sm:p-6' : 'p-4'">
+        <h3
+          class="line-clamp-2 font-semibold leading-snug text-gray-900 transition-colors group-hover:text-brand"
+          [ngClass]="featured() ? 'text-xl sm:text-2xl' : 'text-base'"
+        >
           {{ event().name }}
         </h3>
+
+        @if (featured() && event().description) {
+          <p class="mt-2 line-clamp-3 text-sm text-gray-600">{{ event().description }}</p>
+        }
 
         <div class="mt-2 space-y-1 text-xs text-gray-500">
           <span class="flex items-center gap-1.5">
@@ -72,6 +85,16 @@ import {
           }
         </div>
 
+        @if (featured() && variants().length > 0) {
+          <div class="mt-3 flex flex-wrap gap-1.5">
+            @for (variant of variants(); track $index) {
+              <span class="rounded-full bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-600">
+                {{ variant.name }} · {{ formatDistance(variant.distanceKm) }}
+              </span>
+            }
+          </div>
+        }
+
         <div class="mt-auto flex items-end justify-between gap-2 pt-3">
           <span class="text-xs text-gray-500">
             {{ distanceText() }} · {{ elevationText() }}
@@ -84,13 +107,31 @@ import {
 })
 export class EventShopCard {
   readonly event = input.required<ShopEvent>();
+  readonly featured = input(false);
   readonly selected = output<ShopEvent>();
 
+  protected readonly variants = computed(() => this.event().variants ?? []);
+  protected readonly formatDistance = formatDistance;
+
+  protected readonly imageFailed = signal(false);
   protected readonly imageUrl = computed(() => {
     const images = this.event().images ?? [];
-    const cover = images.find((image) => image.isCover) ?? images[0];
-    return cover ? resolveAssetUrl(cover.url) : null;
+    if (!Array.isArray(images) || images.length === 0) {
+      return null;
+    }
+    const cover = images.find((image) => image?.isCover) ?? images[0];
+    const rawUrl = cover?.url;
+    if (typeof rawUrl !== 'string' || !rawUrl.trim()) {
+      return null;
+    }
+    return resolveAssetUrl(rawUrl);
   });
+  protected readonly showImage = computed(() => (this.imageFailed() ? null : this.imageUrl()));
+
+  private readonly syncImageState = effect(() => {
+    this.event();
+    this.imageFailed.set(false);
+  }, { allowSignalWrites: true });
 
   protected readonly dateText = computed(() => formatDate(this.event().startDate));
 

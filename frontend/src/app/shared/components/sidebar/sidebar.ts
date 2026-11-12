@@ -8,7 +8,7 @@ import { AuthStore } from '../../../core/stores/auth.store';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [RouterLink, RouterLinkActive],
   template: `
-    <aside class="sticky top-16 hidden h-[calc(100vh-4rem)] w-56 shrink-0 border-r border-gray-200 bg-white/80 backdrop-blur-sm px-4 py-6 lg:block">
+    <aside class="sticky top-16 hidden h-[calc(100vh-4rem)] w-56 shrink-0 border-r border-gray-200 bg-surface/80 backdrop-blur-sm px-4 py-6 lg:block">
       <nav class="space-y-6" aria-label="Navegación lateral">
         <div>
           <p class="mb-2 px-3 text-xs font-semibold uppercase tracking-wider text-gray-400">Principal</p>

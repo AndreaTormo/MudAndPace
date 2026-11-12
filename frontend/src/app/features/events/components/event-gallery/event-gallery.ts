@@ -20,7 +20,7 @@ import { resolveAssetUrl } from '../../../../shared/utils/asset.util';
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [EventImagesStore],
   template: `
-    <section class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+    <section class="overflow-hidden rounded-2xl border border-gray-200 bg-surface shadow-sm">
       @if (loading()) {
         <div class="aspect-[16/10] animate-pulse bg-gray-200"></div>
       } @else if (error()) {
@@ -40,7 +40,7 @@ import { resolveAssetUrl } from '../../../../shared/utils/asset.util';
               type="button"
               (click)="prev()"
               aria-label="Imagen anterior"
-              class="absolute left-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-gray-700 shadow-md transition hover:bg-white"
+              class="overlay-control absolute left-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full"
             >
               <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
@@ -50,7 +50,7 @@ import { resolveAssetUrl } from '../../../../shared/utils/asset.util';
               type="button"
               (click)="next()"
               aria-label="Imagen siguiente"
-              class="absolute right-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-gray-700 shadow-md transition hover:bg-white"
+              class="overlay-control absolute right-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full"
             >
               <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />

@@ -13,6 +13,8 @@ export interface ShopFilters {
   hostSlug?: string | null;
   locationSlug?: string | null;
   distanceSlug?: ShopDistanceSlug | null;
+  minPrice?: number | null;
+  maxPrice?: number | null;
   search?: string;
   page?: number;
   limit?: number;
@@ -50,11 +52,17 @@ export interface ShopDistanceOption {
 
 export const SHOP_DEFAULT_LIMIT = 9;
 
+export const SHOP_MIN_PRICE = 0;
+export const SHOP_MAX_PRICE = 400;
+export const SHOP_PRICE_STEP = 5;
+
 export const DEFAULT_SHOP_FILTERS: ShopFilters = {
   categorySlug: null,
   hostSlug: null,
   locationSlug: null,
   distanceSlug: null,
+  minPrice: SHOP_MIN_PRICE,
+  maxPrice: SHOP_MAX_PRICE,
   search: '',
   page: 1,
   limit: SHOP_DEFAULT_LIMIT

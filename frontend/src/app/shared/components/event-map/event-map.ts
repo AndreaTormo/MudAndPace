@@ -8,9 +8,10 @@ const BBOX_DELTA = 0.08;
   selector: 'app-event-map',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: { class: 'block' },
   template: `
     @if (hasCoordinates()) {
-      <section class="overflow-hidden rounded-2xl border border-gray-200 bg-white/80 backdrop-blur-sm">
+      <section class="overflow-hidden rounded-2xl border border-gray-200 bg-surface/80 backdrop-blur-sm">
         <div class="flex flex-wrap items-start justify-between gap-2 px-4 pt-3">
           <div>
             <h2 class="text-base font-semibold text-gray-900">Ubicación</h2>
@@ -34,7 +35,7 @@ const BBOX_DELTA = 0.08;
         ></iframe>
       </section>
     } @else {
-      <section class="rounded-2xl border border-gray-200 bg-white/80 backdrop-blur-sm p-4">
+      <section class="rounded-2xl border border-gray-200 bg-surface/80 backdrop-blur-sm p-4">
         <h2 class="text-base font-semibold text-gray-900">Ubicación</h2>
         <p class="mt-1 text-sm text-gray-400">Ubicación no disponible en el mapa.</p>
       </section>

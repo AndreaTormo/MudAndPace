@@ -40,7 +40,7 @@ Memoria del proyecto entre sesiones. Breve y actualizada.
 - Validación offline del modelo `Event`/Zod con `variants` (sin Mongo ni API levantada).
 - Prueba manual de UI (Edge headless, 17/17): login USER, recarga con refresh `GET /auth/me`, expiración con returnUrl + limpieza de localStorage, logout + recarga sin sesión, USER redirigido de `/events/create` y `/events/trash`, ADMIN accediendo a ambas.
 - Smoke test manual de la API superado: health, login, `/auth/me`, perfil, registro, logout con revocación y RBAC.
-- Base de datos verificada: 3 usuarios, 3 perfiles; 1 host, 2 categorías, 13 ubicaciones, 12 eventos, 1 experiencia y 1 imagen de experiencia. Todos los eventos del seed tienen al menos 3 modalidades.
+- Base de datos verificada: 3 usuarios, 3 perfiles; 1 host, 2 categorías, 13 ubicaciones, 13 eventos, 1 experiencia y 1 imagen de experiencia. Todos los eventos del seed tienen al menos 3 modalidades.
 - `npm run seed` correcto tras añadir índices; consultas verificadas: filtros por slug, combinaciones, alias, paginación, búsqueda de texto, referencias y usuarios.
 
 ## Limitaciones conocidas

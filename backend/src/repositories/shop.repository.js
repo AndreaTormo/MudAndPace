@@ -27,7 +27,13 @@ class ShopRepository {
   }
 
   async findActiveLocations() {
-    return Location.find(ACTIVE_REFERENCE)
+    const locationIds = await Event.distinct('locationId', PUBLISHED_EVENT);
+
+    if (locationIds.length === 0) {
+      return [];
+    }
+
+    return Location.find({ ...ACTIVE_REFERENCE, _id: { $in: locationIds } })
       .select('name slug city coordinates imageUrl')
       .sort({ name: 1 });
   }

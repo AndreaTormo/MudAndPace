@@ -6,6 +6,7 @@ import {
   DIFFICULTY_LABELS,
   SURFACE_LABELS
 } from '../../../../core/models/event.model';
+import { ShopFilters } from '../../../../core/models/shop.model';
 import { ShopService } from '../../../../core/services/shop.service';
 import { ShopStore } from '../../../../core/stores/shop.store';
 import { EmptyState } from '../../../../shared/components/empty-state/empty-state';
@@ -22,6 +23,7 @@ import {
   formatPrice,
   formatTime
 } from '../../../../shared/utils/format.util';
+import { buildShopQueryParams, parseShopFilters } from '../../utils/shop-query.util';
 
 @Component({
   selector: 'app-shop-detail',
@@ -37,23 +39,41 @@ import {
           title="Experiencia no encontrada"
           message="No existe ninguna experiencia con ese enlace o ya no está disponible."
         >
-          <a routerLink="/shop/experiences" class="button-primary">Volver a las experiencias</a>
+          <a
+            [routerLink]="['/shop/experiences']"
+            [queryParams]="returnQueryParams()"
+            class="button-primary"
+          >
+            Volver a las experiencias
+          </a>
         </app-empty-state>
       } @else if (store.detailError()) {
         <app-error-state [message]="store.detailError()!" (retry)="reload()" />
       } @else {
         @if (event(); as ev) {
         <nav class="mb-6 flex items-center gap-2 overflow-hidden text-sm text-gray-500">
-          <a routerLink="/shop" class="shrink-0 hover:text-gray-800 hover:underline">Shop</a>
+          <a
+            [routerLink]="['/shop']"
+            [queryParams]="returnQueryParams()"
+            class="shrink-0 hover:text-gray-800 hover:underline"
+          >
+            Shop
+          </a>
           <span>/</span>
-          <a routerLink="/shop/experiences" class="shrink-0 hover:text-gray-800 hover:underline">Experiencias</a>
+          <a
+            [routerLink]="['/shop/experiences']"
+            [queryParams]="returnQueryParams()"
+            class="shrink-0 hover:text-gray-800 hover:underline"
+          >
+            Experiencias
+          </a>
           <span>/</span>
           <span class="truncate font-medium text-gray-800">{{ ev.name }}</span>
         </nav>
 
         <div class="grid gap-8 lg:grid-cols-3">
-          <div class="space-y-6 lg:col-span-2">
-            <section class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+          <div class="space-y-8 lg:col-span-2">
+            <section class="overflow-hidden rounded-2xl border border-gray-200 bg-surface shadow-sm">
               <div class="relative aspect-[16/10] bg-gradient-to-br from-brand/10 to-brand/25">
                 @if (activeImageUrl(); as url) {
                   <img
@@ -74,7 +94,7 @@ import {
                     type="button"
                     (click)="prevImage()"
                     aria-label="Imagen anterior"
-                    class="absolute left-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-gray-700 shadow-md transition hover:bg-white"
+                    class="overlay-control absolute left-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full"
                   >
                     <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                       <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
@@ -84,7 +104,7 @@ import {
                     type="button"
                     (click)="nextImage()"
                     aria-label="Imagen siguiente"
-                    class="absolute right-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/90 text-gray-700 shadow-md transition hover:bg-white"
+                    class="overlay-control absolute right-3 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full"
                   >
                     <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                       <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
@@ -121,7 +141,7 @@ import {
               <p class="mt-1 text-sm text-gray-500">{{ locationText() }}</p>
             </section>
 
-            <section class="rounded-2xl border border-gray-200 bg-white/80 p-5 backdrop-blur-sm">
+            <section class="rounded-2xl border border-gray-200 bg-surface/80 p-5 backdrop-blur-sm">
               <h2 class="mb-3 text-base font-semibold text-gray-900">Descripción</h2>
               @if (ev.description) {
                 <p class="whitespace-pre-line text-sm leading-relaxed text-gray-700">
@@ -132,35 +152,8 @@ import {
               }
             </section>
 
-            <section class="grid grid-cols-2 gap-4 sm:grid-cols-3">
-              <div class="rounded-2xl border border-gray-200 bg-white/80 p-4 text-center backdrop-blur-sm">
-                <p class="text-lg font-semibold text-gray-900">{{ formatDistance(ev.distanceKm) }}</p>
-                <p class="text-xs text-gray-500">Distancia</p>
-              </div>
-              <div class="rounded-2xl border border-gray-200 bg-white/80 p-4 text-center backdrop-blur-sm">
-                <p class="text-lg font-semibold text-gray-900">{{ formatElevation(ev.elevationGain) }}</p>
-                <p class="text-xs text-gray-500">Desnivel +</p>
-              </div>
-              <div class="rounded-2xl border border-gray-200 bg-white/80 p-4 text-center backdrop-blur-sm">
-                <p class="text-lg font-semibold text-gray-900">{{ formatPrice(ev.price) }}</p>
-                <p class="text-xs text-gray-500">Precio</p>
-              </div>
-              <div class="rounded-2xl border border-gray-200 bg-white/80 p-4 text-center backdrop-blur-sm">
-                <p class="text-lg font-semibold text-gray-900">{{ formatDate(ev.startDate) }}</p>
-                <p class="text-xs text-gray-500">Inicio</p>
-              </div>
-              <div class="rounded-2xl border border-gray-200 bg-white/80 p-4 text-center backdrop-blur-sm">
-                <p class="text-lg font-semibold text-gray-900">{{ formatDate(ev.endDate) }}</p>
-                <p class="text-xs text-gray-500">Fin</p>
-              </div>
-              <div class="rounded-2xl border border-gray-200 bg-white/80 p-4 text-center backdrop-blur-sm">
-                <p class="text-lg font-semibold text-gray-900">{{ categoryText() }}</p>
-                <p class="text-xs text-gray-500">Categoría</p>
-              </div>
-            </section>
-
             @if (ev.variants?.length) {
-              <section class="rounded-2xl border border-gray-200 bg-white/80 p-5 backdrop-blur-sm">
+              <section class="rounded-2xl border border-gray-200 bg-surface/80 p-5 backdrop-blur-sm">
                 <div class="mb-3 flex items-center justify-between gap-3">
                   <h2 class="text-base font-semibold text-gray-900">Modalidades</h2>
                   <span class="text-xs font-medium uppercase tracking-wide text-gray-400">
@@ -192,7 +185,7 @@ import {
             }
 
             @if (hasCharacteristics()) {
-              <section class="rounded-2xl border border-gray-200 bg-white/80 p-5 backdrop-blur-sm">
+              <section class="rounded-2xl border border-gray-200 bg-surface/80 p-5 backdrop-blur-sm">
                 <h2 class="mb-3 text-base font-semibold text-gray-900">Características</h2>
                 <dl class="space-y-2 text-sm">
                   @if (difficultyLabel(); as difficulty) {
@@ -239,7 +232,7 @@ import {
           </div>
 
           <aside class="space-y-4">
-            <div class="sticky top-20 space-y-4 rounded-2xl border border-gray-200 bg-white/80 p-5 backdrop-blur-sm">
+            <div class="sticky top-20 space-y-4 rounded-2xl border border-gray-200 bg-surface/80 p-5 backdrop-blur-sm">
               <div class="flex items-center gap-4">
                 <div class="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-brand text-xl font-bold text-white shadow-sm">
                   {{ hostInitial() }}
@@ -310,7 +303,7 @@ import {
                         class="w-full rounded-xl border-2 p-3 text-left transition"
                         [class]="isSelected(departure)
                           ? 'border-brand bg-brand/5'
-                          : 'border-gray-200 bg-white hover:border-brand/40'"
+                          : 'border-gray-200 bg-surface hover:border-brand/40'"
                       >
                         <div class="flex items-start justify-between gap-3">
                           <div class="min-w-0">
@@ -365,7 +358,11 @@ import {
               </div>
 
               <div class="space-y-2 border-t border-gray-100 pt-4">
-                <a routerLink="/shop/experiences" class="button-secondary block text-center">
+                <a
+                  [routerLink]="['/shop/experiences']"
+                  [queryParams]="returnQueryParams()"
+                  class="button-secondary block text-center"
+                >
                   Volver a las experiencias
                 </a>
                 @if (ev.host; as host) {
@@ -450,6 +447,12 @@ export class ShopDetail implements OnInit, OnDestroy {
   protected readonly resolveAssetUrl = resolveAssetUrl;
 
   private currentSlug = '';
+  protected readonly returnFilters = signal<ShopFilters>(
+    parseShopFilters(this.route.snapshot.queryParams)
+  );
+  protected readonly returnQueryParams = computed(() =>
+    buildShopQueryParams(this.returnFilters())
+  );
 
   ngOnInit(): void {
     this.route.paramMap
@@ -462,6 +465,10 @@ export class ShopDetail implements OnInit, OnDestroy {
         this.currentSlug = slug;
         void this.load(slug);
       });
+
+    this.route.queryParams
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((params) => this.returnFilters.set(parseShopFilters(params)));
   }
 
   ngOnDestroy(): void {
@@ -510,8 +517,9 @@ export class ShopDetail implements OnInit, OnDestroy {
   }
 
   protected showHostEvents(hostSlug: string): void {
+    const filters: ShopFilters = { ...this.returnFilters(), hostSlug, page: 1 };
     void this.router.navigate(['/shop/experiences'], {
-      queryParams: { hostSlug }
+      queryParams: buildShopQueryParams(filters)
     });
   }
 

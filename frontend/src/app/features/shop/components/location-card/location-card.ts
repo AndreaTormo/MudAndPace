@@ -10,7 +10,7 @@ import { resolveAssetUrl } from '../../../../shared/utils/asset.util';
     <button
       type="button"
       (click)="selected.emit(location())"
-      class="group flex w-full flex-col items-center gap-2 rounded-2xl border border-gray-200 bg-white p-4 text-center transition-all hover:border-brand hover:shadow-md"
+      class="group flex w-full flex-col items-center gap-2 rounded-2xl border border-gray-200 bg-surface p-4 text-center transition-all hover:border-brand hover:shadow-md"
     >
       <div class="flex h-14 w-14 items-center justify-center overflow-hidden rounded-full bg-brand/10 transition-colors group-hover:bg-brand/20">
         @if (imageUrl(); as url) {

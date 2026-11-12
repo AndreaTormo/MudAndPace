@@ -42,7 +42,7 @@ import { isHttpError, showUnexpectedError } from '../../../../shared/utils/error
           <a routerLink="/events" class="button-primary">Volver a los eventos</a>
         </app-empty-state>
       } @else {
-        <div class="divide-y divide-gray-100 overflow-hidden rounded-2xl border border-gray-200 bg-white/80 backdrop-blur-sm shadow-sm">
+        <div class="divide-y divide-gray-100 overflow-hidden rounded-2xl border border-gray-200 bg-surface/80 backdrop-blur-sm shadow-sm">
           @for (event of store.deletedEvents(); track event._id) {
             <div class="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:gap-4">
               <div class="min-w-0 flex-1">

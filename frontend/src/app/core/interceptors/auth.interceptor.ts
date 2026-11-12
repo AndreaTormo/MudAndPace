@@ -5,7 +5,11 @@ import { catchError, throwError } from 'rxjs';
 import { AuthStore } from '../stores/auth.store';
 
 function isPublicAuthUrl(url: string): boolean {
-  return url.includes('/auth/login') || url.includes('/users/register');
+  return (
+    url.includes('/auth/login') ||
+    url.includes('/users/register') ||
+    url.includes('/agent/chat')
+  );
 }
 
 function isLogoutUrl(url: string): boolean {

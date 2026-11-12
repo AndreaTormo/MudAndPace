@@ -78,7 +78,7 @@ import { isHttpError, showUnexpectedError } from '../../../../shared/utils/error
             <app-empty-state title="No hay eventos todavía" message="Todavía no hay eventos disponibles." />
           }
         } @else {
-          <div class="divide-y divide-gray-100 overflow-hidden rounded-2xl border border-gray-200 bg-white/80 backdrop-blur-sm shadow-sm">
+          <div class="divide-y divide-gray-100 overflow-hidden rounded-2xl border border-gray-200 bg-surface/80 backdrop-blur-sm shadow-sm">
             @for (event of store.events(); track event._id) {
               <app-event-row
                 [event]="event"

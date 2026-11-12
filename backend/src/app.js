@@ -15,6 +15,12 @@ const eventRoutes = require('./routes/event.routes');
 const { router: departureRoutes, eventRouter: eventDepartureRoutes } = require('./routes/departure.routes');
 const referenceRoutes = require('./routes/reference.routes');
 const shopRoutes = require('./routes/shop.routes');
+let agentRoutes;
+try {
+  agentRoutes = require('../../backend_agent_ia/agent_ia_routes/agent_ia_routes');
+} catch (error) {
+  console.error('No se pudo cargar el módulo del asistente:', error.message);
+}
 const validate = require('./middlewares/validate.middleware');
 const errorMiddleware = require('./middlewares/error.middleware');
 
@@ -43,6 +49,9 @@ app.use('/api/v1/events', eventRoutes);
 app.use('/api/v1/departures', departureRoutes);
 app.use('/api/v1/references', referenceRoutes);
 app.use('/api/v1/shop', shopRoutes);
+if (agentRoutes) {
+  app.use('/api/v1/agent', agentRoutes);
+}
 app.use(validate.notFound);
 app.use(errorMiddleware);
 

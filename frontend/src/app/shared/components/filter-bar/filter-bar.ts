@@ -1,7 +1,10 @@
-import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
 import { EventCategory, EventHost, EventLocation } from '../../../core/models/event.model';
 import {
   SHOP_DISTANCE_OPTIONS,
+  SHOP_MAX_PRICE,
+  SHOP_MIN_PRICE,
+  SHOP_PRICE_STEP,
   ShopDistanceSlug,
   ShopFilters
 } from '../../../core/models/shop.model';
@@ -16,7 +19,8 @@ import {
         [value]="filters().categorySlug ?? ''"
         (change)="onCategoryChange($event)"
         aria-label="Filtrar por categoría"
-        class="rounded-full border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 shadow-sm transition focus:border-transparent focus:outline-none focus:ring-2 focus:ring-brand"
+        [disabled]="disabled()"
+        class="rounded-full border border-gray-300 bg-surface px-3 py-2 text-sm text-gray-700 shadow-sm transition focus:border-transparent focus:outline-none focus:ring-2 focus:ring-brand disabled:cursor-not-allowed disabled:opacity-50"
       >
         <option value="">Todas las categorías</option>
         @for (category of categories(); track category._id) {
@@ -28,7 +32,8 @@ import {
         [value]="filters().hostSlug ?? ''"
         (change)="onHostChange($event)"
         aria-label="Filtrar por organizador"
-        class="rounded-full border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 shadow-sm transition focus:border-transparent focus:outline-none focus:ring-2 focus:ring-brand"
+        [disabled]="disabled()"
+        class="rounded-full border border-gray-300 bg-surface px-3 py-2 text-sm text-gray-700 shadow-sm transition focus:border-transparent focus:outline-none focus:ring-2 focus:ring-brand disabled:cursor-not-allowed disabled:opacity-50"
       >
         <option value="">Todos los organizadores</option>
         @for (host of hosts(); track host._id) {
@@ -40,7 +45,8 @@ import {
         [value]="filters().locationSlug ?? ''"
         (change)="onLocationChange($event)"
         aria-label="Filtrar por ubicación"
-        class="rounded-full border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 shadow-sm transition focus:border-transparent focus:outline-none focus:ring-2 focus:ring-brand"
+        [disabled]="disabled()"
+        class="rounded-full border border-gray-300 bg-surface px-3 py-2 text-sm text-gray-700 shadow-sm transition focus:border-transparent focus:outline-none focus:ring-2 focus:ring-brand disabled:cursor-not-allowed disabled:opacity-50"
       >
         <option value="">Todas las ubicaciones</option>
         @for (location of locations(); track location._id) {
@@ -54,7 +60,8 @@ import {
         [value]="filters().distanceSlug ?? ''"
         (change)="onDistanceChange($event)"
         aria-label="Filtrar por distancia"
-        class="rounded-full border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 shadow-sm transition focus:border-transparent focus:outline-none focus:ring-2 focus:ring-brand"
+        [disabled]="disabled()"
+        class="rounded-full border border-gray-300 bg-surface px-3 py-2 text-sm text-gray-700 shadow-sm transition focus:border-transparent focus:outline-none focus:ring-2 focus:ring-brand disabled:cursor-not-allowed disabled:opacity-50"
       >
         <option value="">Todas las distancias</option>
         @for (option of distanceOptions; track option.value) {
@@ -62,11 +69,51 @@ import {
         }
       </select>
 
+      <div class="flex items-center gap-3 rounded-full border border-gray-300 bg-surface px-4 py-2 shadow-sm">
+        <span class="whitespace-nowrap text-xs font-medium text-gray-500">Precio</span>
+        <div class="relative h-4 w-40 min-w-[120px] sm:w-48">
+          <div class="pointer-events-none absolute inset-x-0 top-1/2 h-1.5 -translate-y-1/2 rounded-full bg-gray-200"></div>
+          <div
+            class="pointer-events-none absolute top-1/2 h-1.5 -translate-y-1/2 rounded-full bg-brand"
+            [style.left.%]="priceLeft()"
+            [style.right.%]="priceRight()"
+          ></div>
+          <input
+            type="range"
+            class="range-input"
+            [min]="minPrice"
+            [max]="maxPrice"
+            [step]="priceStep"
+            [value]="priceMin()"
+            [disabled]="disabled()"
+            aria-label="Precio mínimo"
+            (input)="onPriceMinInput($event)"
+            (change)="onPriceMinChange($event)"
+          />
+          <input
+            type="range"
+            class="range-input"
+            [min]="minPrice"
+            [max]="maxPrice"
+            [step]="priceStep"
+            [value]="priceMax()"
+            [disabled]="disabled()"
+            aria-label="Precio máximo"
+            (input)="onPriceMaxInput($event)"
+            (change)="onPriceMaxChange($event)"
+          />
+        </div>
+        <span class="whitespace-nowrap text-xs font-semibold text-gray-700">
+          {{ priceMin() }}–{{ priceMax() }} €
+        </span>
+      </div>
+
       @if (hasActiveFilters()) {
         <button
           type="button"
           (click)="filtersReset.emit()"
-          class="rounded-full px-3 py-2 text-sm font-medium text-brand transition-colors hover:bg-brand/10"
+          [disabled]="disabled()"
+          class="rounded-full px-3 py-2 text-sm font-medium text-brand transition-colors hover:bg-brand/10 disabled:cursor-not-allowed disabled:opacity-50"
         >
           Limpiar filtros
         </button>
@@ -80,11 +127,24 @@ export class FilterBar {
   readonly hosts = input<EventHost[]>([]);
   readonly locations = input<EventLocation[]>([]);
   readonly hasActiveFilters = input(false);
+  readonly disabled = input(false);
 
   readonly filterChange = output<Partial<ShopFilters>>();
   readonly filtersReset = output<void>();
 
   protected readonly distanceOptions = SHOP_DISTANCE_OPTIONS;
+  protected readonly minPrice = SHOP_MIN_PRICE;
+  protected readonly maxPrice = SHOP_MAX_PRICE;
+  protected readonly priceStep = SHOP_PRICE_STEP;
+
+  protected readonly priceMin = computed(() =>
+    this.clampPrice(this.filters().minPrice ?? SHOP_MIN_PRICE)
+  );
+  protected readonly priceMax = computed(() =>
+    this.clampPrice(this.filters().maxPrice ?? SHOP_MAX_PRICE)
+  );
+  protected readonly priceLeft = computed(() => this.pricePercent(this.priceMin()));
+  protected readonly priceRight = computed(() => 100 - this.pricePercent(this.priceMax()));
 
   protected onCategoryChange(event: Event): void {
     const value = (event.target as HTMLSelectElement).value;
@@ -104,5 +164,44 @@ export class FilterBar {
   protected onDistanceChange(event: Event): void {
     const value = (event.target as HTMLSelectElement).value as ShopDistanceSlug | '';
     this.filterChange.emit({ distanceSlug: value || null, page: 1 });
+  }
+
+  protected onPriceMinInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const value = Number(input.value);
+    if (value > this.priceMax()) {
+      input.value = String(this.priceMax());
+    }
+  }
+
+  protected onPriceMaxInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const value = Number(input.value);
+    if (value < this.priceMin()) {
+      input.value = String(this.priceMin());
+    }
+  }
+
+  protected onPriceMinChange(event: Event): void {
+    const value = this.clampPrice(Number((event.target as HTMLInputElement).value));
+    const min = Math.min(value, this.priceMax());
+    this.filterChange.emit({ minPrice: min, maxPrice: this.priceMax(), page: 1 });
+  }
+
+  protected onPriceMaxChange(event: Event): void {
+    const value = this.clampPrice(Number((event.target as HTMLInputElement).value));
+    const max = Math.max(value, this.priceMin());
+    this.filterChange.emit({ minPrice: this.priceMin(), maxPrice: max, page: 1 });
+  }
+
+  private clampPrice(value: number): number {
+    if (!Number.isFinite(value)) {
+      return SHOP_MIN_PRICE;
+    }
+    return Math.min(SHOP_MAX_PRICE, Math.max(SHOP_MIN_PRICE, Math.round(value)));
+  }
+
+  private pricePercent(value: number): number {
+    return ((value - SHOP_MIN_PRICE) / (SHOP_MAX_PRICE - SHOP_MIN_PRICE)) * 100;
   }
 }

@@ -35,7 +35,7 @@ import { NgTemplateOutlet } from '@angular/common';
           type="button"
           (click)="scroll(-1)"
           aria-label="Anterior"
-          class="absolute -left-3 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-gray-200 bg-white shadow-md transition-shadow hover:shadow-lg sm:-left-4"
+          class="overlay-control absolute -left-3 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full shadow-md transition-shadow hover:shadow-lg sm:-left-4"
         >
           <svg class="h-4 w-4 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
             <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
@@ -46,7 +46,7 @@ import { NgTemplateOutlet } from '@angular/common';
           type="button"
           (click)="scroll(1)"
           aria-label="Siguiente"
-          class="absolute -right-3 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-gray-200 bg-white shadow-md transition-shadow hover:shadow-lg sm:-right-4"
+          class="overlay-control absolute -right-3 top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full shadow-md transition-shadow hover:shadow-lg sm:-right-4"
         >
           <svg class="h-4 w-4 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
             <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />

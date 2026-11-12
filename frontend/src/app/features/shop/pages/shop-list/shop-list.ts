@@ -1,9 +1,8 @@
-import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, inject } from '@angular/core';
-import { ActivatedRoute, Params, Router, RouterLink } from '@angular/router';
+import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, computed, inject } from '@angular/core';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Subject, catchError, distinctUntilChanged, firstValueFrom, map, of, switchMap, takeUntil, tap } from 'rxjs';
 import {
   DEFAULT_SHOP_FILTERS,
-  ShopDistanceSlug,
   ShopEvent,
   ShopFilters,
   ShopPagination
@@ -17,23 +16,7 @@ import { FilterBar } from '../../../../shared/components/filter-bar/filter-bar';
 import { Pagination } from '../../../../shared/components/pagination/pagination';
 import { SearchBar } from '../../../../shared/components/search-bar/search-bar';
 import { EventShopCard } from '../../components/event-shop-card/event-shop-card';
-
-const DISTANCE_SLUGS = new Set<ShopDistanceSlug>(['corta', 'media', 'larga', 'ultra']);
-
-function toText(value: unknown): string | null {
-  return typeof value === 'string' && value.trim() !== '' ? value.trim() : null;
-}
-
-function toPositiveInt(value: unknown): number | undefined {
-  const number = Number(value);
-  return Number.isInteger(number) && number > 0 ? number : undefined;
-}
-
-function toDistanceSlug(value: unknown): ShopDistanceSlug | null {
-  return typeof value === 'string' && DISTANCE_SLUGS.has(value as ShopDistanceSlug)
-    ? (value as ShopDistanceSlug)
-    : null;
-}
+import { buildShopQueryParams, parseShopFilters } from '../../utils/shop-query.util';
 
 function filtersKey(filters: ShopFilters): string {
   return JSON.stringify(filters);
@@ -60,7 +43,11 @@ function emptyPagination(limit: number): ShopPagination {
   template: `
     <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       <div class="mb-6">
-        <a routerLink="/shop" class="text-sm font-medium text-brand hover:underline">
+        <a
+          [routerLink]="['/shop']"
+          [queryParams]="shopQueryParams()"
+          class="text-sm font-medium text-brand hover:underline"
+        >
           ← Volver al shop
         </a>
 
@@ -143,6 +130,7 @@ export class ShopList implements OnInit, OnDestroy {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly destroy$ = new Subject<void>();
+  protected readonly shopQueryParams = computed(() => buildShopQueryParams(this.store.filters()));
 
   ngOnInit(): void {
     if (!this.store.catalogueLoaded()) {
@@ -151,7 +139,7 @@ export class ShopList implements OnInit, OnDestroy {
 
     this.route.queryParams
       .pipe(
-        map((params) => this.toFilters(params)),
+        map((params) => parseShopFilters(params)),
         distinctUntilChanged((previous, current) => filtersKey(previous) === filtersKey(current)),
         tap((filters) => {
           this.store.setFilters(filters);
@@ -229,7 +217,9 @@ export class ShopList implements OnInit, OnDestroy {
   }
 
   protected onEventSelect(event: ShopEvent): void {
-    void this.router.navigate(['/shop/experiences', event.slug]);
+    void this.router.navigate(['/shop/experiences', event.slug], {
+      queryParams: this.shopQueryParams()
+    });
   }
 
   private navigate(patch: Partial<ShopFilters>): void {
@@ -238,39 +228,9 @@ export class ShopList implements OnInit, OnDestroy {
 
     void this.router.navigate([], {
       relativeTo: this.route,
-      queryParams: this.buildQueryParams(nextFilters),
+      queryParams: buildShopQueryParams(nextFilters),
       replaceUrl: true
     });
-  }
-
-  private toFilters(params: Params): ShopFilters {
-    return {
-      categorySlug: toText(params['categorySlug']),
-      hostSlug: toText(params['hostSlug']),
-      locationSlug: toText(params['locationSlug']),
-      distanceSlug: toDistanceSlug(params['distanceSlug']),
-      search: toText(params['search']) ?? '',
-      page: toPositiveInt(params['page']) ?? 1,
-      limit: toPositiveInt(params['limit']) ?? DEFAULT_SHOP_FILTERS.limit
-    };
-  }
-
-  private buildQueryParams(filters: ShopFilters): Record<string, string> {
-    const params: Record<string, string> = {};
-
-    if (filters.categorySlug) params['categorySlug'] = filters.categorySlug;
-    if (filters.hostSlug) params['hostSlug'] = filters.hostSlug;
-    if (filters.locationSlug) params['locationSlug'] = filters.locationSlug;
-    if (filters.distanceSlug) params['distanceSlug'] = filters.distanceSlug;
-    if (filters.search?.trim()) params['search'] = filters.search.trim();
-
-    const page = filters.page ?? 1;
-    if (page > 1) params['page'] = String(page);
-
-    const limit = filters.limit ?? DEFAULT_SHOP_FILTERS.limit!;
-    if (limit !== DEFAULT_SHOP_FILTERS.limit) params['limit'] = String(limit);
-
-    return params;
   }
 
   private async loadCatalogue(): Promise<void> {

@@ -2,15 +2,16 @@ import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/cor
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { AuthStore } from '../../../core/stores/auth.store';
+import { ThemeToggle } from '../theme-toggle/theme-toggle';
 import { UserAvatar } from '../user-avatar/user-avatar';
 
 @Component({
   selector: 'app-navbar',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, RouterLinkActive, UserAvatar],
+  imports: [RouterLink, RouterLinkActive, ThemeToggle, UserAvatar],
   template: `
-    <header class="sticky top-0 z-40 border-b border-gray-200 bg-white/90 backdrop-blur">
+    <header class="sticky top-0 z-40 border-b border-gray-200 bg-surface/90 backdrop-blur">
       <nav
         class="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8"
         aria-label="Navegación principal"
@@ -52,6 +53,7 @@ import { UserAvatar } from '../user-avatar/user-avatar';
             </a>
             <a routerLink="/events/create" class="button-primary">+ Nuevo evento</a>
           }
+          <app-theme-toggle />
           @if (user(); as currentUser) {
             <a
               routerLink="/profile"
@@ -118,6 +120,10 @@ import { UserAvatar } from '../user-avatar/user-avatar';
 
       @if (menuOpen()) {
         <div id="mobile-menu" class="space-y-1 border-t border-gray-100 px-4 py-3 sm:hidden">
+          <div class="flex items-center justify-between rounded-lg px-3 py-2">
+            <span class="text-sm font-medium text-gray-700">Tema</span>
+            <app-theme-toggle />
+          </div>
           @if (user(); as currentUser) {
             <div class="mb-3 flex items-center gap-3 rounded-xl bg-gray-50 px-3 py-2">
               <app-user-avatar

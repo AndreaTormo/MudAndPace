@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnDestroy, OnInit, input, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { resolveAssetUrl } from '../../../../shared/utils/asset.util';
 
@@ -45,8 +45,9 @@ const ROTATE_INTERVAL_MS = 5000;
               Explora experiencias por categoría, organizador o destino y elige la salida que mejor encaja contigo.
             </p>
             <a
-              routerLink="/shop/experiences"
-              class="mt-8 inline-flex items-center justify-center rounded-xl bg-white px-5 py-3 text-sm font-semibold text-brand shadow-sm transition-colors hover:bg-white/90"
+              [routerLink]="['/shop/experiences']"
+              [queryParams]="queryParams()"
+              class="mt-8 inline-flex items-center justify-center rounded-xl bg-surface px-5 py-3 text-sm font-semibold text-brand shadow-sm transition-colors hover:bg-surface/90"
             >
               Ver todas las experiencias
             </a>
@@ -58,7 +59,7 @@ const ROTATE_INTERVAL_MS = 5000;
             type="button"
             (click)="prev()"
             aria-label="Anterior"
-            class="absolute left-4 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/85 text-gray-700 shadow-md transition hover:bg-white"
+            class="overlay-control absolute left-4 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full"
           >
             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
               <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
@@ -68,7 +69,7 @@ const ROTATE_INTERVAL_MS = 5000;
             type="button"
             (click)="next()"
             aria-label="Siguiente"
-            class="absolute right-4 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/85 text-gray-700 shadow-md transition hover:bg-white"
+            class="overlay-control absolute right-4 top-1/2 z-10 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full"
           >
             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
               <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
@@ -92,6 +93,7 @@ const ROTATE_INTERVAL_MS = 5000;
   `
 })
 export class ShopHero implements OnInit, OnDestroy {
+  readonly queryParams = input<Record<string, string>>({});
   protected readonly images = HERO_IMAGES.map((url) => resolveAssetUrl(url));
   protected readonly activeIndex = signal(0);
 

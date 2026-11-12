@@ -1,11 +1,12 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { RouterLink, RouterOutlet } from '@angular/router';
+import { ThemeToggle } from '../../shared/components/theme-toggle/theme-toggle';
 
 @Component({
   selector: 'app-auth-layout',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, RouterOutlet],
+  imports: [RouterLink, RouterOutlet, ThemeToggle],
   template: `
     <div class="relative min-h-screen overflow-hidden bg-gray-50">
       <div class="mountain-backdrop" aria-hidden="true"></div>
@@ -25,7 +26,10 @@ import { RouterLink, RouterOutlet } from '@angular/router';
             />
             <span>Mud and Pace</span>
           </a>
-          <span class="text-sm text-gray-500">Acceso a la plataforma</span>
+          <div class="flex items-center gap-3">
+            <span class="hidden text-sm text-gray-500 sm:inline">Acceso a la plataforma</span>
+            <app-theme-toggle />
+          </div>
         </header>
 
         <main class="flex flex-1 items-start justify-center px-4 py-10 sm:px-6 sm:py-16">

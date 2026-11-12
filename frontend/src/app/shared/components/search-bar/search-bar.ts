@@ -32,7 +32,7 @@ function debounce<T extends (...args: Parameters<T>) => void>(fn: T, delay: numb
         [placeholder]="placeholder()"
         [(ngModel)]="_value"
         (ngModelChange)="onInput($event)"
-        class="w-full rounded-full border border-gray-300 bg-white py-2.5 pl-10 pr-10 text-sm text-gray-800 shadow-sm transition placeholder:text-gray-400 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-brand"
+        class="w-full rounded-full border border-gray-300 bg-surface py-2.5 pl-10 pr-10 text-sm text-gray-800 shadow-sm transition placeholder:text-gray-400 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-brand"
       />
 
       @if (_value) {

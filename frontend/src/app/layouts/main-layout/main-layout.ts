@@ -4,12 +4,13 @@ import { AuthStore } from '../../core/stores/auth.store';
 import { Navbar } from '../../shared/components/navbar/navbar';
 import { Sidebar } from '../../shared/components/sidebar/sidebar';
 import { Loader } from '../../shared/components/loader/loader';
+import { ChatWidget } from '../../shared/components/chat-widget/chat-widget';
 
 @Component({
   selector: 'app-main-layout',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterOutlet, Navbar, Sidebar, Loader],
+  imports: [RouterOutlet, Navbar, Sidebar, Loader, ChatWidget],
   template: `
     <div class="min-h-screen bg-gray-50">
       <div class="mountain-backdrop" aria-hidden="true"></div>
@@ -23,6 +24,9 @@ import { Loader } from '../../shared/components/loader/loader';
             <router-outlet />
           </main>
         </div>
+        @defer (on idle) {
+          <app-chat-widget />
+        }
       </div>
     </div>
   `
