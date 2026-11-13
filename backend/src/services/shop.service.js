@@ -3,13 +3,24 @@ const referenceRepository = require('../repositories/reference.repository');
 const departureService = require('./departure.service');
 const { AppError, normalizeAppError } = require('../utils/appError');
 const { validateService } = require('../utils/validation');
-const { combineClauses, mergeValues } = require('../utils/queryBuilder');
+const { combineClauses, mergeValues, regexOr } = require('../utils/queryBuilder');
 const { slugSchema } = require('../validators/event.validator');
 const { shopListQuerySchema } = require('../validators/shop.validator');
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 9;
 const MAX_LIMIT = 100;
+const DEFAULT_SORT = 'date_asc';
+
+const SORT_OPTIONS = {
+  date_asc: { startDate: 1, _id: 1 },
+  date_desc: { startDate: -1, _id: 1 },
+  price_asc: { price: 1, _id: 1 },
+  price_desc: { price: -1, _id: 1 },
+  distance_asc: { distanceKm: 1, _id: 1 },
+  distance_desc: { distanceKm: -1, _id: 1 },
+  name_asc: { name: 1, _id: 1 }
+};
 
 const DISTANCE_RANGES = {
   corta: { $lt: 10 },
@@ -50,6 +61,19 @@ function distanceClause(slug) {
       { 'variants.distanceKm': range }
     ]
   };
+}
+
+function partialSearchClause(value) {
+  const tokens = String(value)
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
+
+  const clauses = tokens.map((token) =>
+    regexOr(['name', 'description', 'tags', 'slug'], token)
+  );
+
+  return clauses.length === 1 ? clauses[0] : { $and: clauses };
 }
 
 function groupImages(images = []) {
@@ -94,6 +118,7 @@ class ShopService {
       const input = normalizeShopQuery(validateService(shopListQuerySchema, rawQuery));
       const page = input.page ?? DEFAULT_PAGE;
       const limit = Math.min(MAX_LIMIT, input.limit ?? DEFAULT_LIMIT);
+      const sort = SORT_OPTIONS[input.sort ?? DEFAULT_SORT] ?? SORT_OPTIONS[DEFAULT_SORT];
 
       const [categoryIds, hostIds, locationIds] = await Promise.all([
         input.categorySlug
@@ -124,11 +149,11 @@ class ShopService {
       if (input.distanceSlug) clauses.push(distanceClause(input.distanceSlug));
       if (input.minPrice !== undefined) clauses.push({ price: { $gte: input.minPrice } });
       if (input.maxPrice !== undefined) clauses.push({ price: { $lte: input.maxPrice } });
-      if (input.search) clauses.push({ $text: { $search: input.search } });
+      if (input.search) clauses.push(partialSearchClause(input.search));
 
       const { data, total } = await repository.findPublishedEvents(
         combineClauses(clauses),
-        { page, limit }
+        { page, limit, sort }
       );
 
       const images = await repository.findImagesByEventIds(data.map((event) => event._id));

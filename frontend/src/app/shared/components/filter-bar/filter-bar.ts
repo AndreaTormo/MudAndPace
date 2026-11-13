@@ -1,10 +1,12 @@
 import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
 import { EventCategory, EventHost, EventLocation } from '../../../core/models/event.model';
 import {
+  DEFAULT_SHOP_SORT,
   SHOP_DISTANCE_OPTIONS,
   SHOP_MAX_PRICE,
   SHOP_MIN_PRICE,
   SHOP_PRICE_STEP,
+  SHOP_SORT_OPTIONS,
   ShopDistanceSlug,
   ShopFilters
 } from '../../../core/models/shop.model';
@@ -69,6 +71,18 @@ import {
         }
       </select>
 
+      <select
+        [value]="filters().sort ?? defaultSort"
+        (change)="onSortChange($event)"
+        aria-label="Ordenar eventos"
+        [disabled]="disabled()"
+        class="rounded-full border border-gray-300 bg-surface px-3 py-2 text-sm text-gray-700 shadow-sm transition focus:border-transparent focus:outline-none focus:ring-2 focus:ring-brand disabled:cursor-not-allowed disabled:opacity-50"
+      >
+        @for (option of sortOptions; track option.value) {
+          <option [value]="option.value">{{ option.label }}</option>
+        }
+      </select>
+
       <div class="flex items-center gap-3 rounded-full border border-gray-300 bg-surface px-4 py-2 shadow-sm">
         <span class="whitespace-nowrap text-xs font-medium text-gray-500">Precio</span>
         <div class="relative h-4 w-40 min-w-[120px] sm:w-48">
@@ -108,6 +122,13 @@ import {
         </span>
       </div>
 
+      @if (activeFilterCount() > 0) {
+        <span class="whitespace-nowrap rounded-full bg-brand/10 px-3 py-2 text-xs font-semibold text-brand">
+          {{ activeFilterCount() }}
+          {{ activeFilterCount() === 1 ? 'filtro aplicado' : 'filtros aplicados' }}
+        </span>
+      }
+
       @if (hasActiveFilters()) {
         <button
           type="button"
@@ -127,11 +148,14 @@ export class FilterBar {
   readonly hosts = input<EventHost[]>([]);
   readonly locations = input<EventLocation[]>([]);
   readonly hasActiveFilters = input(false);
+  readonly activeFilterCount = input(0);
   readonly disabled = input(false);
 
   readonly filterChange = output<Partial<ShopFilters>>();
   readonly filtersReset = output<void>();
 
+  protected readonly defaultSort = DEFAULT_SHOP_SORT;
+  protected readonly sortOptions = SHOP_SORT_OPTIONS;
   protected readonly distanceOptions = SHOP_DISTANCE_OPTIONS;
   protected readonly minPrice = SHOP_MIN_PRICE;
   protected readonly maxPrice = SHOP_MAX_PRICE;
@@ -164,6 +188,11 @@ export class FilterBar {
   protected onDistanceChange(event: Event): void {
     const value = (event.target as HTMLSelectElement).value as ShopDistanceSlug | '';
     this.filterChange.emit({ distanceSlug: value || null, page: 1 });
+  }
+
+  protected onSortChange(event: Event): void {
+    const value = (event.target as HTMLSelectElement).value as ShopFilters['sort'];
+    this.filterChange.emit({ sort: value, page: 1 });
   }
 
   protected onPriceMinInput(event: Event): void {

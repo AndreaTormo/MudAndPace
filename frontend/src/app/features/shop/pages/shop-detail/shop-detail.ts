@@ -133,100 +133,110 @@ import { buildShopQueryParams, parseShopFilters } from '../../utils/shop-query.u
               }
             </section>
 
-            <section>
-              @if (ev.category; as category) {
-                <span class="badge bg-brand/10 text-brand">{{ category.name }}</span>
-              }
-              <h1 class="mt-3 text-3xl font-bold leading-tight text-gray-900">{{ ev.name }}</h1>
-              <p class="mt-1 text-sm text-gray-500">{{ locationText() }}</p>
-            </section>
-
-            <section class="rounded-2xl border border-gray-200 bg-surface/80 p-5 backdrop-blur-sm">
-              <h2 class="mb-3 text-base font-semibold text-gray-900">Descripción</h2>
-              @if (ev.description) {
-                <p class="whitespace-pre-line text-sm leading-relaxed text-gray-700">
-                  {{ ev.description }}
-                </p>
-              } @else {
-                <p class="text-sm text-gray-400">Este evento no tiene descripción.</p>
-              }
-            </section>
-
-            @if (ev.variants?.length) {
-              <section class="rounded-2xl border border-gray-200 bg-surface/80 p-5 backdrop-blur-sm">
-                <div class="mb-3 flex items-center justify-between gap-3">
-                  <h2 class="text-base font-semibold text-gray-900">Modalidades</h2>
-                  <span class="text-xs font-medium uppercase tracking-wide text-gray-400">
-                    {{ ev.variants!.length }}
-                    {{ ev.variants!.length === 1 ? 'modalidad' : 'modalidades' }}
+            <section class="rounded-[16px] border border-gray-200 bg-white p-6 sm:p-8 dark:border-[#364530] dark:bg-[#101810]" style="font-family: Inter, system-ui, sans-serif;">
+              <div class="space-y-8">
+                <header class="space-y-3">
+                  <span class="inline-flex items-center rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-xs font-medium uppercase tracking-[0.08em] text-gray-600 dark:border-[#364530] dark:bg-[#1D291D] dark:text-[#AFBDA6]">
+                    {{ ev.category?.name || 'Trail' }}
                   </span>
-                </div>
-                <div class="grid gap-3 sm:grid-cols-2">
-                  @for (variant of ev.variants!; track variant) {
-                    <div class="rounded-xl border border-gray-100 bg-gradient-to-br from-brand/5 to-white p-4">
-                      <div class="flex items-center justify-between gap-2">
-                        <p class="font-semibold text-gray-900">{{ variant.name }}</p>
-                        <span class="font-semibold text-brand">{{ formatPrice(variant.price) }}</span>
-                      </div>
-                      <dl class="mt-2 grid grid-cols-2 gap-2 text-sm">
-                        <div>
-                          <dt class="text-xs text-gray-500">Distancia</dt>
-                          <dd class="font-medium text-gray-800">{{ formatDistance(variant.distanceKm) }}</dd>
-                        </div>
-                        <div>
-                          <dt class="text-xs text-gray-500">Desnivel +</dt>
-                          <dd class="font-medium text-gray-800">{{ formatElevation(variant.elevationGain) }}</dd>
-                        </div>
-                      </dl>
-                    </div>
-                  }
-                </div>
-              </section>
-            }
+                  <div class="space-y-2">
+                    <h1 class="text-3xl font-bold leading-tight text-gray-900 dark:text-[#F4F6EF] sm:text-4xl">{{ ev.name }}</h1>
+                    <p class="text-sm text-gray-500 dark:text-[#AFBDA6] sm:text-base">
+                      @if (eventYear()) { {{ eventYear() }} · }{{ locationText() }}
+                    </p>
+                  </div>
+                </header>
 
-            @if (hasCharacteristics()) {
-              <section class="rounded-2xl border border-gray-200 bg-surface/80 p-5 backdrop-blur-sm">
-                <h2 class="mb-3 text-base font-semibold text-gray-900">Características</h2>
-                <dl class="space-y-2 text-sm">
-                  @if (difficultyLabel(); as difficulty) {
-                    <div class="flex justify-between gap-2">
-                      <dt class="text-gray-500">Dificultad</dt>
-                      <dd class="text-gray-800">{{ difficulty }}</dd>
-                    </div>
+                <div class="space-y-3">
+                  <h2 class="text-sm font-semibold uppercase tracking-[0.08em] text-gray-500 dark:text-[#AFBDA6]">Descripción</h2>
+                  @if (ev.description) {
+                    <p class="max-w-3xl whitespace-pre-line text-base leading-relaxed text-gray-800 dark:text-[#F4F6EF]">
+                      {{ ev.description }}
+                    </p>
+                  } @else {
+                    <p class="text-base text-gray-500 dark:text-[#AFBDA6]">Este evento no tiene descripción.</p>
                   }
-                  @if (ev.elevationLossM) {
-                    <div class="flex justify-between gap-2">
-                      <dt class="text-gray-500">Desnivel −</dt>
-                      <dd class="text-gray-800">{{ formatElevation(ev.elevationLossM) }}</dd>
+                </div>
+
+                @if (ev.variants?.length) {
+                  <section class="space-y-4">
+                    <h2 class="text-sm font-semibold uppercase tracking-[0.08em] text-gray-500 dark:text-[#AFBDA6]">Modalidades</h2>
+                    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                      @for (variant of ev.variants!; track $index) {
+                        <article class="flex h-full flex-col rounded-[16px] border border-gray-200 bg-gray-50 p-4 sm:p-6 dark:border-[#364530] dark:bg-[#1D291D]">
+                          <div class="flex items-start justify-between gap-4">
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-[#F4F6EF]">{{ variant.name }}</h3>
+                            <p class="shrink-0 text-lg font-semibold text-brand dark:text-[#C4F278]">{{ formatPrice(variant.price) }}</p>
+                          </div>
+                          <div class="my-4 border-t border-gray-200 dark:border-[#364530]"></div>
+                          <dl class="mt-auto space-y-3 text-sm">
+                            <div class="flex items-center justify-between gap-4">
+                              <dt class="text-gray-500 dark:text-[#AFBDA6]">Distancia</dt>
+                              <dd class="font-medium text-gray-900 dark:text-[#F4F6EF]">{{ formatDistance(variant.distanceKm) }}</dd>
+                            </div>
+                            <div class="flex items-center justify-between gap-4">
+                              <dt class="text-gray-500 dark:text-[#AFBDA6]">Desnivel +</dt>
+                              <dd class="font-medium text-gray-900 dark:text-[#F4F6EF]">{{ formatElevation(variant.elevationGain) }}</dd>
+                            </div>
+                          </dl>
+                        </article>
+                      }
                     </div>
-                  }
-                </dl>
-                @if (ev.surface?.length) {
-                  <div class="mt-3 flex flex-wrap gap-2">
-                    @for (surface of ev.surface; track surface) {
-                      <span class="badge bg-gray-100 text-gray-700">{{ surfaceLabels[surface] }}</span>
-                    }
-                  </div>
+                  </section>
                 }
-                @if (ev.tags?.length) {
-                  <div class="mt-3 flex flex-wrap gap-2">
-                    @for (tag of ev.tags; track tag) {
-                      <span class="badge bg-brand/10 text-brand">#{{ tag }}</span>
-                    }
-                  </div>
+
+                @if (hasCharacteristics()) {
+                  <section class="rounded-[16px] border border-gray-200 bg-gray-50 p-4 sm:p-6 dark:border-[#364530] dark:bg-[#1D291D]">
+                    <h2 class="text-lg font-semibold text-gray-900 dark:text-[#F4F6EF]">Características</h2>
+                    <div class="mt-4 border-t border-gray-200 dark:border-[#364530]"></div>
+                    <div class="mt-4 space-y-6">
+                      @if (difficultyLabel(); as difficulty) {
+                        <div class="space-y-1">
+                          <p class="text-sm text-gray-500 dark:text-[#AFBDA6]">Dificultad</p>
+                          <p class="text-base font-medium text-gray-900 dark:text-[#F4F6EF]">{{ difficulty }}</p>
+                        </div>
+                      }
+                      @if (ev.elevationLossM !== null && ev.elevationLossM !== undefined) {
+                        <div class="space-y-1">
+                          <p class="text-sm text-gray-500 dark:text-[#AFBDA6]">Desnivel −</p>
+                          <p class="text-base font-semibold text-brand dark:text-[#C4F278]">{{ formatElevation(ev.elevationLossM) }}</p>
+                        </div>
+                      }
+                      @if (ev.surface?.length || ev.tags?.length) {
+                        <div class="space-y-3">
+                          @if (ev.surface?.length) {
+                            <div class="flex flex-wrap gap-2">
+                              @for (surface of ev.surface!; track surface) {
+                                <span class="inline-flex items-center rounded-full border border-gray-200 bg-white px-3 py-1 text-sm text-gray-700 dark:border-[#364530] dark:bg-[#101810] dark:text-[#F4F6EF]">
+                                  {{ surfaceLabels[surface] }}
+                                </span>
+                              }
+                            </div>
+                          }
+                          @if (ev.tags?.length) {
+                            <div class="flex flex-wrap gap-x-4 gap-y-2 text-sm text-gray-500 dark:text-[#AFBDA6]">
+                              @for (tag of ev.tags!; track tag) {
+                                <span>#{{ tag }}</span>
+                              }
+                            </div>
+                          }
+                        </div>
+                      }
+                      @if (ev.gpxUrl) {
+                        <a
+                          [href]="ev.gpxUrl"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          class="inline-block text-sm font-medium text-brand underline-offset-4 hover:underline dark:text-[#C4F278]"
+                        >
+                          Descargar GPX
+                        </a>
+                      }
+                    </div>
+                  </section>
                 }
-                @if (ev.gpxUrl) {
-                  <a
-                    [href]="ev.gpxUrl"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    class="mt-3 inline-block text-sm font-medium text-brand hover:underline"
-                  >
-                    Descargar GPX
-                  </a>
-                }
-              </section>
-            }
+              </div>
+            </section>
 
             <app-event-map [location]="ev.location" />
           </div>
@@ -418,6 +428,15 @@ export class ShopDetail implements OnInit, OnDestroy {
     return name ? name.charAt(0).toUpperCase() : '?';
   });
 
+  protected readonly eventYear = computed(() => {
+    const date = this.event()?.startDate;
+    if (!date) {
+      return '';
+    }
+    const year = new Date(date).getFullYear();
+    return Number.isFinite(year) ? String(year) : '';
+  });
+
   protected readonly difficultyLabel = computed(() => {
     const difficulty = this.event()?.difficulty;
     return difficulty ? DIFFICULTY_LABELS[difficulty] : null;
@@ -430,10 +449,10 @@ export class ShopDetail implements OnInit, OnDestroy {
     }
     return Boolean(
       event.difficulty ||
-        event.elevationLossM ||
+        event.elevationLossM !== undefined ||
+        event.elevationLossM !== null ||
         event.surface?.length ||
-        event.tags?.length ||
-        event.gpxUrl
+        event.tags?.length
     );
   });
 

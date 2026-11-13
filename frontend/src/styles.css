@@ -4,35 +4,41 @@
 
 @layer base {
   :root {
+    --brand: 56 102 65;
+    --brand-dark: 47 85 54;
+    --brand-accent: 74 124 89;
     --surface: 255 255 255;
-    --gray-50: 247 248 242;
-    --gray-100: 236 240 222;
-    --gray-200: 220 232 180;
-    --gray-300: 191 206 158;
-    --gray-400: 127 144 96;
-    --gray-500: 101 115 76;
-    --gray-600: 86 111 75;
-    --gray-700: 62 78 54;
-    --gray-800: 49 61 43;
-    --gray-900: 42 50 38;
+    --gray-50: 250 250 247;
+    --gray-100: 242 244 238;
+    --gray-200: 226 231 221;
+    --gray-300: 203 211 197;
+    --gray-400: 148 160 141;
+    --gray-500: 107 120 102;
+    --gray-600: 82 94 80;
+    --gray-700: 58 69 58;
+    --gray-800: 40 49 40;
+    --gray-900: 28 36 29;
   }
 
   .dark {
-    --surface: 26 33 26;
-    --gray-50: 15 20 15;
-    --gray-100: 35 44 35;
-    --gray-200: 47 58 47;
-    --gray-300: 62 76 62;
-    --gray-400: 111 127 102;
-    --gray-500: 147 162 135;
-    --gray-600: 169 183 157;
-    --gray-700: 195 207 184;
-    --gray-800: 216 225 207;
-    --gray-900: 238 243 232;
+    --brand: 127 175 122;
+    --brand-dark: 106 154 106;
+    --brand-accent: 127 175 122;
+    --surface: 24 33 24;
+    --gray-50: 16 24 16;
+    --gray-100: 29 41 29;
+    --gray-200: 48 64 48;
+    --gray-300: 70 90 70;
+    --gray-400: 134 152 128;
+    --gray-500: 168 184 162;
+    --gray-600: 190 203 185;
+    --gray-700: 210 220 206;
+    --gray-800: 228 235 224;
+    --gray-900: 244 246 239;
   }
 
   html {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     -webkit-font-smoothing: antialiased;
   }
 
@@ -65,10 +71,10 @@
     @apply pointer-events-none fixed inset-0 z-0;
     background: linear-gradient(
       to bottom,
-      #f7f8f2 0%,
-      rgba(247, 248, 242, 0.55) 18%,
-      rgba(247, 248, 242, 0.15) 42%,
-      rgba(247, 248, 242, 0) 60%
+      #fafaf7 0%,
+      rgba(250, 250, 247, 0.6) 18%,
+      rgba(250, 250, 247, 0.18) 42%,
+      rgba(250, 250, 247, 0) 60%
     );
   }
 
@@ -79,10 +85,10 @@
   .dark .mountain-fade {
     background: linear-gradient(
       to bottom,
-      #0f140f 0%,
-      rgba(15, 20, 15, 0.75) 18%,
-      rgba(15, 20, 15, 0.35) 42%,
-      rgba(15, 20, 15, 0) 60%
+      #101810 0%,
+      rgba(16, 24, 16, 0.78) 18%,
+      rgba(16, 24, 16, 0.38) 42%,
+      rgba(16, 24, 16, 0) 60%
     );
   }
 
@@ -372,15 +378,15 @@
   }
 
   .dark .text-brand {
-    color: #9bcb7f;
+    color: rgb(var(--brand));
   }
 
   .dark .hover\:text-brand:hover {
-    color: #9bcb7f;
+    color: rgb(var(--brand));
   }
 
   .dark .group:hover .group-hover\:text-brand {
-    color: #9bcb7f;
+    color: rgb(var(--brand));
   }
 }
 
@@ -616,6 +622,17 @@
   word-break: break-word;
 }
 
+.chat-message-content strong {
+  font-weight: 700;
+}
+
+.chat-message-content code {
+  padding: 0.1rem 0.3rem;
+  border-radius: 0.35rem;
+  background: rgba(17, 24, 39, 0.08);
+  font-size: 0.82em;
+}
+
 .chat-error {
   margin: 0;
   padding: 0.45rem 0.75rem;
@@ -640,6 +657,12 @@
   padding: 0.55rem 0.7rem;
   font-size: 0.875rem;
   background: #f9fafb;
+  color: #111827;
+  caret-color: #386641;
+}
+
+.chat-input::placeholder {
+  color: #9ca3af;
 }
 
 .chat-input:focus {
@@ -647,6 +670,23 @@
   border-color: #386641;
   background: #fff;
   box-shadow: 0 0 0 3px rgba(56, 102, 65, 0.12);
+}
+
+.dark .chat-input {
+  background: #1d291d;
+  border-color: #364530;
+  color: #f4f6ef;
+  caret-color: #c4f278;
+}
+
+.dark .chat-input::placeholder {
+  color: #8fa489;
+}
+
+.dark .chat-input:focus {
+  background: #101810;
+  border-color: #7faf7a;
+  box-shadow: 0 0 0 3px rgba(127, 175, 122, 0.18);
 }
 
 .chat-send-button {

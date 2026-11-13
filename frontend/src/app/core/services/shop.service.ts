@@ -10,6 +10,7 @@ import {
 } from '../models/event.model';
 import { Departure } from '../models/departure.model';
 import {
+  DEFAULT_SHOP_SORT,
   SHOP_MAX_PRICE,
   SHOP_MIN_PRICE,
   ShopCatalogue,
@@ -74,6 +75,9 @@ export class ShopService {
     }
     if (filters.search?.trim()) {
       params = params.set('search', filters.search.trim());
+    }
+    if (filters.sort && filters.sort !== DEFAULT_SHOP_SORT) {
+      params = params.set('sort', filters.sort);
     }
     if (filters.page !== undefined) {
       params = params.set('page', filters.page);

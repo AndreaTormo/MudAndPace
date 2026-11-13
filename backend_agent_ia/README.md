@@ -11,4 +11,4 @@ Módulo de chatbot para MudAndPace (Groq), integrado en `backend/` de v4.
 ## Variables de entorno (en `backend/.env`)
 
 - `GROQ_API_KEY`
-- `GROQ_MODEL` (por defecto `llama-3.3-70b-versatile`)
+- `GROQ_MODEL` (por defecto `openai/gpt-oss-120b`)

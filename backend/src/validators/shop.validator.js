@@ -4,6 +4,16 @@ const { slugSchema } = require('./event.validator');
 
 const distanceSlugSchema = z.enum(['corta', 'media', 'larga', 'ultra']);
 
+const sortSchema = z.enum([
+  'date_asc',
+  'date_desc',
+  'price_asc',
+  'price_desc',
+  'distance_asc',
+  'distance_desc',
+  'name_asc'
+]);
+
 const limitParam = z.preprocess(
   emptyToUndefined,
   z.coerce.number().int().min(1).max(100).optional()
@@ -21,6 +31,7 @@ const shopListQuerySchema = z.object({
   minPrice: numberParam(z.coerce.number().nonnegative()),
   maxPrice: numberParam(z.coerce.number().nonnegative()),
   search: stringParam(z.string().trim().min(1).max(120)),
+  sort: stringParam(sortSchema),
   page: pageParam,
   limit: limitParam,
   pageSize: limitParam
@@ -30,6 +41,7 @@ const shopSlugParamsSchema = z.object({ slug: slugSchema });
 
 module.exports = {
   distanceSlugSchema,
+  sortSchema,
   shopListQuerySchema,
   shopSlugParamsSchema
 };

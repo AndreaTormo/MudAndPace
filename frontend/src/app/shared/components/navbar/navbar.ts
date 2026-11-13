@@ -11,20 +11,25 @@ import { UserAvatar } from '../user-avatar/user-avatar';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [RouterLink, RouterLinkActive, ThemeToggle, UserAvatar],
   template: `
-    <header class="sticky top-0 z-40 border-b border-gray-200 bg-surface/90 backdrop-blur">
+    <header class="sticky top-0 z-40 border-b border-gray-200/80 bg-[#FAFAF7]/90 backdrop-blur dark:border-[#2A352A] dark:bg-[#101810]/90">
       <nav
         class="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8"
         aria-label="Navegación principal"
       >
-        <a routerLink="/events" class="flex items-center gap-2 text-lg font-semibold text-gray-900">
-          <img
-            src="logo.png"
-            alt="Mud and Pace"
-            width="32"
-            height="32"
-            class="h-8 w-8 rounded-lg object-cover"
-          />
-          <span class="hidden sm:inline">Mud and Pace</span>
+        <a
+          routerLink="/events"
+          class="flex items-center gap-2.5 text-gray-900 dark:text-[#EAF1E3]"
+          style="font-family: Inter, system-ui, sans-serif;"
+          aria-label="Mud and Pace, ir a eventos"
+        >
+          <span class="inline-flex h-9 w-9 items-center justify-center rounded-xl text-brand" aria-hidden="true">
+            <svg viewBox="0 0 32 32" class="h-8 w-8" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 23.5L11 11l5 6.5 2.5-3.5L29 23.5" />
+              <path d="M5 23.5c4.2-4 8.4-6 12.5-6 3.2 0 6.2 1.2 9.5 3.8" />
+              <path d="M8 23.5h16" />
+            </svg>
+          </span>
+          <span class="hidden text-[1.05rem] font-semibold tracking-[-0.02em] sm:inline">Mud and Pace</span>
         </a>
 
         <div class="hidden items-center gap-2 sm:flex">

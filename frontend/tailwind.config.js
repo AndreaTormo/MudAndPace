@@ -6,8 +6,9 @@ module.exports = {
     extend: {
       colors: {
         brand: {
-          DEFAULT: '#386641',
-          dark: '#2A4D30'
+          DEFAULT: 'rgb(var(--brand) / <alpha-value>)',
+          dark: 'rgb(var(--brand-dark) / <alpha-value>)',
+          accent: 'rgb(var(--brand-accent) / <alpha-value>)'
         },
         surface: 'rgb(var(--surface) / <alpha-value>)',
         leaf: '#DCE8B4',
@@ -27,6 +28,11 @@ module.exports = {
           800: 'rgb(var(--gray-800) / <alpha-value>)',
           900: 'rgb(var(--gray-900) / <alpha-value>)'
         }
+      },
+      borderRadius: {
+        xl: '0.875rem',
+        '2xl': '1rem',
+        '3xl': '1.25rem'
       }
     }
   },

@@ -87,6 +87,7 @@ function emptyPagination(limit: number): ShopPagination {
           [hosts]="store.hosts()"
           [locations]="store.locations()"
           [hasActiveFilters]="store.hasActiveFilters()"
+          [activeFilterCount]="store.activeFilterCount()"
           (filterChange)="onFilterChange($event)"
           (filtersReset)="onFiltersReset()"
         />

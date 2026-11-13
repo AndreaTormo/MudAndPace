@@ -38,14 +38,14 @@ class ShopRepository {
       .sort({ name: 1 });
   }
 
-  async findPublishedEvents(filters = {}, { page = 1, limit = 9 } = {}) {
+  async findPublishedEvents(filters = {}, { page = 1, limit = 9, sort = { startDate: 1, _id: 1 } } = {}) {
     const query = { ...PUBLISHED_EVENT, ...filters };
     const skip = (page - 1) * limit;
 
     const [data, total] = await Promise.all([
       Event.find(query)
         .populate(POPULATE)
-        .sort({ startDate: 1, _id: 1 })
+        .sort(sort)
         .skip(skip)
         .limit(limit),
       Event.countDocuments(query)

@@ -20,7 +20,7 @@ import { ChatStore } from '../../../core/stores/chat.store';
                 </svg>
               </span>
               <div>
-                <p class="chat-panel-title">Asistente MudAndPace</p>
+                <p class="chat-panel-title">Asistente Mud and Pace</p>
                 <p class="chat-panel-subtitle">Guía de trail y eventos</p>
               </div>
             </div>
@@ -49,7 +49,7 @@ import { ChatStore } from '../../../core/stores/chat.store';
             @for (msg of chat.messages(); track $index) {
               <div class="chat-message" [class.chat-message-user]="msg.role === 'user'" [class.chat-message-assistant]="msg.role === 'assistant'">
                 <p class="chat-message-role">{{ msg.role === 'user' ? 'Tú' : 'Asistente' }}</p>
-                <p class="chat-message-content">{{ msg.content }}</p>
+                <p class="chat-message-content" [innerHTML]="formatMessage(msg.content)"></p>
               </div>
             }
             @if (chat.loading()) {
@@ -115,6 +115,20 @@ export class ChatWidget {
         if (el) el.scrollTop = el.scrollHeight;
       });
     });
+  }
+
+  protected formatMessage(content: string): string {
+    const escaped = content
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+
+    return escaped
+      .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+      .replace(/__([^_]+)__/g, '<strong>$1</strong>')
+      .replace(/`([^`]+)`/g, '<code>$1</code>');
   }
 
   send(): void {

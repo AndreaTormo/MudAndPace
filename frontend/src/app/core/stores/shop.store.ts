@@ -106,6 +106,24 @@ export class ShopStore {
     );
   });
 
+  readonly activeFilterCount = computed(() => {
+    const filters = this._filters();
+    let count = 0;
+
+    if (filters.categorySlug) count += 1;
+    if (filters.hostSlug) count += 1;
+    if (filters.locationSlug) count += 1;
+    if (filters.distanceSlug) count += 1;
+    if (
+      (filters.minPrice ?? SHOP_MIN_PRICE) > SHOP_MIN_PRICE ||
+      (filters.maxPrice ?? SHOP_MAX_PRICE) < SHOP_MAX_PRICE
+    ) {
+      count += 1;
+    }
+
+    return count;
+  });
+
   setCatalogue(catalogue: ShopCatalogue): void {
     this._categories.set(catalogue.categories);
     this._hosts.set(catalogue.hosts);

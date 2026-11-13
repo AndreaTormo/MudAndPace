@@ -37,7 +37,7 @@ const ROTATE_INTERVAL_MS = 5000;
 
         <div class="absolute inset-0 flex items-center">
           <div class="mx-auto w-full max-w-3xl px-6 py-14 text-center text-white sm:px-12 sm:py-20">
-            <p class="text-sm font-medium uppercase tracking-[0.2em] text-white/80">MudAndPace Shop</p>
+            <p class="text-sm font-medium uppercase tracking-[0.2em] text-white/80">Mud and Pace Shop</p>
             <h1 class="mt-3 text-4xl font-bold leading-tight sm:text-5xl">
               Encuentra tu próxima experiencia de trail
             </h1>

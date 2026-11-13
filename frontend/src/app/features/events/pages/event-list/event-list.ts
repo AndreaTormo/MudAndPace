@@ -30,8 +30,10 @@ import { isHttpError, showUnexpectedError } from '../../../../shared/utils/error
     <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       <div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 class="text-2xl font-semibold text-gray-900">Eventos de trail</h1>
-          <p class="mt-0.5 text-sm text-gray-500">
+          <h1 class="text-3xl font-extrabold tracking-tight text-gray-900 sm:text-4xl" style="font-family: Inter, system-ui, sans-serif;">
+            Eventos de <span class="text-brand">trail</span>
+          </h1>
+          <p class="mt-2 text-sm font-medium text-gray-500">
             {{ store.count() }} eventos encontrados
           </p>
         </div>
