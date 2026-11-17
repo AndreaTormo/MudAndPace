@@ -18,7 +18,7 @@ export function showUnexpectedError(error?: unknown): void {
     text: isTimeout
       ? 'La petición ha superado el tiempo de espera. Comprueba que la API está activa.'
       : 'La respuesta del servidor no es válida. Inténtalo de nuevo más tarde.',
-    confirmButtonColor: '#386641',
+    confirmButtonColor: '#A3B18A',
     timer: 5000,
     timerProgressBar: true
   });

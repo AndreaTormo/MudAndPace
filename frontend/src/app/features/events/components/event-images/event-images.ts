@@ -23,7 +23,7 @@ const ALLOWED_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [EventImagesStore],
   template: `
-    <section class="rounded-2xl border border-gray-200 bg-surface/80 p-6 backdrop-blur-sm">
+    <section class="rounded-2xl border border-gray-200 bg-surface/80 p-6 backdrop-blur-sm dark:border-line">
       <div class="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h2 class="text-base font-semibold text-gray-900">Fotos del evento</h2>
@@ -37,8 +37,8 @@ const ALLOWED_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
       </div>
 
       @if (error()) {
-        <div class="mt-4 rounded-xl border border-red-200 bg-red-50 p-4">
-          <p class="text-sm text-red-700">{{ error() }}</p>
+        <div class="mt-4 rounded-xl border border-red-200 bg-red-50 p-4 dark:border-red-900/60 dark:bg-red-950/40">
+          <p class="text-sm text-red-700 dark:text-red-300">{{ error() }}</p>
           <button type="button" class="button-secondary mt-3" (click)="load()">
             Reintentar
           </button>
@@ -62,10 +62,10 @@ const ALLOWED_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
                     loading="lazy"
                   />
                   @if (image.isCover) {
-                    <span class="badge absolute left-2 top-2 bg-brand text-white">Portada</span>
+                    <span class="badge absolute left-2 top-2 bg-brand text-white dark:bg-brand dark:text-night">Portada</span>
                   }
                 </div>
-                <figcaption class="flex items-center justify-between gap-2 border-t border-gray-100 p-2">
+                <figcaption class="flex items-center justify-between gap-2 border-t border-gray-200 p-2 dark:border-line">
                   @if (image.isCover) {
                     <span class="text-xs font-medium text-gray-500">Portada actual</span>
                   } @else {
@@ -108,14 +108,14 @@ const ALLOWED_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
             }
           </div>
         } @else {
-          <p class="mt-5 rounded-xl border border-dashed border-gray-300 bg-gray-50 p-5 text-center text-sm text-gray-500">
+          <p class="mt-5 rounded-xl border border-dashed border-gray-300 bg-gray-50 p-5 text-center text-sm text-gray-500 dark:border-line dark:bg-night">
             Este evento todavía no tiene fotos.
           </p>
         }
 
         @if (images().length < maxImages) {
           <label
-            class="mt-4 flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 px-4 py-6 text-center transition-colors hover:border-brand hover:bg-green-50/50"
+            class="mt-4 flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 px-4 py-6 text-center transition-colors hover:border-brand hover:bg-green-50/50 dark:border-line dark:bg-night dark:hover:border-brand dark:hover:bg-night2"
             [class.border-brand]="dragging()"
             [class.bg-green-50]="dragging()"
             [class.pointer-events-none]="uploading()"
@@ -303,8 +303,8 @@ export class EventImages implements OnInit, OnChanges, OnDestroy {
       text: 'La foto se eliminará del evento de forma permanente.',
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonColor: '#386641',
-      cancelButtonColor: '#566F4B',
+      confirmButtonColor: '#A3B18A',
+      cancelButtonColor: 'rgb(var(--line))',
       confirmButtonText: 'Sí, eliminar',
       cancelButtonText: 'Cancelar'
     });
@@ -335,7 +335,7 @@ export class EventImages implements OnInit, OnChanges, OnDestroy {
       icon: 'warning',
       title,
       text,
-      confirmButtonColor: '#386641'
+      confirmButtonColor: '#A3B18A'
     });
   }
 }

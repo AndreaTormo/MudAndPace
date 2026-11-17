@@ -9,9 +9,11 @@ import {
 import { ShopFilters } from '../../../../core/models/shop.model';
 import { ShopService } from '../../../../core/services/shop.service';
 import { ShopStore } from '../../../../core/stores/shop.store';
+import { ActivityPanel } from '../../../../shared/components/activity-panel/activity-panel';
 import { EmptyState } from '../../../../shared/components/empty-state/empty-state';
 import { ErrorState } from '../../../../shared/components/error-state/error-state';
 import { EventMap } from '../../../../shared/components/event-map/event-map';
+import { WeatherCard } from '../../../../shared/components/weather-card/weather-card';
 import { SkeletonLoader } from '../../../../shared/components/skeleton-loader/skeleton-loader';
 import { resolveAssetUrl } from '../../../../shared/utils/asset.util';
 import { isHttpError } from '../../../../shared/utils/error.util';
@@ -29,7 +31,7 @@ import { buildShopQueryParams, parseShopFilters } from '../../utils/shop-query.u
   selector: 'app-shop-detail',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, EmptyState, ErrorState, EventMap, SkeletonLoader],
+  imports: [RouterLink, EmptyState, ErrorState, EventMap, ActivityPanel, WeatherCard, SkeletonLoader],
   template: `
     <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       @if (store.detailLoading()) {
@@ -133,50 +135,50 @@ import { buildShopQueryParams, parseShopFilters } from '../../utils/shop-query.u
               }
             </section>
 
-            <section class="rounded-[16px] border border-gray-200 bg-white p-6 sm:p-8 dark:border-[#364530] dark:bg-[#101810]" style="font-family: Inter, system-ui, sans-serif;">
+            <section class="rounded-[16px] border border-gray-200 bg-white p-6 sm:p-8 dark:border-line dark:bg-night2" style="font-family: Inter, system-ui, sans-serif;">
               <div class="space-y-8">
                 <header class="space-y-3">
-                  <span class="inline-flex items-center rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-xs font-medium uppercase tracking-[0.08em] text-gray-600 dark:border-[#364530] dark:bg-[#1D291D] dark:text-[#AFBDA6]">
+                  <span class="inline-flex items-center rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-xs font-medium uppercase tracking-[0.08em] text-gray-600 dark:border-line dark:bg-night2 dark:text-gray-500">
                     {{ ev.category?.name || 'Trail' }}
                   </span>
                   <div class="space-y-2">
-                    <h1 class="text-3xl font-bold leading-tight text-gray-900 dark:text-[#F4F6EF] sm:text-4xl">{{ ev.name }}</h1>
-                    <p class="text-sm text-gray-500 dark:text-[#AFBDA6] sm:text-base">
+                    <h1 class="text-3xl font-bold leading-tight text-gray-900 dark:text-gray-900 sm:text-4xl">{{ ev.name }}</h1>
+                    <p class="text-sm text-gray-500 dark:text-gray-500 sm:text-base">
                       @if (eventYear()) { {{ eventYear() }} · }{{ locationText() }}
                     </p>
                   </div>
                 </header>
 
                 <div class="space-y-3">
-                  <h2 class="text-sm font-semibold uppercase tracking-[0.08em] text-gray-500 dark:text-[#AFBDA6]">Descripción</h2>
+                  <h2 class="text-sm font-semibold uppercase tracking-[0.08em] text-gray-500 dark:text-gray-500">Descripción</h2>
                   @if (ev.description) {
-                    <p class="max-w-3xl whitespace-pre-line text-base leading-relaxed text-gray-800 dark:text-[#F4F6EF]">
+                    <p class="max-w-3xl whitespace-pre-line text-base leading-relaxed text-gray-800 dark:text-gray-900">
                       {{ ev.description }}
                     </p>
                   } @else {
-                    <p class="text-base text-gray-500 dark:text-[#AFBDA6]">Este evento no tiene descripción.</p>
+                    <p class="text-base text-gray-500 dark:text-gray-500">Este evento no tiene descripción.</p>
                   }
                 </div>
 
                 @if (ev.variants?.length) {
                   <section class="space-y-4">
-                    <h2 class="text-sm font-semibold uppercase tracking-[0.08em] text-gray-500 dark:text-[#AFBDA6]">Modalidades</h2>
+                    <h2 class="text-sm font-semibold uppercase tracking-[0.08em] text-gray-500 dark:text-gray-500">Modalidades</h2>
                     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                       @for (variant of ev.variants!; track $index) {
-                        <article class="flex h-full flex-col rounded-[16px] border border-gray-200 bg-gray-50 p-4 sm:p-6 dark:border-[#364530] dark:bg-[#1D291D]">
+                        <article class="flex h-full flex-col rounded-[16px] border border-gray-200 bg-gray-50 p-4 sm:p-6 dark:border-line dark:bg-night2">
                           <div class="flex items-start justify-between gap-4">
-                            <h3 class="text-lg font-semibold text-gray-900 dark:text-[#F4F6EF]">{{ variant.name }}</h3>
-                            <p class="shrink-0 text-lg font-semibold text-brand dark:text-[#C4F278]">{{ formatPrice(variant.price) }}</p>
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-900">{{ variant.name }}</h3>
+                            <p class="shrink-0 text-lg font-semibold text-brand dark:text-accent">{{ formatPrice(variant.price) }}</p>
                           </div>
-                          <div class="my-4 border-t border-gray-200 dark:border-[#364530]"></div>
+                          <div class="my-4 border-t border-gray-200 dark:border-line"></div>
                           <dl class="mt-auto space-y-3 text-sm">
                             <div class="flex items-center justify-between gap-4">
-                              <dt class="text-gray-500 dark:text-[#AFBDA6]">Distancia</dt>
-                              <dd class="font-medium text-gray-900 dark:text-[#F4F6EF]">{{ formatDistance(variant.distanceKm) }}</dd>
+                              <dt class="text-gray-500 dark:text-gray-500">Distancia</dt>
+                              <dd class="font-medium text-gray-900 dark:text-gray-900">{{ formatDistance(variant.distanceKm) }}</dd>
                             </div>
                             <div class="flex items-center justify-between gap-4">
-                              <dt class="text-gray-500 dark:text-[#AFBDA6]">Desnivel +</dt>
-                              <dd class="font-medium text-gray-900 dark:text-[#F4F6EF]">{{ formatElevation(variant.elevationGain) }}</dd>
+                              <dt class="text-gray-500 dark:text-gray-500">Desnivel +</dt>
+                              <dd class="font-medium text-gray-900 dark:text-gray-900">{{ formatElevation(variant.elevationGain) }}</dd>
                             </div>
                           </dl>
                         </article>
@@ -186,20 +188,20 @@ import { buildShopQueryParams, parseShopFilters } from '../../utils/shop-query.u
                 }
 
                 @if (hasCharacteristics()) {
-                  <section class="rounded-[16px] border border-gray-200 bg-gray-50 p-4 sm:p-6 dark:border-[#364530] dark:bg-[#1D291D]">
-                    <h2 class="text-lg font-semibold text-gray-900 dark:text-[#F4F6EF]">Características</h2>
-                    <div class="mt-4 border-t border-gray-200 dark:border-[#364530]"></div>
+                  <section class="rounded-[16px] border border-gray-200 bg-gray-50 p-4 sm:p-6 dark:border-line dark:bg-night2">
+                    <h2 class="text-lg font-semibold text-gray-900 dark:text-gray-900">Características</h2>
+                    <div class="mt-4 border-t border-gray-200 dark:border-line"></div>
                     <div class="mt-4 space-y-6">
                       @if (difficultyLabel(); as difficulty) {
                         <div class="space-y-1">
-                          <p class="text-sm text-gray-500 dark:text-[#AFBDA6]">Dificultad</p>
-                          <p class="text-base font-medium text-gray-900 dark:text-[#F4F6EF]">{{ difficulty }}</p>
+                          <p class="text-sm text-gray-500 dark:text-gray-500">Dificultad</p>
+                          <p class="text-base font-medium text-gray-900 dark:text-gray-900">{{ difficulty }}</p>
                         </div>
                       }
                       @if (ev.elevationLossM !== null && ev.elevationLossM !== undefined) {
                         <div class="space-y-1">
-                          <p class="text-sm text-gray-500 dark:text-[#AFBDA6]">Desnivel −</p>
-                          <p class="text-base font-semibold text-brand dark:text-[#C4F278]">{{ formatElevation(ev.elevationLossM) }}</p>
+                          <p class="text-sm text-gray-500 dark:text-gray-500">Desnivel −</p>
+                          <p class="text-base font-semibold text-brand dark:text-accent">{{ formatElevation(ev.elevationLossM) }}</p>
                         </div>
                       }
                       @if (ev.surface?.length || ev.tags?.length) {
@@ -207,14 +209,14 @@ import { buildShopQueryParams, parseShopFilters } from '../../utils/shop-query.u
                           @if (ev.surface?.length) {
                             <div class="flex flex-wrap gap-2">
                               @for (surface of ev.surface!; track surface) {
-                                <span class="inline-flex items-center rounded-full border border-gray-200 bg-white px-3 py-1 text-sm text-gray-700 dark:border-[#364530] dark:bg-[#101810] dark:text-[#F4F6EF]">
+                                <span class="inline-flex items-center rounded-full border border-gray-200 bg-white px-3 py-1 text-sm text-gray-700 dark:border-line dark:bg-night dark:text-gray-900">
                                   {{ surfaceLabels[surface] }}
                                 </span>
                               }
                             </div>
                           }
                           @if (ev.tags?.length) {
-                            <div class="flex flex-wrap gap-x-4 gap-y-2 text-sm text-gray-500 dark:text-[#AFBDA6]">
+                            <div class="flex flex-wrap gap-x-4 gap-y-2 text-sm text-gray-500 dark:text-gray-500">
                               @for (tag of ev.tags!; track tag) {
                                 <span>#{{ tag }}</span>
                               }
@@ -227,7 +229,7 @@ import { buildShopQueryParams, parseShopFilters } from '../../utils/shop-query.u
                           [href]="ev.gpxUrl"
                           target="_blank"
                           rel="noopener noreferrer"
-                          class="inline-block text-sm font-medium text-brand underline-offset-4 hover:underline dark:text-[#C4F278]"
+                          class="inline-block text-sm font-medium text-brand underline-offset-4 hover:underline dark:text-accent"
                         >
                           Descargar GPX
                         </a>
@@ -239,12 +241,20 @@ import { buildShopQueryParams, parseShopFilters } from '../../utils/shop-query.u
             </section>
 
             <app-event-map [location]="ev.location" />
+
+            <app-weather-card [location]="ev.location" [date]="weatherDate()" />
+
+            <app-activity-panel
+              [eventId]="ev._id"
+              [eventName]="ev.name"
+              [eventDate]="ev.startDate"
+            />
           </div>
 
           <aside class="space-y-4">
             <div class="sticky top-20 space-y-4 rounded-2xl border border-gray-200 bg-surface/80 p-5 backdrop-blur-sm">
               <div class="flex items-center gap-4">
-                <div class="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-brand text-xl font-bold text-white shadow-sm">
+                <div class="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-brand text-xl font-bold text-white shadow-sm dark:text-night">
                   {{ hostInitial() }}
                 </div>
                 <div class="min-w-0">
@@ -436,6 +446,10 @@ export class ShopDetail implements OnInit, OnDestroy {
     const year = new Date(date).getFullYear();
     return Number.isFinite(year) ? String(year) : '';
   });
+
+  protected readonly weatherDate = computed(
+    () => this.store.selectedDeparture()?.startDatetime ?? this.event()?.startDate
+  );
 
   protected readonly difficultyLabel = computed(() => {
     const difficulty = this.event()?.difficulty;

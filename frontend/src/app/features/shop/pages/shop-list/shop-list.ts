@@ -53,7 +53,7 @@ function emptyPagination(limit: number): ShopPagination {
 
         <div class="mt-3 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <h1 class="text-2xl font-semibold text-gray-900">Experiencias de trail</h1>
+            <h1 class="text-3xl font-bold tracking-tight text-gray-900">Experiencias de trail</h1>
             <p class="mt-0.5 text-sm text-gray-500">
               @if (store.loading()) {
                 Cargando experiencias…

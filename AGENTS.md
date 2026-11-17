@@ -1,10 +1,11 @@
 # AGENTS.md — MudAndPace v4
 
-Monorepo del proyecto de trail running. Dos aplicaciones npm independientes (sin `package.json` raíz ni workspace). Ejecuta cada comando desde su carpeta.
+Monorepo del proyecto de trail running. Tres aplicaciones npm independientes (sin `package.json` raíz ni workspace). Ejecuta cada comando desde su carpeta.
 
 ```text
-backend/   API Express + Mongoose (CommonJS, JS)
-frontend/  App Angular 18 (TypeScript, standalone)
+backend/           API Express + Mongoose (CommonJS, JS) — puerto 3000
+backend_agent_ia/  Asistente Groq + clima Open-Meteo (CommonJS, JS) — puerto 3001
+frontend/          App Angular 18 (TypeScript, standalone) — puerto 4200
 ```
 
 ## Comandos
@@ -17,11 +18,18 @@ npm start                        # node src/app.js
 npm run seed                     # node src/seed.js (datos de ejemplo + usuarios demo)
 docker compose up -d             # mongo:8 en 27017, volumen mongodb_data
 
+# IA  (http://localhost:3001, health en /health)
+npm install                      # en backend_agent_ia/
+npm run dev                      # nodemon
+npm start                        # node app.js
+
 # Frontend  (http://localhost:4200)
 npm install                      # en frontend/
 npm start                        # ng serve
 npm run build                    # typecheck + build de producción
 ```
+
+La IA es un servidor independiente. El frontend apunta a `AI_API_URL` (`http://localhost:3001/api/v1`); el resto de la API usa `API_URL` (`http://localhost:3000/api/v1`).
 
 La verificación es manual contra la API y la app; no hay tests automatizados.
 
@@ -151,7 +159,7 @@ Página → Store (signals) → Service (único que conoce la URL) → `ApiServi
 ### Rutas y guards
 
 - `/auth` → `AuthLayout` con login y registro.
-- `/` → `MainLayout` protegido por `authGuard`; redirige a `/events`.
+- `/` → `MainLayout` protegido por `authGuard`; redirige a `/shop`.
 - `/profile` → perfil del usuario autenticado.
 - `/admin/profiles` → listado de perfiles para `ADMIN`, protegido por `adminGuard`.
 - `/events` → lista; `/events/:id` → detalle; `/events/create`, `/events/:id/edit` y `/events/trash` protegidos por `adminGuard`.
@@ -160,8 +168,10 @@ Página → Store (signals) → Service (único que conoce la URL) → `ApiServi
 ### UI por rol
 
 - `navbar` y `sidebar` leen `AuthStore`; solo muestran perfiles de usuarios, crear evento, papelera y sección de administración a `ADMIN`.
+- En `/shop` la navbar se superpone al hero, la sidebar se oculta y el landing usa su propia paleta clara/oscura según el tema; el logo y la raíz enlazan a `/shop`.
 - `event-row` recibe `canManage`; las acciones de administración no se renderizan para `USER`.
 - `event-list` y `event-detail` ocultan crear/editar/eliminar/activar para `USER`.
+- El selector `Lista | Calendario` de `/events` solo se muestra a `ADMIN`; la preferencia se guarda en `localStorage` (`mudandpace.events.view`). El calendario es mensual en escritorio y agenda en móvil, y cada evento enlaza a `/events/:id`.
 - La autorización real siempre está en la API; el ocultado de UI es solo experiencia de usuario.
 
 ### Eventos
@@ -170,6 +180,7 @@ Página → Store (signals) → Service (único que conoce la URL) → `ApiServi
 - `buildUniqueSlug(name, excludeId)` en `event.service.js` deriva el slug del nombre con `utils/slugify.js` y resuelve colisiones con sufijos `-2`, `-3`… En `update` se ignora el propio evento.
 - Reglas de negocio numéricas: `distanceKm > 0`, `elevationGain >= 0`, `price >= 0`; se aplican también a cada elemento de `variants`. El evento debe tener al menos 3 modalidades, también al actualizar sin enviar `variants`.
 - Las modalidades se gestionan dentro del formulario de evento y se muestran en el detalle; el listado resume sus nombres. Los filtros de distancia consideran tanto la distancia principal como las modalidades.
+- La vista calendario usa los eventos ya cargados en `EventsStore` (sin endpoint nuevo). Los eventos de varios días aparecen en cada día que abarcan; `calendar.util.ts` calcula la rejilla mensual, los rangos y las etiquetas en fecha local.
 - Edición desde el dashboard (`/events/:id/edit`): el formulario solo permite modificar `name`, `description`, `categoryId`, `locationId`, `distanceKm`, `elevationGain` y `variants`. El resto de campos se conservan (actualización parcial).
 - `slugify` vive en `src/utils/slugify.js`; `utils/appError.js` lo reexporta por compatibilidad.
 - No se implementa módulo `Experience` ni reservas.

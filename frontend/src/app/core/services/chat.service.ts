@@ -9,6 +9,6 @@ export class ChatService {
   private readonly api = inject(ApiService);
 
   sendMessage(payload: ChatRequest): Observable<ApiResponse<ChatResponseData>> {
-    return this.api.post<ApiResponse<ChatResponseData>>('agent/chat', payload);
+    return this.api.postAi<ApiResponse<ChatResponseData>>('agent/chat', payload);
   }
 }

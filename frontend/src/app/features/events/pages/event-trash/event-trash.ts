@@ -122,8 +122,8 @@ export class EventTrash implements OnInit {
       text: `${event.name} volverá al listado como inactivo.`,
       icon: 'question',
       showCancelButton: true,
-      confirmButtonColor: '#386641',
-      cancelButtonColor: '#566F4B',
+      confirmButtonColor: '#A3B18A',
+      cancelButtonColor: 'rgb(var(--line))',
       confirmButtonText: 'Sí, recuperar',
       cancelButtonText: 'Cancelar'
     });
@@ -158,8 +158,8 @@ export class EventTrash implements OnInit {
       text: `${event.name} se borrará para siempre y no podrá recuperarse.`,
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonColor: '#386641',
-      cancelButtonColor: '#566F4B',
+      confirmButtonColor: '#A3B18A',
+      cancelButtonColor: 'rgb(var(--line))',
       confirmButtonText: 'Sí, eliminar definitivamente',
       cancelButtonText: 'Cancelar'
     });

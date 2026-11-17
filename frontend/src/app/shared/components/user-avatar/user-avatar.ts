@@ -42,7 +42,7 @@ export class UserAvatar {
 
   protected readonly containerClass = computed(() => {
     const base =
-      'grid shrink-0 place-items-center overflow-hidden bg-brand font-bold text-white';
+      'grid shrink-0 place-items-center overflow-hidden bg-brand font-bold text-white dark:text-night';
     if (this.size() === 'lg') {
       return `${base} h-16 w-16 rounded-2xl text-2xl`;
     }

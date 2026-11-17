@@ -8,11 +8,16 @@ import { EventsStore } from '../../../../core/stores/events.store';
 import { EventService } from '../../../../core/services/event.service';
 import { Event } from '../../../../core/models/event.model';
 import { EventRow } from '../../components/event-row/event-row';
+import { EventCalendar } from '../../components/event-calendar/event-calendar';
 import { SkeletonLoader } from '../../../../shared/components/skeleton-loader/skeleton-loader';
 import { EmptyState } from '../../../../shared/components/empty-state/empty-state';
 import { ErrorState } from '../../../../shared/components/error-state/error-state';
 import { OBJECT_ID_PATTERN } from '../../../../shared/utils/validators';
 import { isHttpError, showUnexpectedError } from '../../../../shared/utils/error.util';
+
+type EventView = 'list' | 'calendar';
+
+const EVENT_VIEW_STORAGE_KEY = 'mudandpace.events.view';
 
 @Component({
   selector: 'app-event-list',
@@ -22,15 +27,16 @@ import { isHttpError, showUnexpectedError } from '../../../../shared/utils/error
     RouterLink,
     ReactiveFormsModule,
     EventRow,
+    EventCalendar,
     SkeletonLoader,
     EmptyState,
     ErrorState
   ],
   template: `
     <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-      <div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      <div class="mb-4 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 class="text-3xl font-extrabold tracking-tight text-gray-900 sm:text-4xl" style="font-family: Inter, system-ui, sans-serif;">
+          <h1 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl" style="font-family: Inter, system-ui, sans-serif;">
             Eventos de <span class="text-brand">trail</span>
           </h1>
           <p class="mt-2 text-sm font-medium text-gray-500">
@@ -38,7 +44,34 @@ import { isHttpError, showUnexpectedError } from '../../../../shared/utils/error
           </p>
         </div>
 
-        <div class="flex flex-col gap-3 sm:flex-row sm:items-start" [formGroup]="searchForm">
+        @if (isAdmin()) {
+          <div
+            class="inline-flex self-start rounded-lg border border-gray-200 bg-surface p-1 shadow-sm dark:border-line sm:self-auto"
+            role="group"
+            aria-label="Vista de eventos"
+          >
+            <button
+              type="button"
+              [class]="viewButtonClass('list')"
+              [attr.aria-pressed]="view() === 'list'"
+              (click)="setView('list')"
+            >
+              Lista
+            </button>
+            <button
+              type="button"
+              [class]="viewButtonClass('calendar')"
+              [attr.aria-pressed]="view() === 'calendar'"
+              (click)="setView('calendar')"
+            >
+              Calendario
+            </button>
+          </div>
+        }
+      </div>
+
+      @if (view() === 'list') {
+        <div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-end" [formGroup]="searchForm">
           <div class="w-full sm:w-64">
             <label class="sr-only" for="search-id">Buscar evento por ID</label>
             <input
@@ -64,7 +97,13 @@ import { isHttpError, showUnexpectedError } from '../../../../shared/utils/error
             }
           </div>
         </div>
-      </div>
+      } @else if (isAdmin()) {
+        <div class="mb-6 flex justify-end">
+          <a routerLink="/events/create" class="button-primary whitespace-nowrap">
+            + Nuevo evento
+          </a>
+        </div>
+      }
 
       <div class="mt-6">
         @if (store.loading()) {
@@ -79,8 +118,10 @@ import { isHttpError, showUnexpectedError } from '../../../../shared/utils/error
           } @else {
             <app-empty-state title="No hay eventos todavía" message="Todavía no hay eventos disponibles." />
           }
+        } @else if (view() === 'calendar') {
+          <app-event-calendar [events]="store.events()" />
         } @else {
-          <div class="divide-y divide-gray-100 overflow-hidden rounded-2xl border border-gray-200 bg-surface/80 backdrop-blur-sm shadow-sm">
+          <div class="divide-y divide-gray-200 overflow-hidden rounded-2xl border border-gray-200 bg-surface/80 backdrop-blur-sm shadow-sm dark:divide-line dark:border-line">
             @for (event of store.events(); track event._id) {
               <app-event-row
                 [event]="event"
@@ -111,10 +152,43 @@ export class EventList implements OnInit {
   });
   private readonly searchAttempted = signal(false);
   private readonly pending = signal<ReadonlySet<string>>(new Set());
+  protected readonly view = signal<EventView>('list');
 
   ngOnInit(): void {
+    this.restoreView();
     if (!this.store.loaded() || this.store.stale()) {
       this.load();
+    }
+  }
+
+  protected setView(view: EventView): void {
+    if (view === 'calendar' && !this.isAdmin()) {
+      return;
+    }
+    this.view.set(view);
+    try {
+      localStorage.setItem(EVENT_VIEW_STORAGE_KEY, view);
+    } catch {}
+  }
+
+  protected viewButtonClass(target: EventView): string {
+    const base = 'rounded-md px-3 py-1.5 text-sm font-semibold transition-colors';
+    return this.view() === target
+      ? `${base} bg-brand text-white shadow-sm dark:bg-brand dark:text-night`
+      : `${base} text-gray-600 hover:bg-gray-100 dark:text-gray-500 dark:hover:bg-night2`;
+  }
+
+  private restoreView(): void {
+    if (!this.isAdmin()) {
+      this.view.set('list');
+      return;
+    }
+    try {
+      if (localStorage.getItem(EVENT_VIEW_STORAGE_KEY) === 'calendar') {
+        this.view.set('calendar');
+      }
+    } catch {
+      this.view.set('list');
     }
   }
 
@@ -216,8 +290,8 @@ export class EventList implements OnInit {
       text: `${event.name} pasará a la papelera. Podrás recuperarlo después.`,
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonColor: '#386641',
-      cancelButtonColor: '#566F4B',
+      confirmButtonColor: '#A3B18A',
+      cancelButtonColor: 'rgb(var(--line))',
       confirmButtonText: 'Sí, eliminar',
       cancelButtonText: 'Cancelar'
     });
@@ -249,8 +323,8 @@ export class EventList implements OnInit {
       text: `${event.name} volverá a estar activo.`,
       icon: 'question',
       showCancelButton: true,
-      confirmButtonColor: '#386641',
-      cancelButtonColor: '#566F4B',
+      confirmButtonColor: '#A3B18A',
+      cancelButtonColor: 'rgb(var(--line))',
       confirmButtonText: 'Sí, activar',
       cancelButtonText: 'Cancelar'
     });

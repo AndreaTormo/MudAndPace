@@ -3,7 +3,8 @@
 Memoria del proyecto entre sesiones. Breve y actualizada.
 
 ## Estado actual
-- v4 con backend (Express + Mongoose) y frontend (Angular 18) funcionales.
+- v4 con backend (Express + Mongoose, puerto 3000), servidor de IA (`backend_agent_ia`, puerto 3001) y frontend (Angular 18) funcionales.
+- `backend_agent_ia` es una app npm independiente con su propio `package.json`, `app.js` y `.env`; expone `/api/v1/agent/chat` y `/api/v1/agent/weather` en el 3001. El backend principal ya no monta la IA.
 - Autenticación JWT: registro (`POST /users/register`), login y logout con revocación de sesión. No hay verificación de email ni reset de contraseña.
 - RBAC (`USER`/`ADMIN`) con `User.role` como campo simple; perfiles self-or-admin. Frontend con `AuthStore` (caché híbrido en localStorage + refresh `/me`), guards (`auth`, `guest`, `admin` en fichero propio) e interceptores.
 - Módulo único de contenido: `events`. El módulo `trailRoute` (rutas) se eliminó.
@@ -34,6 +35,8 @@ Memoria del proyecto entre sesiones. Breve y actualizada.
 - `GET /events` pagina explícitamente (`page`, `pageSize` máximo 100) y añade `pagination`; referencias, usuarios y perfiles siguen completos.
 - Índices compuestos y de texto en modelos para home/listados; `connectDatabase()` ejecuta `ensureIndexes()`.
 - `Location` incluye `country` opcional; el seed lo rellena para las 13 ubicaciones.
+- La IA se separó en su propio servidor (3001) para que el backend quede solo en el 3000. El frontend usa `AI_API_URL` (`http://localhost:3001/api/v1`) para `agent/chat` y `agent/weather`; `ApiService` expone `getAi`/`postAi`.
+- El dashboard `/events` tiene selector `Lista | Calendario` solo para `ADMIN`, con preferencia en `localStorage` (`mudandpace.events.view`). El calendario es mensual en escritorio y agenda en móvil, usa los eventos de `EventsStore` y enlaza al detalle.
 
 ## Verificación
 - `npm run build` en `frontend/` pasa correctamente, incluida la gestión de modalidades de evento.

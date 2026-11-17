@@ -13,6 +13,6 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
   `
 })
 export class EmptyState {
-  title = input('No hay rutas todavía');
-  message = input('Crea una ruta de trail running para empezar a trabajar con la API.');
+  title = input('No hay eventos todavía');
+  message = input('Crea un evento de trail running para empezar.');
 }

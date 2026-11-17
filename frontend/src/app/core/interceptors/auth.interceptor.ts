@@ -8,7 +8,9 @@ function isPublicAuthUrl(url: string): boolean {
   return (
     url.includes('/auth/login') ||
     url.includes('/users/register') ||
-    url.includes('/agent/chat')
+    url.includes('/agent/chat') ||
+    url.includes('/agent/weather') ||
+    url.includes('/agent/activities')
   );
 }
 

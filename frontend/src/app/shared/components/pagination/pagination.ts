@@ -42,7 +42,7 @@ import { ShopPagination } from '../../../core/models/shop.model';
       </div>
 
       <p class="mt-2 text-center text-xs text-gray-500">
-        Mostrando {{ rangeStart() }}–{{ rangeEnd() }} de {{ pagination().total }} eventos
+        Mostrando {{ rangeStart() }}–{{ rangeEnd() }} de {{ pagination().total }} experiencias
       </p>
     }
   `
@@ -85,7 +85,7 @@ export class Pagination {
     const current = this.pagination().page;
     const base = 'h-9 w-9 rounded-lg text-sm font-medium transition-colors';
     if (page === current) {
-      return `${base} border border-brand bg-brand text-white`;
+      return `${base} border border-brand bg-brand text-white dark:text-night`;
     }
     return `${base} border border-gray-300 bg-surface text-gray-700 hover:bg-gray-50`;
   }

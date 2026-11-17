@@ -15,12 +15,6 @@ const eventRoutes = require('./routes/event.routes');
 const { router: departureRoutes, eventRouter: eventDepartureRoutes } = require('./routes/departure.routes');
 const referenceRoutes = require('./routes/reference.routes');
 const shopRoutes = require('./routes/shop.routes');
-let agentRoutes;
-try {
-  agentRoutes = require('../../backend_agent_ia/agent_ia_routes/agent_ia_routes');
-} catch (error) {
-  console.error('No se pudo cargar el módulo del asistente:', error.message);
-}
 const validate = require('./middlewares/validate.middleware');
 const errorMiddleware = require('./middlewares/error.middleware');
 
@@ -40,6 +34,7 @@ app.use(express.json({ limit: '2mb' }));
 app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
 
 app.get('/health', (req, res) => res.json({ status: 'ok', service: 'trail-running-api', timestamp: new Date().toISOString() }));
+app.use('/uploads/carousel', express.static(path.join(__dirname, '..', 'uploads', 'carousel'), { maxAge: 0 }));
 app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads'), { maxAge: '1d' }));
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/users', userRoutes);
@@ -49,9 +44,6 @@ app.use('/api/v1/events', eventRoutes);
 app.use('/api/v1/departures', departureRoutes);
 app.use('/api/v1/references', referenceRoutes);
 app.use('/api/v1/shop', shopRoutes);
-if (agentRoutes) {
-  app.use('/api/v1/agent', agentRoutes);
-}
 app.use(validate.notFound);
 app.use(errorMiddleware);
 

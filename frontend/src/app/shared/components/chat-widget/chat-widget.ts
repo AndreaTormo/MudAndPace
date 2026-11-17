@@ -33,7 +33,7 @@ import { ChatStore } from '../../../core/stores/chat.store';
             </svg>
           </header>
 
-          <div class="chat-messages" #messagesContainer>
+          <div class="chat-messages" #messagesContainer role="log" aria-live="polite">
             @if (!chat.hasMessages()) {
               <div class="chat-empty-state">
                 <span class="chat-empty-icon" aria-hidden="true">
@@ -49,7 +49,7 @@ import { ChatStore } from '../../../core/stores/chat.store';
             @for (msg of chat.messages(); track $index) {
               <div class="chat-message" [class.chat-message-user]="msg.role === 'user'" [class.chat-message-assistant]="msg.role === 'assistant'">
                 <p class="chat-message-role">{{ msg.role === 'user' ? 'Tú' : 'Asistente' }}</p>
-                <p class="chat-message-content" [innerHTML]="formatMessage(msg.content)"></p>
+                <div class="chat-message-content" [innerHTML]="formatMessage(msg.content)"></div>
               </div>
             }
             @if (chat.loading()) {
@@ -125,10 +125,99 @@ export class ChatWidget {
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#39;');
 
-    return escaped
+    const lines = escaped.replace(/\r\n/g, '\n').split('\n');
+    const rendered: string[] = [];
+
+    for (let index = 0; index < lines.length; index += 1) {
+      const line = lines[index];
+      if (this.isTableRow(line) && this.isTableSeparator(lines[index + 1])) {
+        const headers = this.splitTableRow(line);
+        const alignments = this.splitTableRow(lines[index + 1]).map((cell) =>
+          this.tableAlignment(cell)
+        );
+        const rows: string[][] = [];
+        let rowIndex = index + 2;
+
+        while (rowIndex < lines.length && this.isTableRow(lines[rowIndex])) {
+          rows.push(this.splitTableRow(lines[rowIndex]));
+          rowIndex += 1;
+        }
+
+        rendered.push(this.renderTable(headers, alignments, rows));
+        index = rowIndex - 1;
+      } else {
+        rendered.push(this.applyInlineFormatting(line));
+      }
+    }
+
+    return rendered.join('\n');
+  }
+
+  private applyInlineFormatting(value: string): string {
+    return value
       .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
       .replace(/__([^_]+)__/g, '<strong>$1</strong>')
       .replace(/`([^`]+)`/g, '<code>$1</code>');
+  }
+
+  private isTableRow(line: string | undefined): boolean {
+    return Boolean(line && line.includes('|') && line.trim().length > 0);
+  }
+
+  private isTableSeparator(line: string | undefined): boolean {
+    if (!this.isTableRow(line)) {
+      return false;
+    }
+    const cells = this.splitTableRow(line as string);
+    return cells.length > 0 && cells.every((cell) => /^:?-{3,}:?$/.test(cell.trim()));
+  }
+
+  private splitTableRow(line: string): string[] {
+    let value = line.trim();
+    if (value.startsWith('|')) {
+      value = value.slice(1);
+    }
+    if (value.endsWith('|')) {
+      value = value.slice(0, -1);
+    }
+    return value.split('|').map((cell) => cell.trim());
+  }
+
+  private tableAlignment(cell: string): 'left' | 'center' | 'right' {
+    const value = cell.trim();
+    if (value.startsWith(':') && value.endsWith(':')) {
+      return 'center';
+    }
+    if (value.endsWith(':')) {
+      return 'right';
+    }
+    return 'left';
+  }
+
+  private renderTable(
+    headers: string[],
+    alignments: Array<'left' | 'center' | 'right'>,
+    rows: string[][]
+  ): string {
+    const headerCells = headers
+      .map(
+        (header, index) =>
+          `<th class="chat-table-align-${alignments[index] ?? 'left'}">${this.applyInlineFormatting(header)}</th>`
+      )
+      .join('');
+    const bodyRows = rows
+      .map((row) => {
+        const cells = headers
+          .map((_, index) => {
+            const alignment = alignments[index] ?? 'left';
+            return `<td class="chat-table-align-${alignment}">${this.applyInlineFormatting(row[index] ?? '')}</td>`;
+          })
+          .join('');
+        return `<tr>${cells}</tr>`;
+      })
+      .join('');
+
+    return `<div class="chat-table-wrap"><table class="chat-table"><thead><tr>${headerCells}</tr></thead><tbody>${bodyRows}</tbody></table></div>`;
   }
 
   send(): void {

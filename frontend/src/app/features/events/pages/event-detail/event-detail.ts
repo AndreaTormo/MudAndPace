@@ -15,6 +15,7 @@ import { EmptyState } from '../../../../shared/components/empty-state/empty-stat
 import { ErrorState } from '../../../../shared/components/error-state/error-state';
 import { SkeletonLoader } from '../../../../shared/components/skeleton-loader/skeleton-loader';
 import { EventMap } from '../../../../shared/components/event-map/event-map';
+import { WeatherCard } from '../../../../shared/components/weather-card/weather-card';
 import { EventImages } from '../../components/event-images/event-images';
 import { EventGallery } from '../../components/event-gallery/event-gallery';
 import { formatDate, formatDistance, formatElevation, formatPrice } from '../../../../shared/utils/format.util';
@@ -25,7 +26,7 @@ import { isHttpError, showUnexpectedError } from '../../../../shared/utils/error
   selector: 'app-event-detail',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, EmptyState, ErrorState, SkeletonLoader, EventMap, EventImages, EventGallery],
+  imports: [RouterLink, EmptyState, ErrorState, SkeletonLoader, EventMap, WeatherCard, EventImages, EventGallery],
   template: `
     <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       @if (loading()) {
@@ -62,7 +63,7 @@ import { isHttpError, showUnexpectedError } from '../../../../shared/utils/error
                   {{ event()!.isActive ? 'Activo' : 'Inactivo' }}
                 </span>
               </div>
-              <h1 class="text-2xl font-semibold text-gray-900 sm:text-3xl">
+              <h1 class="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
                 {{ event()!.name }}
               </h1>
               <p class="mt-1 text-sm text-gray-500">{{ locationText() }}</p>
@@ -127,7 +128,7 @@ import { isHttpError, showUnexpectedError } from '../../../../shared/utils/error
                 </div>
                 <div class="grid gap-3 sm:grid-cols-2">
                   @for (variant of event()!.variants!; track variant) {
-                    <div class="rounded-xl border border-gray-100 bg-gradient-to-br from-green-50 to-white p-4">
+                    <div class="rounded-xl border border-gray-200 bg-gradient-to-br from-gray-50 to-white p-4 dark:border-line dark:from-night2 dark:to-night">
                       <p class="font-semibold text-gray-900">{{ variant.name }}</p>
                       <dl class="mt-2 grid grid-cols-3 gap-2 text-sm">
                         <div>
@@ -162,9 +163,9 @@ import { isHttpError, showUnexpectedError } from '../../../../shared/utils/error
                   Organizador
                 </span>
               </div>
-              <div class="flex items-center gap-4 rounded-xl border border-gray-100 bg-gradient-to-br from-green-50 to-white p-4">
+              <div class="flex items-center gap-4 rounded-xl border border-gray-200 bg-gradient-to-br from-gray-50 to-white p-4 dark:border-line dark:from-night2 dark:to-night">
                 <div
-                  class="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-brand text-xl font-bold text-white shadow-sm"
+                  class="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-brand text-xl font-bold text-white shadow-sm dark:bg-brand dark:text-night"
                   aria-hidden="true"
                 >
                   {{ hostInitial() }}
@@ -203,7 +204,7 @@ import { isHttpError, showUnexpectedError } from '../../../../shared/utils/error
                 @if (event()!.tags?.length) {
                   <div class="mt-3 flex flex-wrap gap-2">
                     @for (tag of event()!.tags; track tag) {
-                      <span class="badge bg-indigo-50 text-indigo-700">#{{ tag }}</span>
+                      <span class="badge bg-indigo-50 text-indigo-700 dark:bg-night2 dark:text-gray-500">#{{ tag }}</span>
                     }
                   </div>
                 }
@@ -212,7 +213,7 @@ import { isHttpError, showUnexpectedError } from '../../../../shared/utils/error
                     [href]="event()!.gpxUrl"
                     target="_blank"
                     rel="noopener noreferrer"
-                    class="mt-3 inline-block text-sm font-medium text-brand hover:underline"
+                    class="mt-3 inline-block text-sm font-medium text-brand hover:underline dark:text-accent"
                   >
                     Descargar GPX
                   </a>
@@ -223,6 +224,8 @@ import { isHttpError, showUnexpectedError } from '../../../../shared/utils/error
 
           <aside class="space-y-4">
             <app-event-map [location]="event()!.location" />
+
+            <app-weather-card [location]="event()!.location" [date]="event()!.startDate" />
 
             <div class="sticky top-20 space-y-4 rounded-2xl border border-gray-200 bg-surface/80 backdrop-blur-sm p-5">
               <dl class="space-y-2 text-sm">
@@ -244,7 +247,7 @@ import { isHttpError, showUnexpectedError } from '../../../../shared/utils/error
                 </div>
               </dl>
 
-              <div class="space-y-2 border-t border-gray-100 pt-4">
+              <div class="space-y-2 border-t border-gray-200 pt-4 dark:border-line">
                 @if (isAdmin()) {
                   <a
                     [routerLink]="['/events', event()!._id, 'edit']"
@@ -398,8 +401,8 @@ export class EventDetail implements OnInit {
       text: `${event.name} pasará a la papelera. Podrás recuperarlo después.`,
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonColor: '#386641',
-      cancelButtonColor: '#566F4B',
+      confirmButtonColor: '#A3B18A',
+      cancelButtonColor: 'rgb(var(--line))',
       confirmButtonText: 'Sí, eliminar',
       cancelButtonText: 'Cancelar'
     });
@@ -438,8 +441,8 @@ export class EventDetail implements OnInit {
       text: `${event.name} volverá a estar activo.`,
       icon: 'question',
       showCancelButton: true,
-      confirmButtonColor: '#386641',
-      cancelButtonColor: '#566F4B',
+      confirmButtonColor: '#A3B18A',
+      cancelButtonColor: 'rgb(var(--line))',
       confirmButtonText: 'Sí, activar',
       cancelButtonText: 'Cancelar'
     });

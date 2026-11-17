@@ -3,6 +3,10 @@ import { catchError, throwError } from 'rxjs';
 import Swal from 'sweetalert2';
 import { ApiErrorBody } from '../models/api.model';
 
+function isSilentErrorUrl(url: string): boolean {
+  return url.includes('/agent/weather') || url.includes('/agent/activities');
+}
+
 export const errorInterceptor: HttpInterceptorFn = (req, next) => {
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
@@ -46,14 +50,16 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
         }
       }
 
-      Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: message,
-        confirmButtonColor: '#386641',
-        timer: 5000,
-        timerProgressBar: true
-      });
+      if (!isSilentErrorUrl(req.url)) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: message,
+          confirmButtonColor: '#A3B18A',
+          timer: 5000,
+          timerProgressBar: true
+        });
+      }
 
       return throwError(() => error);
     })

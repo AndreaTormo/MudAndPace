@@ -313,7 +313,7 @@ export class ProfilePage implements OnInit {
         icon: 'success',
         title: 'Perfil actualizado',
         text: 'Tus datos se han guardado correctamente.',
-        confirmButtonColor: '#386641'
+        confirmButtonColor: '#A3B18A'
       });
     } catch (error) {
       if (!isHttpError(error)) {

@@ -49,7 +49,7 @@ import {
 
       <div class="flex flex-1 flex-col" [ngClass]="featured() ? 'p-5 sm:p-6' : 'p-4'">
         <h3
-          class="line-clamp-2 font-semibold leading-snug text-gray-900 transition-colors group-hover:text-brand"
+          class="line-clamp-2 font-display font-semibold leading-snug text-gray-900 transition-colors group-hover:text-brand"
           [ngClass]="featured() ? 'text-xl sm:text-2xl' : 'text-base'"
         >
           {{ event().name }}

@@ -2,12 +2,13 @@
 
 Aplicación Angular 18 para consultar y administrar eventos de trail running, con autenticación JWT,
 perfil de usuario y control de acceso por roles. Consume la API Express en
-`http://localhost:3000/api/v1`.
+`http://localhost:3000/api/v1` y el servidor de IA en `http://localhost:3001/api/v1`.
 
 ## Requisitos
 
 - Node.js 18 o superior con npm
 - La API y MongoDB levantados en `http://localhost:3000` (ver `../backend`)
+- El servidor de IA levantado en `http://localhost:3001` (ver `../backend_agent_ia`)
 
 ## Instalación
 
@@ -22,7 +23,8 @@ npm start
 ```
 
 Arranca `ng serve` en `http://localhost:4200/` y recarga al guardar cambios. Las llamadas a la API
-salen desde el navegador hacia `http://localhost:3000` (CORS habilitado en la API para el puerto 4200).
+salen desde el navegador hacia `http://localhost:3000` y las de IA hacia `http://localhost:3001`
+(CORS habilitado en ambos servidores para el puerto 4200).
 
 ## Build de producción
 
@@ -72,6 +74,8 @@ reciben inputs/emiten outputs.
 | `/auth/verify-email` | Público | Verificación de email |
 | `/auth/forgot-password` | Público (`guestGuard`) | Solicitar reset |
 | `/auth/reset-password` | Público | Nueva contraseña |
+| `/` | Autenticado | Redirige a `/shop` |
+| `/shop` | Autenticado | Landing con hero |
 | `/events` | Autenticado | Listado |
 | `/events/:id` | Autenticado | Detalle |
 | `/events/create` | `ADMIN` | Crear evento |
@@ -96,7 +100,8 @@ reciben inputs/emiten outputs.
 | Clave            | Valor                              | Uso                                        |
 | ---------------- | ---------------------------------- | ------------------------------------------ |
 | `production`     | `true` / `false`                   | Modo de compilación                        |
-| `API_URL`        | `http://localhost:3000/api/v1`     | Base de todos los endpoints                |
+| `API_URL`        | `http://localhost:3000/api/v1`     | Base de los endpoints de la API            |
+| `AI_API_URL`     | `http://localhost:3001/api/v1`     | Base del asistente y del clima             |
 | `requestTimeout` | `10000` (ms)                       | Timeout de cada petición en `ApiService`   |
 
 ## Funcionalidades
@@ -105,6 +110,8 @@ reciben inputs/emiten outputs.
 - Perfil editable: nombre, datos personales, avatar por URL o subida de foto y logout. El navbar y el perfil reflejan el cambio al instante.
 - Listado de eventos con filtros (estado, categoría, ubicación, distancia, fechas) y búsqueda por ID
   hexadecimal de 24 caracteres.
+- Selector `Lista | Calendario` en `/events` solo para `ADMIN`. El calendario es mensual en escritorio
+  y agenda en móvil, muestra los eventos de varios días en cada fecha y enlaza al detalle.
 - Alta y edición de eventos solo para `ADMIN`. Desde el dashboard solo se editan `name`, `description`,
   `categoryId`, `locationId`, `distanceKm` y `elevationGain`.
 - Detalle con caché, mapa de ubicación (OpenStreetMap embebido) y características técnicas.

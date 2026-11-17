@@ -13,6 +13,7 @@ import { CategoryCard } from '../../components/category-card/category-card';
 import { EventShopCard } from '../../components/event-shop-card/event-shop-card';
 import { HostCard } from '../../components/host-card/host-card';
 import { LocationCard } from '../../components/location-card/location-card';
+import { MountainDivider } from '../../components/mountain-divider/mountain-divider';
 import { ShopHero } from '../../components/shop-hero/shop-hero';
 import { buildShopQueryParams, parseShopFilters } from '../../utils/shop-query.util';
 
@@ -26,16 +27,18 @@ import { buildShopQueryParams, parseShopFilters } from '../../utils/shop-query.u
     EventShopCard,
     HostCard,
     LocationCard,
+    MountainDivider,
     RouterLink,
     ShopHero,
     SkeletonLoader,
     ErrorState
   ],
   template: `
-    <div class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+    <div class="shop-landing paper-texture">
       <app-shop-hero [queryParams]="shopQueryParams()" />
 
-      <div class="mt-12 space-y-14">
+      <div class="mx-auto max-w-7xl px-4 pb-16 pt-10 sm:px-6 sm:pt-14 lg:px-8">
+        <div class="space-y-14">
         @if (store.catalogueLoading()) {
           <app-skeleton-loader [count]="4" />
         } @else if (store.catalogueError()) {
@@ -45,7 +48,7 @@ import { buildShopQueryParams, parseShopFilters } from '../../utils/shop-query.u
             <section>
               <div class="mb-5 flex items-end justify-between gap-4">
                 <div>
-                  <h2 class="text-2xl font-bold text-gray-900">Explora por categoría</h2>
+                  <h2 class="font-display text-2xl font-bold text-brand sm:text-3xl">Explora por categoría</h2>
                   <p class="mt-1 text-sm text-gray-500">Encuentra el tipo de carrera que buscas.</p>
                 </div>
               </div>
@@ -63,7 +66,7 @@ import { buildShopQueryParams, parseShopFilters } from '../../utils/shop-query.u
             <section>
               <div class="mb-5 flex items-end justify-between gap-4">
                 <div>
-                  <h2 class="text-2xl font-bold text-gray-900">Conoce a los organizadores</h2>
+                  <h2 class="font-display text-2xl font-bold text-brand sm:text-3xl">Conoce a los organizadores</h2>
                   <p class="mt-1 text-sm text-gray-500">Descubre quién está detrás de cada evento.</p>
                 </div>
               </div>
@@ -81,7 +84,7 @@ import { buildShopQueryParams, parseShopFilters } from '../../utils/shop-query.u
             <section>
               <div class="mb-5 flex items-end justify-between gap-4">
                 <div>
-                  <h2 class="text-2xl font-bold text-gray-900">Destinos para correr</h2>
+                  <h2 class="font-display text-2xl font-bold text-brand sm:text-3xl">Destinos para correr</h2>
                   <p class="mt-1 text-sm text-gray-500">Elige un lugar y explora sus experiencias.</p>
                 </div>
               </div>
@@ -96,10 +99,14 @@ import { buildShopQueryParams, parseShopFilters } from '../../utils/shop-query.u
           }
         }
 
+        <div class="relative h-12 sm:h-16" aria-hidden="true">
+          <app-mountain-divider class="absolute inset-x-0 bottom-0 h-full opacity-70" />
+        </div>
+
         @if (store.featuredLoading()) {
           <section>
             <div class="mb-5">
-              <h2 class="text-2xl font-bold text-gray-900">Experiencias destacadas</h2>
+              <h2 class="font-display text-2xl font-bold text-brand sm:text-3xl">Experiencias destacadas</h2>
               <p class="mt-1 text-sm text-gray-500">Una selección de las próximas carreras para inspirarte.</p>
             </div>
             <app-skeleton-loader [count]="3" />
@@ -110,13 +117,13 @@ import { buildShopQueryParams, parseShopFilters } from '../../utils/shop-query.u
           <section>
             <div class="mb-5 flex items-end justify-between gap-4">
               <div>
-                <h2 class="text-2xl font-bold text-gray-900">Experiencias destacadas</h2>
+                <h2 class="font-display text-2xl font-bold text-brand sm:text-3xl">Experiencias destacadas</h2>
                 <p class="mt-1 text-sm text-gray-500">Una selección de las próximas carreras para inspirarte.</p>
               </div>
               <a
                 [routerLink]="['/shop/experiences']"
                 [queryParams]="shopQueryParams()"
-                class="shrink-0 text-sm font-medium text-brand hover:underline"
+                class="shrink-0 text-sm font-medium text-accent transition-colors hover:text-brand hover:underline"
               >
                 Ver todas
               </a>
@@ -132,6 +139,7 @@ import { buildShopQueryParams, parseShopFilters } from '../../utils/shop-query.u
             </div>
           </section>
         }
+        </div>
       </div>
     </div>
   `
@@ -150,6 +158,8 @@ export class ShopHome implements OnInit {
   );
 
   ngOnInit(): void {
+    window.scrollTo(0, 0);
+
     this.route.queryParams
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe((params) => this.currentFilters.set(parseShopFilters(params)));

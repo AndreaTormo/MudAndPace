@@ -14,7 +14,7 @@ export const routes: Routes = [
     component: MainLayout,
     canActivate: [authGuard],
     children: [
-      { path: '', redirectTo: 'events', pathMatch: 'full' },
+      { path: '', redirectTo: 'shop', pathMatch: 'full' },
       {
         path: 'profile',
         loadComponent: () =>

@@ -26,6 +26,7 @@ El proyecto está desarrollado con **Angular** para el frontend y una **API REST
 - Guards `authGuard`, `adminGuard` (fichero propio) y `guestGuard`; interceptor que añade el Bearer, detecta token caducado y redirige ante 401 con `returnUrl`.
 - Listado de eventos con filtros por estado, categoría, ubicación, distancia y fechas.
 - Búsqueda de eventos por su identificador.
+- Vista de calendario mensual en el dashboard, solo para `ADMIN`, con agenda en móvil y eventos de varios días.
 - Eventos con al menos 3 modalidades propias (por ejemplo, `OCC`, `CCC`, `UTMB` o `20K`, `50K`, `100K`) con distancia, desnivel y precio.
 - Páginas de detalle con mapa de ubicación (OpenStreetMap), características técnicas y modalidades.
 - Formularios para crear y editar eventos con validaciones en el cliente, solo para `ADMIN`.
@@ -128,7 +129,18 @@ npm run dev
 
 La API estará disponible en `http://localhost:3000`.
 
-### 2. Datos de ejemplo (opcional)
+### 2. Servidor de IA
+
+```bash
+cd backend_agent_ia
+npm install
+cp .env.example .env
+npm run dev
+```
+
+Configura `GROQ_API_KEY` en `backend_agent_ia/.env`. El asistente y el clima estarán disponibles en `http://localhost:3001/api/v1/agent` (health en `http://localhost:3001/health`).
+
+### 3. Datos de ejemplo (opcional)
 
 ```bash
 cd backend
@@ -137,7 +149,7 @@ npm run seed
 
 El seed repuebla eventos, hosts, categorías, ubicaciones, experiencias e imágenes. No borra usuarios ni perfiles, pero sí el contenido existente. Deja 12 eventos y 13 ubicaciones; todos los eventos incluyen al menos 3 modalidades. `UTMB Mont-Blanc 2027` usa `OCC`, `CCC` y `UTMB`, y `Val d'Aran by UTMB 2027` usa `20K`, `50K` y `100K`.
 
-### 3. Frontend
+### 4. Frontend
 
 ```bash
 cd frontend
@@ -147,7 +159,7 @@ npm start
 
 Angular arrancará el servidor de desarrollo en `http://localhost:4200/`.
 
-El frontend utiliza por defecto la API configurada en `src/environments/environment.development.ts`, con la URL base `http://localhost:3000/api/v1`.
+El frontend utiliza por defecto la API configurada en `src/environments/environment.development.ts`, con la URL base `http://localhost:3000/api/v1` y la del servidor de IA (`AI_API_URL`) en `http://localhost:3001/api/v1`.
 
 ## 🔌 API REST
 
@@ -218,10 +230,20 @@ Las modalidades se guardan en el array embebido `variants` de cada evento, con `
 | `GET` | `/references/locations` | Lista ubicaciones activas |
 | `GET` | `/references/hosts` | Lista organizadores activos |
 
-Comprobación del estado del backend:
+### Asistente y clima (servidor de IA)
+
+Base URL: `http://localhost:3001/api/v1`
+
+| Método | Endpoint | Descripción |
+|---|---|---|
+| `POST` | `/agent/chat` | Chat con el asistente (Groq) |
+| `GET` | `/agent/weather` | Previsión meteorológica (Open-Meteo) |
+
+Comprobación del estado de los servidores:
 
 ```text
 GET http://localhost:3000/health
+GET http://localhost:3001/health
 ```
 
 ## 🛡️ Validación y gestión de errores
