@@ -7,7 +7,7 @@ function toPublicUser(user, profile = null) {
     _id: user._id,
     name: user.name,
     email: user.email,
-    role: normalizeRole(user.role),
+    canManage: normalizeRole(user.role) === 'ADMIN',
     status: user.status,
     isActive: user.isActive,
     emailVerified: user.emailVerified,

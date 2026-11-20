@@ -85,7 +85,7 @@ import { UserAvatar } from '../user-avatar/user-avatar';
 
           <app-theme-toggle />
 
-          @if (user(); as currentUser) {
+          @if (isAuthenticated()) {
             <div class="relative hidden sm:block" data-profile-menu>
               <button
                 type="button"
@@ -96,11 +96,11 @@ import { UserAvatar } from '../user-avatar/user-avatar';
                 aria-label="Abrir menú de usuario"
               >
                 <app-user-avatar
-                  [name]="currentUser.name"
-                  [avatarUrl]="currentUser.profile?.avatarUrl ?? null"
+                  [name]="displayName()"
+                  [avatarUrl]="user()?.profile?.avatarUrl ?? null"
                 />
                 <span class="hidden max-w-[7rem] truncate text-sm font-medium md:inline">
-                  {{ currentUser.name }}
+                  {{ displayName() }}
                 </span>
                 <svg
                   class="h-3.5 w-3.5 shrink-0 transition-transform"
@@ -122,9 +122,11 @@ import { UserAvatar } from '../user-avatar/user-avatar';
                 >
                   <div class="px-3 py-2">
                     <p class="truncate text-sm font-semibold text-gray-900">
-                      {{ currentUser.name }}
+                      {{ displayName() }}
                     </p>
-                    <p class="truncate text-xs text-gray-500">{{ currentUser.email }}</p>
+                    @if (user(); as currentUser) {
+                      <p class="truncate text-xs text-gray-500">{{ currentUser.email }}</p>
+                    }
                   </div>
                   <a
                     routerLink="/profile"
@@ -204,15 +206,17 @@ import { UserAvatar } from '../user-avatar/user-avatar';
             <span class="text-sm font-medium text-gray-700">Tema</span>
             <app-theme-toggle />
           </div>
-          @if (user(); as currentUser) {
+          @if (isAuthenticated()) {
             <div class="mb-3 flex items-center gap-3 rounded-xl bg-gray-50 px-3 py-2">
               <app-user-avatar
-                [name]="currentUser.name"
-                [avatarUrl]="currentUser.profile?.avatarUrl ?? null"
+                [name]="displayName()"
+                [avatarUrl]="user()?.profile?.avatarUrl ?? null"
               />
               <div class="min-w-0">
-                <p class="truncate text-sm font-semibold text-gray-900">{{ currentUser.name }}</p>
-                <p class="truncate text-xs text-gray-500">{{ currentUser.email }}</p>
+                <p class="truncate text-sm font-semibold text-gray-900">{{ displayName() }}</p>
+                @if (user(); as currentUser) {
+                  <p class="truncate text-xs text-gray-500">{{ currentUser.email }}</p>
+                }
               </div>
             </div>
           }
@@ -292,7 +296,11 @@ export class Navbar {
   );
 
   protected readonly user = this.auth.user;
+  protected readonly isAuthenticated = () => this.auth.isAuthenticated();
   protected readonly isAdmin = this.auth.isAdmin;
+  protected readonly displayName = computed(
+    () => this.user()?.name ?? this.auth.username() ?? ''
+  );
   protected readonly atTop = computed(() => this.overlay() && !this.scrolled());
 
   protected readonly headerClass = computed(() => {

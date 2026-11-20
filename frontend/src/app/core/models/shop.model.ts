@@ -5,6 +5,7 @@ import {
   EventImage,
   EventLocation
 } from './event.model';
+import { PaginationMeta } from './pagination.model';
 
 export type ShopDistanceSlug = 'corta' | 'media' | 'larga' | 'ultra';
 
@@ -34,12 +35,7 @@ export interface ShopEvent extends Event {
   images?: EventImage[];
 }
 
-export interface ShopPagination {
-  total: number;
-  page: number;
-  limit: number;
-  totalPages: number;
-}
+export type ShopPagination = PaginationMeta;
 
 export interface ShopEventsResponse {
   success: boolean;

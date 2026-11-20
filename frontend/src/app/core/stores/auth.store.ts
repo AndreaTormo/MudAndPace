@@ -1,11 +1,10 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
-import { Observable, finalize, map } from 'rxjs';
+import { Observable, finalize, map, shareReplay, tap } from 'rxjs';
 import {
   AuthSession,
   AuthUser,
   LoginPayload,
-  RegisterPayload,
-  UserRole
+  RegisterPayload
 } from '../models/auth.model';
 import { AuthService } from '../services/auth.service';
 
@@ -15,7 +14,7 @@ const MAX_TIMEOUT = 2_147_483_647;
 
 interface StoredSession {
   expiresAt: string;
-  user: AuthUser;
+  username: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -24,33 +23,28 @@ export class AuthStore {
   private expiryTimer: ReturnType<typeof setTimeout> | null = null;
 
   private readonly _user = signal<AuthUser | null>(null);
+  private readonly _username = signal<string | null>(null);
   private readonly _expiresAt = signal<number | null>(null);
+  private readonly _canManage = signal<boolean | null>(null);
   private readonly _sessionExpired = signal(false);
   private userRevision = 0;
+  private refreshInFlight: Observable<AuthSession> | null = null;
 
   readonly user = this._user.asReadonly();
+  readonly username = this._username.asReadonly();
   readonly expiresAt = this._expiresAt.asReadonly();
+  readonly canManage = this._canManage.asReadonly();
   readonly sessionExpired = this._sessionExpired.asReadonly();
 
-  readonly roles = computed<UserRole[]>(() => {
-    const role = this._user()?.role;
-    return role ? [role] : [];
-  });
-
-  readonly isAdmin = computed(() => this._user()?.role === 'ADMIN');
+  readonly isAdmin = computed(() => this._canManage() === true);
 
   constructor() {
     this.restore();
   }
 
   isAuthenticated(): boolean {
-    const user = this._user();
     const expiresAt = this._expiresAt();
-    return Boolean(user && expiresAt && expiresAt > Date.now());
-  }
-
-  hasRole(role: string): boolean {
-    return this._user()?.role === role;
+    return Boolean(expiresAt && expiresAt > Date.now());
   }
 
   register(payload: RegisterPayload): Observable<AuthUser> {
@@ -59,6 +53,15 @@ export class AuthStore {
 
   login(payload: LoginPayload): Observable<AuthUser> {
     return this.authService.login(payload).pipe(
+      map((session) => {
+        this.setSession(session);
+        return session.user;
+      })
+    );
+  }
+
+  loginUser(payload: LoginPayload): Observable<AuthUser> {
+    return this.authService.userLogin(payload).pipe(
       map((session) => {
         this.setSession(session);
         return session.user;
@@ -79,6 +82,26 @@ export class AuthStore {
     );
   }
 
+  refreshSession(): Observable<AuthSession> {
+    if (!this.refreshInFlight) {
+      const revision = this.userRevision;
+
+      this.refreshInFlight = this.authService.refresh().pipe(
+        tap((session) => {
+          if (revision === this.userRevision) {
+            this.setSession(session);
+          }
+        }),
+        finalize(() => {
+          this.refreshInFlight = null;
+        }),
+        shareReplay({ bufferSize: 1, refCount: false })
+      );
+    }
+
+    return this.refreshInFlight;
+  }
+
   logout(): Observable<void> {
     return this.authService.logout().pipe(finalize(() => this.clear()));
   }
@@ -93,7 +116,9 @@ export class AuthStore {
     this.userRevision += 1;
     this._sessionExpired.set(false);
     this._user.set(session.user);
+    this._username.set(session.user.name);
     this._expiresAt.set(expiresAt);
+    this._canManage.set(session.user.canManage ?? false);
     this.persist();
     this.scheduleExpiry();
   }
@@ -101,6 +126,8 @@ export class AuthStore {
   updateUser(user: AuthUser): void {
     this.userRevision += 1;
     this._user.set(user);
+    this._username.set(user.name);
+    this._canManage.set(user.canManage ?? false);
     if (this._expiresAt()) {
       this.persist();
     }
@@ -108,9 +135,12 @@ export class AuthStore {
 
   clear(): void {
     this.userRevision += 1;
+    this.refreshInFlight = null;
     this.cancelExpiry();
     this._user.set(null);
+    this._username.set(null);
     this._expiresAt.set(null);
+    this._canManage.set(null);
     this._sessionExpired.set(false);
     try {
       localStorage.removeItem(STORAGE_KEY);
@@ -127,15 +157,17 @@ export class AuthStore {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) return;
 
-      const session = JSON.parse(raw) as StoredSession;
+      const session = JSON.parse(raw) as StoredSession & { user?: AuthUser };
       const expiresAt = new Date(session.expiresAt).getTime();
-      if (!session.user || !Number.isFinite(expiresAt) || expiresAt <= Date.now()) {
+      const username = session.username ?? session.user?.name;
+      if (!username || !Number.isFinite(expiresAt) || expiresAt <= Date.now()) {
         this.clear();
         return;
       }
 
-      this._user.set(session.user);
+      this._username.set(username);
       this._expiresAt.set(expiresAt);
+      this.persist();
       this.scheduleExpiry();
     } catch {
       this.clear();
@@ -143,13 +175,13 @@ export class AuthStore {
   }
 
   private persist(): void {
-    const user = this._user();
+    const username = this._username();
     const expiresAt = this._expiresAt();
-    if (!user || !expiresAt) return;
+    if (!username || !expiresAt) return;
 
     const session: StoredSession = {
-      user,
-      expiresAt: new Date(expiresAt).toISOString()
+      expiresAt: new Date(expiresAt).toISOString(),
+      username
     };
 
     try {

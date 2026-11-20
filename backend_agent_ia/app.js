@@ -11,6 +11,7 @@ const validate = require('./middlewares/validate.middleware');
 const errorMiddleware = require('./middlewares/error.middleware');
 
 const app = express();
+app.set('trust proxy', 1);
 const allowedOrigins = process.env.CORS_ORIGIN
   ? process.env.CORS_ORIGIN.split(',').map((origin) => origin.trim()).filter(Boolean)
   : (process.env.NODE_ENV === 'production' ? [] : ['http://localhost:4200']);

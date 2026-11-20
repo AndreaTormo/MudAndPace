@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
-import { ShopPagination } from '../../../core/models/shop.model';
+import { PaginationMeta } from '../../../core/models/pagination.model';
 
 @Component({
   selector: 'app-pagination',
@@ -42,13 +42,14 @@ import { ShopPagination } from '../../../core/models/shop.model';
       </div>
 
       <p class="mt-2 text-center text-xs text-gray-500">
-        Mostrando {{ rangeStart() }}–{{ rangeEnd() }} de {{ pagination().total }} experiencias
+        Mostrando {{ rangeStart() }}–{{ rangeEnd() }} de {{ pagination().total }} {{ label() }}
       </p>
     }
   `
 })
 export class Pagination {
-  readonly pagination = input.required<ShopPagination>();
+  readonly pagination = input.required<PaginationMeta>();
+  readonly label = input('experiencias');
   readonly pageChange = output<number>();
 
   readonly pages = computed(() => {

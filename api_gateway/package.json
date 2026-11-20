@@ -1,0 +1,20 @@
+{
+  "name": "mudandpace-api-gateway",
+  "version": "1.0.0",
+  "description": "API gateway de MudAndPace: enruta la API principal y la API de IA en un único puerto",
+  "main": "app.js",
+  "scripts": {
+    "dev": "nodemon app.js",
+    "start": "node app.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "http-proxy-middleware": "^3.0.0",
+    "morgan": "^1.10.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.9"
+  }
+}

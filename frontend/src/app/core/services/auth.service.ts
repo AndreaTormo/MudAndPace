@@ -20,6 +20,18 @@ export class AuthService {
       .pipe(map((response) => response.data));
   }
 
+  userLogin(payload: LoginPayload): Observable<AuthSession> {
+    return this.api
+      .post<ApiResponse<AuthSession>>('auth/user/login', payload)
+      .pipe(map((response) => response.data));
+  }
+
+  refresh(): Observable<AuthSession> {
+    return this.api
+      .post<ApiResponse<AuthSession>>('auth/refresh', {})
+      .pipe(map((response) => response.data));
+  }
+
   me(): Observable<AuthUser> {
     return this.api
       .get<ApiResponse<AuthUser>>('auth/me')

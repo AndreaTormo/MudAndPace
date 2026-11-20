@@ -12,12 +12,14 @@ import { EventCalendar } from '../../components/event-calendar/event-calendar';
 import { SkeletonLoader } from '../../../../shared/components/skeleton-loader/skeleton-loader';
 import { EmptyState } from '../../../../shared/components/empty-state/empty-state';
 import { ErrorState } from '../../../../shared/components/error-state/error-state';
+import { Pagination } from '../../../../shared/components/pagination/pagination';
 import { OBJECT_ID_PATTERN } from '../../../../shared/utils/validators';
 import { isHttpError, showUnexpectedError } from '../../../../shared/utils/error.util';
 
 type EventView = 'list' | 'calendar';
 
 const EVENT_VIEW_STORAGE_KEY = 'mudandpace.events.view';
+const EVENT_LIST_PAGE_SIZE = 100;
 
 @Component({
   selector: 'app-event-list',
@@ -30,7 +32,8 @@ const EVENT_VIEW_STORAGE_KEY = 'mudandpace.events.view';
     EventCalendar,
     SkeletonLoader,
     EmptyState,
-    ErrorState
+    ErrorState,
+    Pagination
   ],
   template: `
     <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
@@ -122,7 +125,7 @@ const EVENT_VIEW_STORAGE_KEY = 'mudandpace.events.view';
           <app-event-calendar [events]="store.events()" />
         } @else {
           <div class="divide-y divide-gray-200 overflow-hidden rounded-2xl border border-gray-200 bg-surface/80 backdrop-blur-sm shadow-sm dark:divide-line dark:border-line">
-            @for (event of store.events(); track event._id) {
+            @for (event of store.visibleEvents(); track event._id) {
               <app-event-row
                 [event]="event"
                 [pending]="isPending(event._id)"
@@ -134,6 +137,14 @@ const EVENT_VIEW_STORAGE_KEY = 'mudandpace.events.view';
                 (toggleStatus)="onToggleStatus($event)"
               />
             }
+          </div>
+
+          <div class="mt-6">
+            <app-pagination
+              [pagination]="store.pagination()"
+              label="eventos"
+              (pageChange)="store.setPage($event)"
+            />
           </div>
         }
       </div>
@@ -197,7 +208,7 @@ export class EventList implements OnInit {
     this.store.setError(null);
 
     try {
-      const events = await firstValueFrom(this.service.list());
+      const events = await firstValueFrom(this.service.list({ pageSize: EVENT_LIST_PAGE_SIZE }));
       this.store.setEvents(events);
     } catch {
       this.store.setError('No se han podido cargar los eventos. Inténtalo de nuevo.');

@@ -9,6 +9,14 @@ const sessionSchema = new mongoose.Schema(
       index: true
     },
     jti: { type: String, required: true, unique: true, index: true },
+    kind: {
+      type: String,
+      enum: ['access', 'refresh'],
+      default: 'access',
+      required: true,
+      index: true
+    },
+    familyId: { type: String, default: null, index: true },
     tokenHash: { type: String, required: true, select: false },
     expiresAt: { type: Date, required: true, index: true },
     revokedAt: { type: Date, default: null, index: true },

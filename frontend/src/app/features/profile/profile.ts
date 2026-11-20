@@ -40,7 +40,7 @@ const AVATAR_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
               <p class="truncate text-sm text-gray-500">{{ currentUser.email }}</p>
               <div class="mt-2 flex flex-wrap gap-2">
                 <span class="badge bg-brand/10 text-brand">
-                  {{ currentUser.role === 'ADMIN' ? 'Administrador' : 'Usuario' }}
+                  {{ isAdmin() ? 'Administrador' : 'Usuario' }}
                 </span>
                 <span
                   class="badge"
@@ -219,6 +219,7 @@ export class ProfilePage implements OnInit {
   private readonly router = inject(Router);
 
   protected readonly user = this.auth.user;
+  protected readonly isAdmin = this.auth.isAdmin;
   protected readonly saving = signal(false);
   protected readonly uploadingAvatar = signal(false);
   protected readonly errorMessage = signal<string | null>(null);
@@ -243,7 +244,14 @@ export class ProfilePage implements OnInit {
     ]
   });
 
-  ngOnInit(): void {
+  async ngOnInit(): Promise<void> {
+    if (!this.user()) {
+      try {
+        await firstValueFrom(this.auth.refreshMe());
+      } catch {
+        return;
+      }
+    }
     void this.load();
   }
 

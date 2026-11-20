@@ -1,20 +1,28 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
+import { firstValueFrom } from 'rxjs';
 import { AuthStore } from '../stores/auth.store';
 
-export const adminGuard: CanActivateFn = (_route, state) => {
+export const adminGuard: CanActivateFn = async (_route, state) => {
   const auth = inject(AuthStore);
   const router = inject(Router);
 
-  if (!auth.isAuthenticated()) {
-    return router.createUrlTree(['/auth/login'], {
+  const loginTree = () =>
+    router.createUrlTree(['/auth/login'], {
       queryParams: { returnUrl: state.url }
     });
+
+  if (!auth.isAuthenticated()) {
+    return loginTree();
   }
 
-  if (auth.isAdmin()) {
-    return true;
+  if (!auth.user() || auth.canManage() === null) {
+    try {
+      await firstValueFrom(auth.refreshMe());
+    } catch {
+      return loginTree();
+    }
   }
 
-  return router.createUrlTree(['/events']);
+  return auth.isAdmin() ? true : router.createUrlTree(['/events']);
 };

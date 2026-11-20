@@ -4,7 +4,7 @@ import { finalize } from 'rxjs';
 import { LoadingService } from '../services/loading.service';
 
 function isSilentLoadingUrl(url: string): boolean {
-  return url.includes('/agent/weather');
+  return url.includes('/agent/weather') || url.includes('/auth/refresh');
 }
 
 export const loadingInterceptor: HttpInterceptorFn = (req, next) => {

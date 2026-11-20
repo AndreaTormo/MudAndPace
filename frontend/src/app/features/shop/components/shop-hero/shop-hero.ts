@@ -72,7 +72,7 @@ const CAROUSEL_VERSION = '20261117';
           <h1
             class="mt-4 font-display text-[clamp(2.5rem,7vw,5.25rem)] font-bold leading-[1.04] tracking-[-0.02em] text-cream"
           >
-            Corre donde el camino se acaba.
+            No hay montaña lo suficientemente alta.
           </h1>
           <p
             class="mx-auto mt-5 max-w-xl text-base leading-relaxed text-cream/80 sm:text-lg lg:mx-0 lg:max-w-2xl"

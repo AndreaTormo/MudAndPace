@@ -5,12 +5,17 @@ class SessionRepository {
     return Session.create(data);
   }
 
-  async findActiveByJti(jti) {
+  async findActiveByJti(jti, kind = 'access') {
     return Session.findOne({
       jti,
+      kind,
       revokedAt: null,
       expiresAt: { $gt: new Date() }
     });
+  }
+
+  async findActiveRefreshByJti(jti) {
+    return this.findActiveByJti(jti, 'refresh');
   }
 
   async findByJti(jti) {
@@ -26,6 +31,15 @@ class SessionRepository {
       { jti, revokedAt: null },
       { $set: { revokedAt: new Date() } },
       { new: true }
+    );
+  }
+
+  async revokeByFamily(familyId) {
+    if (!familyId) return { modifiedCount: 0 };
+
+    return Session.updateMany(
+      { familyId, revokedAt: null },
+      { $set: { revokedAt: new Date() } }
     );
   }
 

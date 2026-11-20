@@ -3,6 +3,7 @@ import { RouterLink } from '@angular/router';
 import { AdminProfilesStore } from '../../../../core/stores/admin-profiles.store';
 import { EmptyState } from '../../../../shared/components/empty-state/empty-state';
 import { ErrorState } from '../../../../shared/components/error-state/error-state';
+import { Pagination } from '../../../../shared/components/pagination/pagination';
 import { SkeletonLoader } from '../../../../shared/components/skeleton-loader/skeleton-loader';
 import { AdminProfileRow } from '../../components/admin-profile-row/admin-profile-row';
 
@@ -10,7 +11,7 @@ import { AdminProfileRow } from '../../components/admin-profile-row/admin-profil
   selector: 'app-admin-profiles',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, AdminProfileRow, SkeletonLoader, EmptyState, ErrorState],
+  imports: [RouterLink, AdminProfileRow, SkeletonLoader, EmptyState, ErrorState, Pagination],
   template: `
     <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       <div class="mb-8">
@@ -76,9 +77,17 @@ import { AdminProfileRow } from '../../components/admin-profile-row/admin-profil
         />
       } @else {
         <div class="divide-y divide-gray-100 overflow-hidden rounded-2xl border border-gray-200 bg-surface/80 backdrop-blur-sm shadow-sm">
-          @for (item of store.profiles(); track item.user._id) {
+          @for (item of store.visibleProfiles(); track item.user._id) {
             <app-admin-profile-row [profile]="item" />
           }
+        </div>
+
+        <div class="mt-6">
+          <app-pagination
+            [pagination]="store.pagination()"
+            label="perfiles"
+            (pageChange)="store.setPage($event)"
+          />
         </div>
       }
     </div>

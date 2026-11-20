@@ -34,7 +34,7 @@ export function profileLocation(item: AdminProfile): string {
 }
 
 export function profileRoleLabel(item: AdminProfile): string {
-  return item.user.role === 'ADMIN' ? 'Administrador' : 'Usuario';
+  return item.user.canManage === true ? 'Administrador' : 'Usuario';
 }
 
 export function profileStatusLabel(item: AdminProfile): string {

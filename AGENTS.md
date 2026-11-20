@@ -1,8 +1,9 @@
 # AGENTS.md — MudAndPace v4
 
-Monorepo del proyecto de trail running. Tres aplicaciones npm independientes (sin `package.json` raíz ni workspace). Ejecuta cada comando desde su carpeta.
+Monorepo del proyecto de trail running. Cuatro aplicaciones npm independientes y un `package.json` raíz que orquesta el arranque con `concurrently`. Ejecuta cada comando desde su carpeta.
 
 ```text
+api_gateway/       Gateway Express (CommonJS, JS) — puerto 4000
 backend/           API Express + Mongoose (CommonJS, JS) — puerto 3000
 backend_agent_ia/  Asistente Groq + clima Open-Meteo (CommonJS, JS) — puerto 3001
 frontend/          App Angular 18 (TypeScript, standalone) — puerto 4200
@@ -11,6 +12,14 @@ frontend/          App Angular 18 (TypeScript, standalone) — puerto 4200
 ## Comandos
 
 ```bash
+# Raíz: levanta gateway + API + IA + frontend
+npm start                        # concurrently (requiere npm install en las cuatro carpetas)
+
+# Gateway  (http://localhost:4000, health agregado en /health)
+npm install                      # en api_gateway/
+npm run dev                      # nodemon
+npm start                        # node app.js
+
 # API  (http://localhost:3000, health en /health)
 npm install                      # en backend/
 npm run dev                      # nodemon
@@ -29,7 +38,7 @@ npm start                        # ng serve
 npm run build                    # typecheck + build de producción
 ```
 
-La IA es un servidor independiente. El frontend apunta a `AI_API_URL` (`http://localhost:3001/api/v1`); el resto de la API usa `API_URL` (`http://localhost:3000/api/v1`).
+La IA es un servidor independiente. El frontend solo habla con el gateway: `AI_API_URL` y `API_URL` apuntan a `http://localhost:4000/api/v1`. El gateway enruta `/api/v1/agent/**` al puerto 3001 y el resto de `/api/v1/**` y `/uploads/**` al puerto 3000. Ambos backends confían en `X-Forwarded-For` (`trust proxy = 1`) para mantener los rate limits por IP real.
 
 La verificación es manual contra la API y la app; no hay tests automatizados.
 
@@ -79,10 +88,12 @@ Endpoints de auth (`/api/v1/auth`):
 | Método | Endpoint | Acceso |
 |---|---|---|
 | POST | `/login` | Público |
+| POST | `/user/login` | Público (USER) |
+| POST | `/refresh` | Público |
 | POST | `/logout` | Autenticado |
 | GET | `/me` | Autenticado |
 
-Rate limiting: 30 peticiones/15 min por IP en auth; 10/15 min en login. Superarlo devuelve 429 `TOO_MANY_REQUESTS`.
+Rate limiting: 30 peticiones/15 min por IP en auth; 10/15 min en login. Superarlo devuelve 429 `TOO_MANY_REQUESTS`. Login USER usa `user_access_token`/`user_refresh_token`; ADMIN conserva `mp_access_token`. Login, refresh y logout limpian las cookies legacy `access_token` y `session_id` en `/api/v1` y `/`.
 
 Endpoints de usuarios (`/api/v1/users`):
 
@@ -151,17 +162,17 @@ Página → Store (signals) → Service (único que conoce la URL) → `ApiServi
 - Componentes standalone + `ChangeDetectionStrategy.OnPush` + plantilla inline (sin `.html` por componente). Estilos en `src/styles.css`.
 - Estado con Angular signals (sin NgRx), expuestos vía `.asReadonly()`.
 - Rutas lazy con `loadComponent`.
-- `app.config.ts` registra `withInterceptors([loadingInterceptor, authInterceptor, errorInterceptor])`.
-- `auth.interceptor.ts` añade el Bearer desde `AuthStore`. Antes de enviar aborta si el token ya caducó (clear + redirect sin popup). En un 401: en `auth/login` o `users/register` no hace nada (credenciales), en `auth/logout` solo limpia, y en el resto limpia y redirige a `/auth/login` con `returnUrl` (sin duplicar si ya está en `/auth`).
-- `error.interceptor.ts` muestra mensajes en español, incluidos 401/403, red (status 0), timeout, respuestas inválidas y el desglose `details` de Zod. En un 401 muestra además el popup de credenciales (el redirect lo hace el interceptor de auth).
-- `AuthStore` persiste token + usuario + `expiresAt` en `localStorage` (`mudandpace.auth`): la UI arranca rápido desde la caché y `MainLayout` refresca con `GET /auth/me`. Programa un timer de expiración que marca `sessionExpired` (el effect de `MainLayout` redirige con `returnUrl`). Expone `user`, `roles` (`[role]`), `isAdmin` e `isAuthenticated()`. `isAuthenticated` es un método porque comprueba la expiración con `Date.now()`.
+- `app.config.ts` registra `withInterceptors([loadingInterceptor, errorInterceptor, authInterceptor])`.
+- `auth.interceptor.ts` no gestiona tokens: las cookies `httpOnly` las envía el navegador. En un 401: en credenciales, logout o refresh no reintenta; en el resto llama una sola vez a `AuthStore.refreshSession()`, vuelve a enviar la petición con un flag anti-bucles y, si falla, limpia y redirige a `/auth/login` con `returnUrl`.
+- `error.interceptor.ts` muestra mensajes en español, incluidos 401/403, red (status 0), timeout, respuestas inválidas y el desglose `details` de Zod; `/auth/refresh` es silencioso.
+- `AuthStore` persiste únicamente `expiresAt` y `username` en `localStorage` (`mudandpace.session`); el usuario completo y `canManage` se hidratan en memoria desde `GET /auth/me` al arrancar (`MainLayout`). Programa un timer de expiración que marca `sessionExpired` (el effect de `MainLayout` redirige con `returnUrl`). Expone `user`, `username`, `canManage`, `isAdmin` e `isAuthenticated()`. `isAuthenticated` solo comprueba `expiresAt` con `Date.now()`, porque las cookies no son legibles desde JS.
 
 ### Rutas y guards
 
 - `/auth` → `AuthLayout` con login y registro.
 - `/` → `MainLayout` protegido por `authGuard`; redirige a `/shop`.
 - `/profile` → perfil del usuario autenticado.
-- `/admin/profiles` → listado de perfiles para `ADMIN`, protegido por `adminGuard`.
+- `/admin/profiles` → listado de perfiles para `ADMIN`, protegido por `adminGuard` (espera a `refreshMe()` si aún no hay usuario en memoria).
 - `/events` → lista; `/events/:id` → detalle; `/events/create`, `/events/:id/edit` y `/events/trash` protegidos por `adminGuard`.
 - `guestGuard` evita que un usuario autenticado vuelva a login/registro/olvido.
 
@@ -199,7 +210,7 @@ Página → Store (signals) → Service (único que conoce la URL) → `ApiServi
 
 ### Listados y paginación
 
-`GET /events` usa paginación explícita (`page`/`pageSize` + `pagination.total`) con `pageSize` máximo 100. El resto de listados (referencias, usuarios y perfiles) se devuelven completos. No introducir límites fijos (`limit`, `slice`, etc.) que oculten elementos silenciosamente.
+`GET /events` usa paginación explícita (`page`/`pageSize` + `pagination.total`) con `pageSize` máximo 100. La vista `/events` pide `pageSize=100` y reutiliza `app-pagination` con paginación de cliente de 10 en la vista lista; la vista calendario sigue usando la lista completa cargada. El resto de listados (referencias, usuarios y perfiles) se devuelven completos. No introducir límites fijos (`limit`, `slice`, etc.) que oculten elementos silenciosamente. `/admin/profiles` reutiliza el mismo `app-pagination` con paginación de cliente sobre la respuesta completa de `GET /profile`; el paginador muestra el rango y el total, por lo que el recorte no es silencioso. Si el volumen crece, migrar esos listados a paginación de servidor.
 
 ## Convenios
 

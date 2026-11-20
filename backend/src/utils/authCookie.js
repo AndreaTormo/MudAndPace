@@ -1,4 +1,6 @@
 const ACCESS_COOKIE_NAME = process.env.AUTH_COOKIE_NAME || 'mp_access_token';
+const USER_ACCESS_COOKIE_NAME = process.env.USER_ACCESS_COOKIE_NAME || 'user_access_token';
+const USER_REFRESH_COOKIE_NAME = process.env.USER_REFRESH_COOKIE_NAME || 'user_refresh_token';
 
 function baseCookieOptions() {
   const sameSite = process.env.AUTH_COOKIE_SAME_SITE || 'lax';
@@ -35,8 +37,31 @@ function clearAccessCookieOptions() {
   return baseCookieOptions();
 }
 
+function userAccessCookieOptions(expiresAt) {
+  return accessCookieOptions(expiresAt);
+}
+
+function userRefreshCookieOptions(expiresAt) {
+  return accessCookieOptions(expiresAt);
+}
+
+const LEGACY_COOKIE_NAMES = ['access_token', 'session_id'];
+
+function clearLegacyCookies(res) {
+  for (const name of LEGACY_COOKIE_NAMES) {
+    res.clearCookie(name, baseCookieOptions());
+    res.clearCookie(name, { ...baseCookieOptions(), path: '/' });
+  }
+}
+
 module.exports = {
   ACCESS_COOKIE_NAME,
+  USER_ACCESS_COOKIE_NAME,
+  USER_REFRESH_COOKIE_NAME,
   accessCookieOptions,
-  clearAccessCookieOptions
+  clearAccessCookieOptions,
+  userAccessCookieOptions,
+  userRefreshCookieOptions,
+  clearUserCookieOptions: clearAccessCookieOptions,
+  clearLegacyCookies
 };

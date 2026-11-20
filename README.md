@@ -140,7 +140,18 @@ npm run dev
 
 Configura `GROQ_API_KEY` en `backend_agent_ia/.env`. El asistente y el clima estarán disponibles en `http://localhost:3001/api/v1/agent` (health en `http://localhost:3001/health`).
 
-### 3. Datos de ejemplo (opcional)
+### 3. API Gateway
+
+```bash
+cd api_gateway
+npm install
+cp .env.example .env
+npm run dev
+```
+
+Escucha en `http://localhost:4000`. Enruta `/api/v1/agent/**` al servidor de IA (3001) y el resto de `/api/v1/**` y `/uploads/**` a la API principal (3000). `GET /health` comprueba ambos servicios. Desde la raíz del repo, `npm start` levanta gateway, API, IA y frontend a la vez.
+
+### 4. Datos de ejemplo (opcional)
 
 ```bash
 cd backend
@@ -149,7 +160,7 @@ npm run seed
 
 El seed repuebla eventos, hosts, categorías, ubicaciones, experiencias e imágenes. No borra usuarios ni perfiles, pero sí el contenido existente. Deja 12 eventos y 13 ubicaciones; todos los eventos incluyen al menos 3 modalidades. `UTMB Mont-Blanc 2027` usa `OCC`, `CCC` y `UTMB`, y `Val d'Aran by UTMB 2027` usa `20K`, `50K` y `100K`.
 
-### 4. Frontend
+### 5. Frontend
 
 ```bash
 cd frontend
@@ -159,11 +170,11 @@ npm start
 
 Angular arrancará el servidor de desarrollo en `http://localhost:4200/`.
 
-El frontend utiliza por defecto la API configurada en `src/environments/environment.development.ts`, con la URL base `http://localhost:3000/api/v1` y la del servidor de IA (`AI_API_URL`) en `http://localhost:3001/api/v1`.
+El frontend utiliza por defecto la API configurada en `src/environments/environment.development.ts`: tanto `API_URL` como `AI_API_URL` apuntan al gateway en `http://localhost:4000/api/v1`.
 
 ## 🔌 API REST
 
-Base URL: `http://localhost:3000/api/v1`
+Base URL: `http://localhost:4000/api/v1` (gateway → API en `http://localhost:3000`)
 
 Todo requiere autenticación salvo `/auth/*`, `/health` y `/uploads`. Envía el token con `Authorization: Bearer <token>`.
 
@@ -232,7 +243,7 @@ Las modalidades se guardan en el array embebido `variants` de cada evento, con `
 
 ### Asistente y clima (servidor de IA)
 
-Base URL: `http://localhost:3001/api/v1`
+Base URL: `http://localhost:4000/api/v1` (gateway → IA en `http://localhost:3001`)
 
 | Método | Endpoint | Descripción |
 |---|---|---|
@@ -242,6 +253,7 @@ Base URL: `http://localhost:3001/api/v1`
 Comprobación del estado de los servidores:
 
 ```text
+GET http://localhost:4000/health   # gateway (comprueba ambos servicios)
 GET http://localhost:3000/health
 GET http://localhost:3001/health
 ```
@@ -269,9 +281,16 @@ La configuración se encuentra en:
 - `src/environments/environment.ts`
 - `src/environments/environment.development.ts`
 
-La URL base de la API se define mediante `API_URL`, y el tiempo máximo de espera de las peticiones mediante `requestTimeout`.
+La URL base de la API se define mediante `API_URL` y la del asistente mediante `AI_API_URL` (ambas apuntan al gateway), y el tiempo máximo de espera de las peticiones mediante `requestTimeout`. El gateway lee sus targets de `api_gateway/.env` (`API_TARGET`, `AI_TARGET`, `CORS_ORIGIN`, `PORT`).
 
 ## 📦 Scripts disponibles
+
+### Gateway
+
+| Comando | Descripción |
+|---|---|
+| `npm run dev` | Inicia el gateway en modo desarrollo |
+| `npm start` | Inicia el gateway con Node |
 
 ### Frontend
 

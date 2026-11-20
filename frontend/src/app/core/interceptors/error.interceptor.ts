@@ -4,7 +4,11 @@ import Swal from 'sweetalert2';
 import { ApiErrorBody } from '../models/api.model';
 
 function isSilentErrorUrl(url: string): boolean {
-  return url.includes('/agent/weather') || url.includes('/agent/activities');
+  return (
+    url.includes('/agent/weather') ||
+    url.includes('/agent/activities') ||
+    url.includes('/auth/refresh')
+  );
 }
 
 export const errorInterceptor: HttpInterceptorFn = (req, next) => {

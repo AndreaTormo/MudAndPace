@@ -51,6 +51,9 @@ export class EventService {
     if (filters.toDate) {
       params = params.set('toDate', filters.toDate);
     }
+    if (filters.pageSize !== undefined) {
+      params = params.set('pageSize', filters.pageSize);
+    }
 
     return this.api
       .get<ApiResponse<Event[]>>('events', params)

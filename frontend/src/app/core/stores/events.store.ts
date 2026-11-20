@@ -1,5 +1,8 @@
 import { Injectable, computed, effect, signal } from '@angular/core';
 import { Event } from '../models/event.model';
+import { PaginationMeta } from '../models/pagination.model';
+
+const PAGE_SIZE = 10;
 
 @Injectable({ providedIn: 'root' })
 export class EventsStore {
@@ -13,6 +16,7 @@ export class EventsStore {
   private readonly _deletedError = signal<string | null>(null);
   private readonly _deletedEvents = signal<Event[]>([]);
   private readonly _deletedLoaded = signal(false);
+  private readonly _page = signal(1);
 
   readonly loading = this._loading.asReadonly();
   readonly error = this._error.asReadonly();
@@ -29,6 +33,28 @@ export class EventsStore {
     () => !this._loading() && !this._error() && this._events().length === 0
   );
   readonly count = computed(() => this._events().length);
+
+  readonly pagination = computed<PaginationMeta>(() => {
+    const total = this._events().length;
+    const totalPages = Math.ceil(total / PAGE_SIZE);
+    return {
+      total,
+      page: Math.min(this._page(), Math.max(1, totalPages)),
+      limit: PAGE_SIZE,
+      totalPages
+    };
+  });
+
+  readonly visibleEvents = computed(() => {
+    const { page, limit } = this.pagination();
+    const start = (page - 1) * limit;
+    return this._events().slice(start, start + limit);
+  });
+
+  setPage(page: number): void {
+    const { totalPages } = this.pagination();
+    this._page.set(Math.max(1, Math.min(page, Math.max(1, totalPages))));
+  }
 
   private readonly syncSelected = effect(() => {
     const events = this._events();
@@ -52,6 +78,7 @@ export class EventsStore {
 
   setEvents(list: Event[]): void {
     this._events.set(list);
+    this._page.set(1);
     this._loaded.set(true);
     this._stale.set(false);
   }
@@ -126,5 +153,6 @@ export class EventsStore {
     this._deletedError.set(null);
     this._deletedEvents.set([]);
     this._deletedLoaded.set(false);
+    this._page.set(1);
   }
 }

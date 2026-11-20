@@ -11,6 +11,7 @@ import { ThemeToggle } from '../../shared/components/theme-toggle/theme-toggle';
     <div class="auth-shell">
       <img class="auth-photo" src="/auth-mountain.png" alt="" aria-hidden="true" />
       <div class="auth-shade" aria-hidden="true"></div>
+      <div class="auth-topo" aria-hidden="true"></div>
 
       <div class="auth-content">
         <header class="auth-header">
@@ -28,7 +29,6 @@ import { ThemeToggle } from '../../shared/components/theme-toggle/theme-toggle';
         <main class="auth-main">
           <section class="auth-pane">
             <div class="auth-form-area">
-              <div class="auth-topo" aria-hidden="true"></div>
               <div class="auth-card">
                 <nav class="auth-tabs" aria-label="Acceso">
                   <a

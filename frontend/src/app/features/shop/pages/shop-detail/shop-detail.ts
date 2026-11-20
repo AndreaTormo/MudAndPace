@@ -74,7 +74,7 @@ import { buildShopQueryParams, parseShopFilters } from '../../utils/shop-query.u
         </nav>
 
         <div class="grid gap-8 lg:grid-cols-3">
-          <div class="space-y-8 lg:col-span-2">
+          <div class="space-y-12 lg:col-span-2">
             <section class="overflow-hidden rounded-2xl border border-gray-200 bg-surface shadow-sm">
               <div class="relative aspect-[16/10] bg-gradient-to-br from-brand/10 to-brand/25">
                 @if (activeImageUrl(); as url) {
@@ -242,9 +242,10 @@ import { buildShopQueryParams, parseShopFilters } from '../../utils/shop-query.u
 
             <app-event-map [location]="ev.location" />
 
-            <app-weather-card [location]="ev.location" [date]="weatherDate()" />
+            <app-weather-card class="block" [location]="ev.location" [date]="weatherDate()" />
 
             <app-activity-panel
+              class="block"
               [eventId]="ev._id"
               [eventName]="ev.name"
               [eventDate]="ev.startDate"

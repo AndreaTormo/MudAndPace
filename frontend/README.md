@@ -1,12 +1,13 @@
 # Mud and Pace — Frontend
 
 Aplicación Angular 18 para consultar y administrar eventos de trail running, con autenticación JWT,
-perfil de usuario y control de acceso por roles. Consume la API Express en
-`http://localhost:3000/api/v1` y el servidor de IA en `http://localhost:3001/api/v1`.
+perfil de usuario y control de acceso por roles. Consume todas las APIs a través del gateway en
+`http://localhost:4000/api/v1` (que enruta a la API Express y al servidor de IA).
 
 ## Requisitos
 
 - Node.js 18 o superior con npm
+- El gateway levantado en `http://localhost:4000` (ver `../api_gateway`)
 - La API y MongoDB levantados en `http://localhost:3000` (ver `../backend`)
 - El servidor de IA levantado en `http://localhost:3001` (ver `../backend_agent_ia`)
 
@@ -22,9 +23,8 @@ npm install
 npm start
 ```
 
-Arranca `ng serve` en `http://localhost:4200/` y recarga al guardar cambios. Las llamadas a la API
-salen desde el navegador hacia `http://localhost:3000` y las de IA hacia `http://localhost:3001`
-(CORS habilitado en ambos servidores para el puerto 4200).
+Arranca `ng serve` en `http://localhost:4200/` y recarga al guardar cambios. Todas las llamadas
+salen desde el navegador hacia `http://localhost:4000` (CORS habilitado en el gateway para el puerto 4200).
 
 ## Build de producción
 
@@ -100,8 +100,8 @@ reciben inputs/emiten outputs.
 | Clave            | Valor                              | Uso                                        |
 | ---------------- | ---------------------------------- | ------------------------------------------ |
 | `production`     | `true` / `false`                   | Modo de compilación                        |
-| `API_URL`        | `http://localhost:3000/api/v1`     | Base de los endpoints de la API            |
-| `AI_API_URL`     | `http://localhost:3001/api/v1`     | Base del asistente y del clima             |
+| `API_URL`        | `http://localhost:4000/api/v1`     | Base de los endpoints de la API (gateway)  |
+| `AI_API_URL`     | `http://localhost:4000/api/v1`     | Base del asistente y del clima (gateway)   |
 | `requestTimeout` | `10000` (ms)                       | Timeout de cada petición en `ApiService`   |
 
 ## Funcionalidades

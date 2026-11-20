@@ -107,6 +107,7 @@ export class LoginPage {
   private readonly auth = inject(AuthStore);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
+  private readonly isUserMode = this.route.snapshot.queryParamMap.get('mode') === 'user';
 
   protected readonly form = this.fb.nonNullable.group({
     email: ['', [Validators.required, Validators.email]],
@@ -130,7 +131,10 @@ export class LoginPage {
     this.errorMessage.set(null);
 
     try {
-      await firstValueFrom(this.auth.login(this.form.getRawValue()));
+      const request = this.isUserMode
+        ? this.auth.loginUser(this.form.getRawValue())
+        : this.auth.login(this.form.getRawValue());
+      await firstValueFrom(request);
       const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
       const target = returnUrl?.startsWith('/') ? returnUrl : '/events';
       await this.router.navigateByUrl(target);

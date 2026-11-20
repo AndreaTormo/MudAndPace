@@ -1171,21 +1171,28 @@ html:not(.dark) .auth-shell .auth-shade {
 }
 
 .auth-topo {
-  position: absolute;
-  inset: 0;
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: clamp(320px, 38vw, 560px);
   z-index: -1;
   pointer-events: none;
-  opacity: 0.16;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1200' height='900' viewBox='0 0 1200 900' fill='none' stroke='%2368775A' stroke-width='1.15'%3E%3Cpath d='M-120 790C40 730 130 760 250 690S430 540 570 565 780 690 940 620 1130 430 1320 470'/%3E%3Cpath d='M-100 740C50 685 145 710 260 645S440 500 580 520 790 640 950 575 1145 395 1330 430'/%3E%3Cpath d='M-80 690C65 640 160 660 270 600S455 460 590 480 800 590 960 530 1160 360 1340 395'/%3E%3Cpath d='M-60 640C80 595 175 610 280 555S470 420 600 440 810 540 970 485 1175 325 1350 355'/%3E%3Cpath d='M-40 590C95 550 190 560 290 510S485 385 610 400 820 490 980 440 1190 290 1360 315'/%3E%3Cpath d='M-20 540C110 505 205 510 300 465S500 350 620 360 830 440 990 395 1205 255 1370 275'/%3E%3Cpath d='M0 490C125 460 220 460 310 420S515 315 630 320 840 390 1000 350 1220 220 1380 235'/%3E%3Cpath d='M20 440C140 415 235 410 320 375S530 280 640 280 850 340 1010 305 1235 185 1390 195'/%3E%3Cpath d='M40 390C155 370 250 360 330 330S545 245 650 240 860 290 1020 260 1250 150 1400 155'/%3E%3C/svg%3E");
+  opacity: 0.38;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1600' height='1000' viewBox='0 0 1600 1000' fill='none' stroke='%2368775A' stroke-width='1.15'%3E%3Cpath d='M-160 150C20 105 150 120 280 55S520 -20 680 10 920 130 1100 65 1340 -60 1600 -10'/%3E%3Cpath d='M-160 95C25 55 160 65 290 5S525 -70 685 -45 925 70 1110 10 1350 -110 1600 -65'/%3E%3Cpath d='M-160 205C15 165 145 175 275 110S515 -5 675 25 915 145 1095 85 1335 -25 1600 20'/%3E%3Cpath d='M-160 940C10 885 140 905 270 830S510 660 675 685 915 810 1100 745 1340 525 1600 575'/%3E%3Cpath d='M-160 885C15 835 150 850 280 780S515 615 680 635 920 755 1105 690 1345 475 1600 520'/%3E%3Cpath d='M-160 830C20 785 160 795 290 730S520 570 685 585 925 700 1110 635 1350 425 1600 465'/%3E%3Cpath d='M-160 775C25 735 170 740 300 680S525 525 690 535 930 645 1115 580 1355 375 1600 410'/%3E%3Cpath d='M-160 720C30 685 180 685 310 630S530 480 695 485 935 590 1120 525 1360 325 1600 355'/%3E%3Cpath d='M-160 665C35 635 190 630 320 580S535 435 700 435 940 535 1125 470 1365 275 1600 300'/%3E%3Cpath d='M-160 610C40 585 200 575 330 530S540 390 705 385 945 480 1130 415 1370 225 1600 245'/%3E%3Cpath d='M-160 555C45 535 210 520 340 480S545 345 710 335 950 425 1135 360 1375 175 1600 190'/%3E%3Cpath d='M-160 500C50 485 220 465 350 430S550 300 715 285 955 370 1140 305 1380 125 1600 135'/%3E%3Cpath d='M-160 445C55 435 230 410 360 380S555 255 720 235 960 315 1145 250 1385 75 1600 80'/%3E%3Cpath d='M85 470C115 390 220 345 320 375C420 405 450 495 405 570C360 645 185 660 115 610C45 560 55 550 85 470'/%3E%3Cpath d='M120 445C145 385 225 350 305 375C385 400 410 475 375 540C340 605 190 615 130 575C70 535 95 505 120 445'/%3E%3Cpath d='M160 420C180 375 240 350 295 370C350 390 365 440 345 480C325 520 205 540 160 510C115 480 140 465 160 420'/%3E%3Cpath d='M200 400C215 370 260 355 300 370C340 385 350 425 330 455C310 485 235 495 205 475C175 455 185 430 200 400'/%3E%3Cpath d='M-80 1010C40 960 150 975 250 925S430 810 540 820'/%3E%3Cpath d='M-40 1050C80 1000 190 1015 290 965S470 850 580 860'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
-  background-position: left center;
-  background-size: cover;
-  -webkit-mask-image: radial-gradient(ellipse at 25% 50%, #000 0%, #000 55%, transparent 100%);
-  mask-image: radial-gradient(ellipse at 25% 50%, #000 0%, #000 55%, transparent 100%);
+  background-position: left top;
+  background-size: auto 120%;
+  -webkit-mask-image: linear-gradient(90deg, #000 0%, #000 55%, transparent 100%);
+  mask-image: linear-gradient(90deg, #000 0%, #000 55%, transparent 100%);
 }
 
 html:not(.dark) .auth-shell .auth-topo {
-  opacity: 0.22;
+  opacity: 0.32;
+}
+
+.dark .auth-topo {
+  filter: brightness(1.45) saturate(0.9);
 }
 
 .auth-content {
@@ -1583,8 +1590,23 @@ html:not(.dark) .auth-shell .auth-logo-light {
     overflow: visible;
   }
 
+  .auth-topo,
+  html:not(.dark) .auth-shell .auth-topo {
+    top: 38vh;
+    left: 0;
+    width: 100%;
+    background-position: center center;
+    background-size: auto 100%;
+    -webkit-mask-image: radial-gradient(ellipse 80% 70% at 50% 50%, #000 0%, #000 45%, transparent 100%);
+    mask-image: radial-gradient(ellipse 80% 70% at 50% 50%, #000 0%, #000 45%, transparent 100%);
+  }
+
   .auth-topo {
-    opacity: 0.12;
+    opacity: 0.28;
+  }
+
+  html:not(.dark) .auth-shell .auth-topo {
+    opacity: 0.18;
   }
 }
 

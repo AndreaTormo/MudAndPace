@@ -37,7 +37,39 @@ const loginLimiter = rateLimit({
   }
 });
 
+const userLoginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 10,
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler(req, res) {
+    return res.status(429).json({
+      error: {
+        code: 'TOO_MANY_REQUESTS',
+        message: 'Demasiados intentos de inicio de sesión. Inténtalo de nuevo más tarde.'
+      }
+    });
+  }
+});
+
+const refreshLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  handler(req, res) {
+    return res.status(429).json({
+      error: {
+        code: 'TOO_MANY_REQUESTS',
+        message: 'Demasiadas solicitudes. Inténtalo de nuevo más tarde.'
+      }
+    });
+  }
+});
+
 router.post('/login', loginLimiter, validate(loginSchema), controller.login);
+router.post('/user/login', userLoginLimiter, validate(loginSchema), controller.userLogin);
+router.post('/refresh', refreshLimiter, controller.refresh);
 router.post('/logout', authLimiter, authenticate, controller.logout);
 router.get('/me', authLimiter, authenticate, controller.me);
 

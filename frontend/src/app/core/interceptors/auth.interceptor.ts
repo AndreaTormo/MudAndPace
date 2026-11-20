@@ -1,8 +1,10 @@
-import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
+import { HttpContextToken, HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { catchError, throwError } from 'rxjs';
+import { catchError, switchMap, throwError } from 'rxjs';
 import { AuthStore } from '../stores/auth.store';
+
+const RETRY_AFTER_REFRESH = new HttpContextToken<boolean>(() => false);
 
 function isPublicAuthUrl(url: string): boolean {
   return (
@@ -18,6 +20,10 @@ function isLogoutUrl(url: string): boolean {
   return url.includes('/auth/logout');
 }
 
+function isRefreshUrl(url: string): boolean {
+  return url.includes('/auth/refresh');
+}
+
 function redirectToLogin(router: Router): void {
   if (router.url.startsWith('/auth')) return;
   void router.navigate(['/auth/login'], {
@@ -31,31 +37,34 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   const isPublicAuth = isPublicAuthUrl(req.url);
   const isLogout = isLogoutUrl(req.url);
-
-  if (!isPublicAuth && !isLogout) {
-    const expiresAt = auth.expiresAt();
-    if (expiresAt !== null && expiresAt <= Date.now()) {
-      auth.clear();
-      redirectToLogin(router);
-      return throwError(() => new HttpErrorResponse({ status: 401, url: req.url }));
-    }
-  }
+  const isRefresh = isRefreshUrl(req.url);
+  const alreadyRetried = req.context.get(RETRY_AFTER_REFRESH);
 
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
-      if (error.status === 401) {
-        if (isPublicAuth) {
-          // Credenciales incorrectas: no invalida la sesión ni redirige.
-        } else if (isLogout) {
-          // Sesión ya inválida: solo se limpia; el caller navega al login.
-          auth.clear();
-        } else {
-          auth.clear();
-          redirectToLogin(router);
-        }
+      if (error.status !== 401) {
+        return throwError(() => error);
       }
 
-      return throwError(() => error);
+      if (isLogout) {
+        auth.clear();
+        return throwError(() => error);
+      }
+
+      if (isPublicAuth || isRefresh || alreadyRetried) {
+        return throwError(() => error);
+      }
+
+      return auth.refreshSession().pipe(
+        switchMap(() =>
+          next(req.clone({ context: req.context.set(RETRY_AFTER_REFRESH, true) }))
+        ),
+        catchError(() => {
+          auth.clear();
+          redirectToLogin(router);
+          return throwError(() => error);
+        })
+      );
     })
   );
 };

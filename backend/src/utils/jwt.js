@@ -4,6 +4,7 @@ const { AppError } = require('./appError');
 
 const ISSUER = process.env.JWT_ISSUER || 'trail-running-api';
 const AUDIENCE = process.env.JWT_AUDIENCE || 'trail-running-frontend';
+const REFRESH_TOKEN_TTL = '7d';
 
 function normalizeRole(role) {
   return role === 'ADMIN' ? 'ADMIN' : 'USER';
@@ -16,15 +17,15 @@ function secret() {
   return process.env.JWT_SECRET;
 }
 
-function signAccessToken(user) {
+function signToken(user, type, expiresIn) {
   const jti = crypto.randomUUID();
 
   const token = jwt.sign(
-    { role: normalizeRole(user.role), ver: Number(user.tokenVersion) || 0, jti },
+    { type, ver: Number(user.tokenVersion) || 0, jti },
     secret(),
     {
       subject: String(user._id),
-      expiresIn: process.env.JWT_EXPIRES_IN || '1h',
+      expiresIn,
       issuer: ISSUER,
       audience: AUDIENCE,
       algorithm: 'HS256'
@@ -35,27 +36,59 @@ function signAccessToken(user) {
   return {
     token,
     jti,
+    type,
     expiresAt: new Date(decoded.exp * 1000).toISOString()
   };
 }
 
-function verifyAccessToken(token) {
+function signAccessToken(user) {
+  return signToken(user, 'access', process.env.JWT_EXPIRES_IN || '1h');
+}
+
+function signRefreshToken(user) {
+  return signToken(user, 'refresh', REFRESH_TOKEN_TTL);
+}
+
+function verifyToken(token, type) {
   try {
-    return jwt.verify(token, secret(), {
+    const payload = jwt.verify(token, secret(), {
       algorithms: ['HS256'],
       issuer: ISSUER,
       audience: AUDIENCE
     });
+
+    const expectedType = type || 'access';
+    if ((payload.type || 'access') !== expectedType) {
+      throw new AppError('Invalid token', 401, 'INVALID_TOKEN');
+    }
+
+    return payload;
   } catch (error) {
     if (error.name === 'TokenExpiredError') {
       throw new AppError('Token expired', 401, 'TOKEN_EXPIRED');
     }
+    if (error instanceof AppError) throw error;
     throw new AppError('Invalid token', 401, 'INVALID_TOKEN');
   }
+}
+
+function verifyAccessToken(token) {
+  return verifyToken(token, 'access');
+}
+
+function verifyRefreshToken(token) {
+  return verifyToken(token, 'refresh');
 }
 
 function hashToken(token) {
   return crypto.createHash('sha256').update(String(token)).digest('hex');
 }
 
-module.exports = { signAccessToken, verifyAccessToken, hashToken, normalizeRole };
+module.exports = {
+  signAccessToken,
+  signRefreshToken,
+  verifyAccessToken,
+  verifyRefreshToken,
+  hashToken,
+  normalizeRole
+};

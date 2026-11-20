@@ -136,6 +136,7 @@ export interface EventFilters {
   maxDistance?: number;
   fromDate?: string;
   toDate?: string;
+  pageSize?: number;
 }
 
 export interface EventFormValue {

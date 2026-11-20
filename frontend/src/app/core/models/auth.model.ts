@@ -1,5 +1,3 @@
-export type UserRole = 'USER' | 'ADMIN';
-
 export interface UserProfile {
   _id: string;
   userId: string;
@@ -20,7 +18,7 @@ export interface AuthUser {
   _id: string;
   name: string;
   email: string;
-  role: UserRole;
+  canManage?: boolean;
   status?: UserStatus;
   isActive: boolean;
   emailVerified: boolean;
