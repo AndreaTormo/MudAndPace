@@ -24,7 +24,7 @@ import { AuthStore } from '../../../core/stores/auth.store';
             </li>
             <li>
               <a
-                routerLink="/shop"
+                routerLink="/shop/experiences"
                 routerLinkActive="bg-brand/10 text-brand"
                 class="block rounded-lg px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100"
               >
@@ -58,11 +58,20 @@ import { AuthStore } from '../../../core/stores/auth.store';
               </li>
               <li>
                 <a
-                  routerLink="/events/create"
+                  routerLink="/admin/comments"
                   routerLinkActive="bg-brand/10 text-brand ring-1 ring-brand/20"
                   class="block rounded-lg px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100"
                 >
-                  Nuevo evento
+                  Comentarios
+                </a>
+              </li>
+              <li>
+                <a
+                  routerLink="/admin/analytics"
+                  routerLinkActive="bg-brand/10 text-brand ring-1 ring-brand/20"
+                  class="block rounded-lg px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100"
+                >
+                  Análisis IA
                 </a>
               </li>
               <li>

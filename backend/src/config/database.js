@@ -10,6 +10,8 @@ const Departure = require('../models/departure.model');
 const User = require('../models/user.model');
 const Profile = require('../models/profile.model');
 const EventImage = require('../models/eventImage.model');
+const Comment = require('../models/comment.model');
+const Rating = require('../models/rating.model');
 const Session = require('../models/session.model');
 const { slugify } = require('../utils/slugify');
 
@@ -23,6 +25,8 @@ async function ensureIndexes() {
     User.ensureIndexes(),
     Profile.ensureIndexes(),
     EventImage.ensureIndexes(),
+    Comment.ensureIndexes(),
+    Rating.ensureIndexes(),
     Session.ensureIndexes()
   ]);
 }
@@ -59,7 +63,8 @@ const EVENT_IMAGE_FOLDERS = {
   '665a1b2c3d4e5f60718293f1': 'reunion',
   '665a1b2c3d4e5f60718293f2': 'montgo',
   '665a1b2c3d4e5f60718293f3': 'sierra-calderona',
-  '665a1b2c3d4e5f60718293f4': 'courmayeur'
+  '665a1b2c3d4e5f60718293f4': 'courmayeur',
+  '665a1b2c3d4e5f60718293f5': 'chamonix'
 };
 
 function resetDirectory(targetDir) {
@@ -388,6 +393,35 @@ const events = [
     locationId: oid('665a1b2c3d4e5f60718293d9'),
     startDate: new Date('2027-08-27T05:00:00Z'),
     endDate: new Date('2027-08-29T18:00:00Z'),
+    distanceKm: 174.0,
+    elevationGain: 9900,
+    elevationLossM: 9900,
+    difficulty: 'expert',
+    surface: ['trail', 'rock', 'mixed'],
+    tags: ['alpes', 'glaciares', 'utmb'],
+    price: 250.0,
+    variants: [
+      { name: 'OCC', distanceKm: 60.0, elevationGain: 3500, price: 120.0 },
+      { name: 'CCC', distanceKm: 101.0, elevationGain: 6050, price: 180.0 },
+      { name: 'UTMB', distanceKm: 174.0, elevationGain: 9900, price: 250.0 }
+    ],
+    status: 'published',
+    isActive: true,
+    created_At: SEED_DATE,
+    updated_at: SEED_DATE,
+    deleted_at: null
+  },
+  {
+    _id: oid('665a1b2c3d4e5f60718293f5'),
+    name: 'UTMB Mont-Blanc 2026',
+    slug: 'utmb-mont-blanc-2026',
+    sku: 'UTMB-2026',
+    description: 'La gran cita del trail mundial alrededor del macizo del Mont-Blanc, con las modalidades OCC, CCC y UTMB.',
+    hostId: oid('665a1b2c3d4e5f60718293b5'),
+    categoryId: oid('665a1b2c3d4e5f60718293c6'),
+    locationId: oid('665a1b2c3d4e5f60718293d9'),
+    startDate: new Date('2026-08-27T05:00:00Z'),
+    endDate: new Date('2026-08-29T18:00:00Z'),
     distanceKm: 174.0,
     elevationGain: 9900,
     elevationLossM: 9900,
@@ -868,8 +902,245 @@ async function seedDatabase() {
   await Event.insertMany(events, { timestamps: false });
   await Departure.insertMany(departures, { timestamps: false });
   const seededUsers = await seedUsers();
+  const demoCommentAuthor = await User.findOne({ email: 'user@mudandpace.com' });
+  const demoAdminAuthor = await User.findOne({ email: demoAdminEmail });
+  const secondaryAdminAuthor = await User.findOne({ email: 'admin2@mudandpace.com' });
+  const demoAuthors = [demoCommentAuthor, demoAdminAuthor, secondaryAdminAuthor]
+    .filter(Boolean)
+    .map((user) => user._id);
 
   const db = mongoose.connection.db;
+
+  const utmb2026Id = oid('665a1b2c3d4e5f60718293f5');
+  const utmb2026Departures = await Departure.find({ eventId: utmb2026Id }).sort({
+    startDatetime: 1,
+    _id: 1
+  });
+  const commentSeeds = [
+    {
+      _id: oid('665a1b2c3d4e5f6071829601'),
+      departureIndex: 0,
+      content: 'La OCC fue durísima, pero con unas vistas increíbles. La organización, de 10.',
+      date: new Date('2026-08-27T12:30:00Z')
+    },
+    {
+      _id: oid('665a1b2c3d4e5f6071829602'),
+      departureIndex: 1,
+      content: 'Muy buena carrera, el paso por el col de la Forclaz es espectacular. Repetiría sin duda.',
+      date: new Date('2026-08-27T19:15:00Z')
+    },
+    {
+      _id: oid('665a1b2c3d4e5f6071829603'),
+      departureIndex: 2,
+      content: 'He completado mi primera UTMB. Noche larga, pero llegar a Chamonix no se olvida.',
+      date: new Date('2026-08-28T09:00:00Z')
+    },
+    {
+      _id: oid('665a1b2c3d4e5f6071829604'),
+      departureIndex: 0,
+      authorIndex: 1,
+      content: 'Salida demasiado temprano y mucha niebla en el primer puerto. Aun así, terreno precioso.',
+      date: new Date('2026-08-27T14:05:00Z')
+    },
+    {
+      _id: oid('665a1b2c3d4e5f6071829605'),
+      departureIndex: 0,
+      authorIndex: 2,
+      content: 'La bajada final a Chamonix es espectacular. Muy bien señalizada y con buena animación.',
+      date: new Date('2026-08-27T16:40:00Z')
+    },
+    {
+      _id: oid('665a1b2c3d4e5f6071829606'),
+      departureIndex: 0,
+      content: 'Distancia real algo superior a la anunciada, pero el desnivel merece la pena.',
+      date: new Date('2026-08-27T18:10:00Z')
+    },
+    {
+      _id: oid('665a1b2c3d4e5f6071829607'),
+      departureIndex: 1,
+      authorIndex: 1,
+      content: 'Carteles confusos en el paso de Switzerland y bastante tráfico en el primer tramo.',
+      date: new Date('2026-08-27T20:30:00Z')
+    },
+    {
+      _id: oid('665a1b2c3d4e5f6071829608'),
+      departureIndex: 1,
+      authorIndex: 2,
+      content: 'Avituallamientos muy completos y volunteers increíbles. La CCC me ha encantado.',
+      date: new Date('2026-08-27T22:15:00Z')
+    },
+    {
+      _id: oid('665a1b2c3d4e5f6071829609'),
+      departureIndex: 1,
+      content: 'Ritmo exigente desde el principio. Me quedé sin fuerzas en el último col.',
+      date: new Date('2026-08-28T07:45:00Z')
+    },
+    {
+      _id: oid('665a1b2c3d4e5f6071829610'),
+      departureIndex: 2,
+      authorIndex: 1,
+      content: 'La noche se hizo larguísima y el frío en Courmayeur fue duro, pero la experiencia es única.',
+      date: new Date('2026-08-28T10:20:00Z')
+    },
+    {
+      _id: oid('665a1b2c3d4e5f6071829611'),
+      departureIndex: 2,
+      authorIndex: 2,
+      content: 'Ambiente increíble en la meta de Chamonix. Lágrimas de alegría al llegar.',
+      date: new Date('2026-08-28T11:35:00Z')
+    },
+    {
+      _id: oid('665a1b2c3d4e5f6071829612'),
+      departureIndex: 2,
+      content: 'Logística de salida mejorable, con demasiada aglomeración en el zona de salida.',
+      date: new Date('2026-08-28T13:00:00Z')
+    },
+    {
+      _id: oid('665a1b2c3d4e5f6071829613'),
+      departureIndex: 0,
+      authorIndex: 1,
+      content: 'Organización impecable en controles y barreras. Repetiría la OCC sin dudarlo.',
+      date: new Date('2026-08-28T15:25:00Z')
+    },
+    {
+      _id: oid('665a1b2c3d4e5f6071829614'),
+      departureIndex: 1,
+      authorIndex: 2,
+      content: 'Desnivel brutal, pero las vistas desde el Grand Col Ferret compensan todo el esfuerzo.',
+      date: new Date('2026-08-28T17:50:00Z')
+    },
+    {
+      _id: oid('665a1b2c3d4e5f6071829615'),
+      departureIndex: 2,
+      authorIndex: 1,
+      content: 'Cruzar la meta con el amanecer en Chamonix fue el mejor momento del año.',
+      date: new Date('2026-08-28T18:30:00Z')
+    }
+  ];
+  const comments = demoAuthors.length
+    ? commentSeeds.flatMap(({ departureIndex, authorIndex = 0, date, content, ...rest }) => {
+        const departure = utmb2026Departures[departureIndex];
+        if (!departure) {
+          return [];
+        }
+        return [
+          {
+            ...rest,
+            content,
+            contentHash: crypto.createHash('sha256').update(content).digest('hex'),
+            departureId: departure._id,
+            userId: demoAuthors[authorIndex % demoAuthors.length],
+            status: 'visible',
+            deleted_at: null,
+            created_At: date,
+            updated_at: date
+          }
+        ];
+      })
+    : [];
+
+  const ratingSeeds = [
+    {
+      _id: oid('665a1b2c3d4e5f6071829701'),
+      departureIndex: 0,
+      authorIndex: 0,
+      score: 5,
+      review: 'Organización excelente y un recorrido precioso. Repetiría sin dudarlo.',
+      date: new Date('2026-08-27T13:00:00Z')
+    },
+    {
+      _id: oid('665a1b2c3d4e5f6071829702'),
+      departureIndex: 0,
+      authorIndex: 1,
+      score: 4,
+      review: 'Muy buena experiencia, aunque la niebla del principio limitó las vistas.',
+      date: new Date('2026-08-27T14:30:00Z')
+    },
+    {
+      _id: oid('665a1b2c3d4e5f6071829703'),
+      departureIndex: 0,
+      authorIndex: 2,
+      score: 3,
+      review: 'Recorrido bonito pero la distancia real se notó más de lo esperado.',
+      date: new Date('2026-08-27T16:00:00Z')
+    },
+    {
+      _id: oid('665a1b2c3d4e5f6071829704'),
+      departureIndex: 1,
+      authorIndex: 0,
+      score: 4,
+      review: 'Avituallamientos de lujo y ambiente excelente en todo el recorrido.',
+      date: new Date('2026-08-27T21:00:00Z')
+    },
+    {
+      _id: oid('665a1b2c3d4e5f6071829705'),
+      departureIndex: 1,
+      authorIndex: 1,
+      score: 2,
+      review: 'Señalización mejorable y demasiada aglomeración en los primeros kilómetros.',
+      date: new Date('2026-08-27T22:30:00Z')
+    },
+    {
+      _id: oid('665a1b2c3d4e5f6071829706'),
+      departureIndex: 1,
+      authorIndex: 2,
+      score: 5,
+      review: 'La CCC es una carrera increíble. El paso por Forclaz es inolvidable.',
+      date: new Date('2026-08-28T08:00:00Z')
+    },
+    {
+      _id: oid('665a1b2c3d4e5f6071829707'),
+      departureIndex: 2,
+      authorIndex: 0,
+      score: 5,
+      review: 'La UTMB es dura, pero llegar a Chamonix no se olvida. Experiencia única.',
+      date: new Date('2026-08-28T10:45:00Z')
+    },
+    {
+      _id: oid('665a1b2c3d4e5f6071829708'),
+      departureIndex: 2,
+      authorIndex: 1,
+      score: 3,
+      review: 'Muy bien organizada, aunque el frío nocturno se me hizo complicado.',
+      date: new Date('2026-08-28T12:00:00Z')
+    },
+    {
+      _id: oid('665a1b2c3d4e5f6071829709'),
+      departureIndex: 2,
+      authorIndex: 2,
+      score: 1,
+      review: 'No fue mi día: fatiga, frío y problemas de estómago desde el primer tramo.',
+      date: new Date('2026-08-28T13:30:00Z')
+    },
+    {
+      _id: oid('665a1b2c3d4e5f6071829710'),
+      departureIndex: 1,
+      authorIndex: 0,
+      score: 2,
+      review: 'Valoración eliminada por el moderador por contenido duplicado.',
+      date: new Date('2026-08-28T14:00:00Z'),
+      deletedAt: new Date('2026-08-28T15:00:00Z')
+    }
+  ];
+  const ratings = demoAuthors.length
+    ? ratingSeeds.flatMap(({ departureIndex, authorIndex, date, deletedAt, ...rest }) => {
+        const departure = utmb2026Departures[departureIndex];
+        if (!departure) {
+          return [];
+        }
+        return [
+          {
+            ...rest,
+            eventId: utmb2026Id,
+            departureId: departure._id,
+            userId: demoAuthors[authorIndex % demoAuthors.length],
+            deleted_at: deletedAt || null,
+            created_At: date,
+            updated_at: date
+          }
+        ];
+      })
+    : [];
 
   const eventImages = [];
   if (fs.existsSync(SEED_ASSETS_ROOT)) {
@@ -919,10 +1190,20 @@ async function seedDatabase() {
   await db.collection('experiences').deleteMany({});
   await db.collection('event_images').deleteMany({});
   await db.collection('experience_images').deleteMany({});
+  await db.collection('comments').deleteMany({});
+  await db.collection('ratings').deleteMany({});
+  await db.collection('ai_comment_summaries').deleteMany({});
+  await db.collection('ai_sentiment_analyses').deleteMany({});
   await db.collection('experiences').insertMany(experiences);
   await db.collection('experience_images').insertMany(experienceImages);
   if (eventImages.length) {
     await db.collection('event_images').insertMany(eventImages);
+  }
+  if (comments.length) {
+    await db.collection('comments').insertMany(comments);
+  }
+  if (ratings.length) {
+    await db.collection('ratings').insertMany(ratings);
   }
 
   await db.collection('experiences').createIndex({ eventId: 1 });
@@ -941,6 +1222,8 @@ async function seedDatabase() {
     experiences: experiences.length,
     event_images: eventImages.length,
     experience_images: experienceImages.length,
+    comments: comments.length,
+    ratings: ratings.length,
     users: seededUsers,
     profiles: seededUsers
   };

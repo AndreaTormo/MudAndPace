@@ -1,12 +1,30 @@
-import { ChangeDetectionStrategy, Component, effect, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnDestroy, effect, input, output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
-function debounce<T extends (...args: Parameters<T>) => void>(fn: T, delay: number): T {
-  let timer: ReturnType<typeof setTimeout>;
-  return ((...args: Parameters<T>) => {
-    clearTimeout(timer);
-    timer = setTimeout(() => fn(...args), delay);
-  }) as T;
+interface Debounced<T extends (...args: never[]) => void> {
+  (...args: Parameters<T>): void;
+  cancel(): void;
+}
+
+function debounce<T extends (...args: never[]) => void>(fn: T, delay: number): Debounced<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+
+  const debounced = (...args: Parameters<T>) => {
+    debounced.cancel();
+    timer = setTimeout(() => {
+      timer = undefined;
+      fn(...args);
+    }, delay);
+  };
+
+  debounced.cancel = () => {
+    if (timer !== undefined) {
+      clearTimeout(timer);
+      timer = undefined;
+    }
+  };
+
+  return debounced;
 }
 
 @Component({
@@ -50,7 +68,7 @@ function debounce<T extends (...args: Parameters<T>) => void>(fn: T, delay: numb
     </div>
   `
 })
-export class SearchBar {
+export class SearchBar implements OnDestroy {
   readonly placeholder = input('Buscar eventos...');
   readonly value = input<string>('');
   readonly searchChange = output<string>();
@@ -65,9 +83,14 @@ export class SearchBar {
     effect(() => {
       const external = this.value();
       if (external !== this._value) {
+        this.debouncedEmit.cancel();
         this._value = external;
       }
     });
+  }
+
+  ngOnDestroy(): void {
+    this.debouncedEmit.cancel();
   }
 
   protected onInput(value: string): void {
@@ -76,6 +99,7 @@ export class SearchBar {
   }
 
   protected clear(): void {
+    this.debouncedEmit.cancel();
     this._value = '';
     this.searchChange.emit('');
   }

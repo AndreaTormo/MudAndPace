@@ -26,6 +26,10 @@
     --status-published: 78 104 117;
     --status-draft: 142 101 43;
     --status-danger: 163 78 69;
+    --status-verified: 58 82 110;
+    --landing-paper: 244 241 232;
+    --ridge: #ece8dc;
+    --ridge-line: transparent;
   }
 
   .dark {
@@ -51,48 +55,8 @@
     --status-published: 179 195 210;
     --status-draft: 217 188 135;
     --status-danger: 223 160 153;
-  }
-
-  .shop-landing {
-    --brand: 47 74 30;
-    --brand-dark: 38 60 24;
-    --brand-accent: 82 105 60;
-    --surface: 244 241 232;
-    --gray-50: 236 232 220;
-    --gray-100: 228 223 210;
-    --gray-200: 211 205 190;
-    --gray-300: 181 174 157;
-    --gray-400: 96 94 83;
-    --gray-500: 78 76 68;
-    --gray-600: 62 61 55;
-    --gray-700: 52 53 46;
-    --gray-800: 45 47 40;
-    --gray-900: 43 46 37;
-    --accent: 122 74 46;
-    --line: 211 205 190;
-    --landing-paper: 236 232 220;
-    --ridge: #ece8dc;
-    --ridge-line: transparent;
-  }
-
-  .dark .shop-landing {
-    --brand: 163 177 138;
-    --brand-dark: 141 154 118;
-    --brand-accent: 199 207 182;
-    --surface: 30 36 27;
-    --gray-50: 22 27 21;
-    --gray-100: 35 41 33;
-    --gray-200: 55 63 50;
-    --gray-300: 78 88 70;
-    --gray-400: 166 171 155;
-    --gray-500: 185 188 175;
-    --gray-600: 203 206 194;
-    --gray-700: 222 224 214;
-    --gray-800: 235 235 227;
-    --gray-900: 242 239 231;
-    --accent: 201 148 114;
-    --line: 55 63 50;
-    --landing-paper: 26 33 24;
+    --status-verified: 170 194 222;
+    --landing-paper: 25 28 24;
     --ridge: #2b3527;
     --ridge-line: #a3b18a;
   }
@@ -201,30 +165,96 @@
     @apply bg-amber-100 text-amber-800;
   }
 
-  .button-primary {
-    @apply bg-brand text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-brand-dark transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
+  .badge-admin,
+  .badge-user,
+  .badge-blocked,
+  .badge-email-verified,
+  .badge-email-unverified {
+    border: 1px solid transparent;
+    font-weight: 600;
   }
 
+  .badge-admin {
+    border-color: rgb(var(--status-draft) / 0.55);
+    background-color: rgb(var(--status-draft) / 0.24);
+    color: rgb(var(--status-draft));
+  }
+
+  .badge-user {
+    border-color: rgb(var(--status-published) / 0.55);
+    background-color: rgb(var(--status-published) / 0.24);
+    color: rgb(var(--status-published));
+  }
+
+  .badge-blocked {
+    border-color: rgb(var(--status-danger) / 0.55);
+    background-color: rgb(var(--status-danger) / 0.24);
+    color: rgb(var(--status-danger));
+  }
+
+  .badge-email-verified {
+    border-color: rgb(var(--status-verified) / 0.55);
+    background-color: rgb(var(--status-verified) / 0.24);
+    color: rgb(var(--status-verified));
+  }
+
+  .badge-email-unverified {
+    border-color: rgb(var(--line) / 0.5);
+    background-color: rgb(var(--gray-100));
+    color: rgb(var(--gray-500));
+  }
+
+  .button-primary,
   .button-sage {
-    @apply w-full rounded-xl px-4 py-2.5 text-sm font-semibold shadow-sm transition-all duration-200 hover:shadow-md active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50;
-    background-color: #a3b18a;
+    @apply inline-flex items-center justify-center gap-2 rounded-xl border px-4 py-2 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50;
+    border-color: rgb(var(--brand));
+    background-color: rgb(var(--brand));
     color: rgb(var(--night));
   }
 
+  .button-primary:hover:not(:disabled),
   .button-sage:hover:not(:disabled) {
-    background-color: #8d9a76;
+    border-color: rgb(var(--brand-dark));
+    background-color: rgb(var(--brand-dark));
+  }
+
+  .button-sage {
+    @apply w-full;
   }
 
   .button-secondary {
-    @apply border border-gray-300 bg-surface text-gray-700 px-4 py-2 rounded-xl text-sm font-medium hover:bg-gray-100 transition-colors disabled:opacity-50;
+    @apply inline-flex items-center justify-center gap-2 rounded-xl border px-4 py-2 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50;
+    border-color: rgb(var(--line));
+    background-color: rgb(var(--surface));
+    color: rgb(var(--gray-700));
+  }
+
+  .button-secondary:hover:not(:disabled) {
+    border-color: rgb(var(--brand) / 0.4);
+    background-color: rgb(var(--gray-100));
+    color: rgb(var(--brand-dark));
   }
 
   .button-danger {
-    @apply border border-red-200 bg-surface text-red-600 px-4 py-2 rounded-xl text-sm font-medium hover:bg-red-50 transition-colors disabled:opacity-50;
+    @apply inline-flex items-center justify-center gap-2 rounded-xl border px-4 py-2 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50;
+    border-color: rgb(var(--status-danger) / 0.4);
+    background-color: rgb(var(--surface));
+    color: rgb(var(--status-danger));
+  }
+
+  .button-danger:hover:not(:disabled) {
+    background-color: rgb(var(--status-danger) / 0.14);
   }
 
   .button-success {
-    @apply border border-green-200 bg-surface text-green-700 px-4 py-2 rounded-xl text-sm font-medium hover:bg-green-50 transition-colors disabled:opacity-50;
+    @apply inline-flex items-center justify-center gap-2 rounded-xl border px-4 py-2 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50;
+    border-color: rgb(var(--status-active) / 0.4);
+    background-color: rgb(var(--surface));
+    color: rgb(var(--status-active));
+  }
+
+  .button-success:hover:not(:disabled) {
+    background-color: rgb(var(--status-active) / 0.14);
   }
 
   .form-label {
@@ -237,6 +267,61 @@
 
   .form-error {
     @apply text-xs text-red-600 mt-1;
+  }
+
+  .comment-form {
+    @apply rounded-2xl border border-gray-200 bg-surface p-3;
+  }
+
+  .comment-card {
+    @apply rounded-2xl border border-gray-200 bg-surface p-4;
+  }
+
+  .comment-content {
+    @apply whitespace-pre-line break-words leading-relaxed;
+  }
+
+  .comment-avatar {
+    @apply grid h-10 w-10 shrink-0 place-items-center overflow-hidden rounded-full bg-brand/15 text-sm font-semibold text-brand-dark;
+  }
+
+  .comment-actions button {
+    @apply rounded-lg px-2 py-1 font-semibold text-gray-500 transition-colors hover:bg-gray-100 hover:text-brand;
+  }
+
+  .rating-panel {
+    @apply rounded-2xl border border-gray-200 bg-surface p-4;
+  }
+
+  .star-rating {
+    @apply inline-flex items-center gap-0.5;
+  }
+
+  .star-button,
+  .star-readonly {
+    @apply inline-flex items-center;
+  }
+
+  .star-button {
+    @apply rounded p-0.5 text-xl leading-none text-gray-300 transition-colors hover:text-accent focus-visible:outline-none;
+  }
+
+  .star-button-active,
+  .star-icon-active {
+    @apply text-accent;
+  }
+
+  .star-icon,
+  .star-placeholder {
+    @apply text-xl leading-none text-gray-300;
+  }
+
+  .star-placeholder {
+    @apply opacity-60;
+  }
+
+  .star-rating-value {
+    @apply ml-2 text-sm font-semibold text-gray-700;
   }
 
   .event-row {
@@ -252,7 +337,11 @@
   }
 
   .event-row-draft {
-    @apply bg-transparent;
+    background-color: rgb(var(--status-draft) / 0.14);
+  }
+
+  .event-row-draft:hover {
+    background-color: rgb(var(--status-draft) / 0.2);
   }
 
   .event-row-draft .event-data {
@@ -276,35 +365,77 @@
   }
 
   .state-pill {
-    @apply inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-brand/40 disabled:cursor-not-allowed disabled:opacity-50;
+    @apply inline-flex items-center justify-center rounded-xl border px-3 py-1.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-brand/40 disabled:cursor-not-allowed disabled:opacity-50;
+    border-color: rgb(var(--line));
+    background-color: rgb(var(--surface));
+    color: rgb(var(--gray-600));
   }
 
   .state-pill-published {
-    @apply border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100;
+    border-color: rgb(var(--status-published) / 0.4);
+    background-color: rgb(var(--status-published) / 0.14);
+    color: rgb(var(--status-published));
+  }
+
+  .state-pill-published:hover:not(:disabled) {
+    background-color: rgb(var(--status-published) / 0.24);
   }
 
   .state-pill-draft {
-    @apply border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100;
+    border-color: rgb(var(--status-draft) / 0.4);
+    background-color: rgb(var(--status-draft) / 0.14);
+    color: rgb(var(--status-draft));
+  }
+
+  .state-pill-draft:hover:not(:disabled) {
+    background-color: rgb(var(--status-draft) / 0.24);
   }
 
   .state-pill-active {
-    @apply border-green-200 bg-green-50 text-green-700 hover:bg-green-100;
+    border-color: rgb(var(--status-active) / 0.4);
+    background-color: rgb(var(--status-active) / 0.14);
+    color: rgb(var(--status-active));
+  }
+
+  .state-pill-active:hover:not(:disabled) {
+    background-color: rgb(var(--status-active) / 0.24);
   }
 
   .state-pill-inactive {
-    @apply border-gray-200 bg-gray-100 text-gray-600 hover:bg-gray-200;
+    border-color: rgb(var(--line));
+    background-color: rgb(var(--gray-100));
+    color: rgb(var(--gray-500));
+  }
+
+  .state-pill-inactive:hover:not(:disabled) {
+    background-color: rgb(var(--gray-200));
   }
 
   .icon-button {
-    @apply inline-grid h-9 w-9 place-items-center rounded-lg border border-gray-200 bg-surface text-gray-600 transition-colors hover:bg-gray-100 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-brand/40;
+    @apply inline-grid h-9 w-9 place-items-center rounded-xl border transition-colors hover:bg-gray-100 hover:text-brand focus:outline-none focus:ring-2 focus:ring-brand/40;
+    border-color: rgb(var(--line));
+    background-color: rgb(var(--surface));
+    color: rgb(var(--gray-600));
   }
 
   .icon-button-danger {
-    @apply border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700;
+    border-color: rgb(var(--status-danger) / 0.4);
+    color: rgb(var(--status-danger));
+  }
+
+  .icon-button-danger:hover:not(:disabled) {
+    background-color: rgb(var(--status-danger) / 0.14);
+    color: rgb(var(--status-danger));
   }
 
   .icon-button-success {
-    @apply border-green-200 text-green-700 hover:bg-green-50 hover:text-green-800;
+    border-color: rgb(var(--status-active) / 0.4);
+    color: rgb(var(--status-active));
+  }
+
+  .icon-button-success:hover:not(:disabled) {
+    background-color: rgb(var(--status-active) / 0.14);
+    color: rgb(var(--status-active));
   }
 
   .range-input {
@@ -395,9 +526,16 @@
     background-color: rgb(var(--status-active) / 0.16);
   }
 
-  .dark .event-row-inactive,
-  .dark .event-row-draft {
+  .dark .event-row-inactive {
     background-color: transparent;
+  }
+
+  .dark .event-row-draft {
+    background-color: rgb(var(--status-draft) / 0.18);
+  }
+
+  .dark .event-row-draft:hover {
+    background-color: rgb(var(--status-draft) / 0.26);
   }
 
   .dark .event-avatar-active {
@@ -482,6 +620,42 @@
     color: rgb(var(--night));
   }
 
+  .dark .comment-form,
+  .dark .comment-card {
+    border-color: rgb(var(--line));
+    background-color: rgb(var(--night-2));
+  }
+
+  .dark .comment-actions button {
+    color: rgb(var(--gray-400));
+  }
+
+  .dark .comment-actions button:hover {
+    background-color: rgb(var(--line) / 0.4);
+    color: rgb(var(--brand));
+  }
+
+  .dark .rating-panel {
+    border-color: rgb(var(--line));
+    background-color: rgb(var(--night-2));
+  }
+
+  .dark .star-button,
+  .dark .star-icon,
+  .dark .star-placeholder {
+    color: rgb(var(--gray-400));
+  }
+
+  .dark .star-button:hover,
+  .dark .star-button-active,
+  .dark .star-icon-active {
+    color: rgb(var(--accent));
+  }
+
+  .dark .star-rating-value {
+    color: rgb(var(--gray-800));
+  }
+
   .dark .text-brand {
     color: rgb(var(--brand));
   }
@@ -523,6 +697,11 @@
   border-color: rgb(var(--status-danger) / 0.38);
 }
 
+.dark .text-emerald-600 {
+  color: rgb(var(--status-active));
+}
+
+.dark .text-amber-600,
 .dark .text-amber-700,
 .dark .text-amber-800 {
   color: rgb(var(--status-draft));
@@ -748,15 +927,15 @@
   justify-content: center;
   width: 2rem;
   height: 2rem;
-  background: rgba(163, 177, 138, 0.16);
-  border: none;
+  background: rgb(var(--brand) / 0.16);
+  border: 1px solid rgb(var(--brand) / 0.3);
   border-radius: 9999px;
-  color: #f2efe7;
+  color: rgb(var(--gray-50));
   cursor: pointer;
 }
 
 .chat-icon-button:hover {
-  background: rgba(163, 177, 138, 0.26);
+  background: rgb(var(--brand) / 0.26);
 }
 
 .chat-messages {
@@ -968,8 +1147,8 @@
   align-items: center;
   justify-content: center;
   background: rgb(var(--brand));
-  color: #fff;
-  border: none;
+  color: rgb(var(--night));
+  border: 1px solid rgb(var(--brand));
   border-radius: 0.75rem;
   padding: 0.55rem 0.7rem;
   min-width: 2.6rem;
@@ -1101,16 +1280,16 @@
   --auth-carbon: #171c19;
   --auth-forest: #202a23;
   --auth-olive: #68775a;
-  --auth-sage: #a8b995;
+  --auth-sage: #a3b18a;
   --auth-warm: #f1f0e9;
   --auth-muted: #a9ada5;
   --auth-card-bg: rgba(23, 28, 25, 0.78);
   --auth-card-solid: #171c19;
-  --auth-card-border: rgba(168, 185, 149, 0.28);
+  --auth-card-border: rgba(163, 177, 138, 0.28);
   --auth-text: #f1f0e9;
   --auth-subtext: #a9ada5;
   --auth-input-bg: rgba(23, 28, 25, 0.58);
-  --auth-input-border: rgba(168, 185, 149, 0.24);
+  --auth-input-border: rgba(163, 177, 138, 0.24);
   --auth-error: #e5a6a0;
   position: relative;
   isolation: isolate;
@@ -1502,8 +1681,10 @@ html:not(.dark) .auth-shell .auth-logo-light {
 }
 
 .auth-submit {
+  width: 100%;
   margin-top: 4px;
   padding: 13px 18px;
+  border: 1px solid var(--auth-sage);
   border-radius: 12px;
   background-color: var(--auth-sage);
   color: var(--auth-carbon);
@@ -1512,6 +1693,7 @@ html:not(.dark) .auth-shell .auth-logo-light {
 }
 
 .auth-submit:hover:not(:disabled) {
+  border-color: var(--auth-olive);
   background-color: var(--auth-olive);
   color: var(--auth-warm);
 }
@@ -1640,4 +1822,606 @@ html:not(.dark) .auth-shell .auth-logo-light {
   .auth-quote i {
     width: 52px;
   }
+}
+
+.admin-shell .mountain-backdrop {
+  display: none;
+}
+
+.admin-shell .mountain-fade {
+  background: linear-gradient(
+    180deg,
+    rgb(var(--surface) / 0.96) 0%,
+    rgb(var(--surface) / 0.88) 24%,
+    rgb(var(--surface) / 0.62) 58%,
+    rgb(var(--surface) / 0.32) 100%
+  );
+}
+
+.admin-shell app-sidebar nav {
+  position: relative;
+  z-index: 1;
+}
+
+.admin-shell app-sidebar aside::after {
+  --admin-ridge: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20320%20160%22%20preserveAspectRatio%3D%22none%22%3E%3Cdefs%3E%3ClinearGradient%20id%3D%22f%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%220%22%20y2%3D%221%22%3E%3Cstop%20offset%3D%220%22%20stop-color%3D%22white%22%20stop-opacity%3D%220%22%2F%3E%3Cstop%20offset%3D%220.5%22%20stop-color%3D%22white%22%20stop-opacity%3D%220.6%22%2F%3E%3Cstop%20offset%3D%221%22%20stop-color%3D%22white%22%20stop-opacity%3D%221%22%2F%3E%3C%2FlinearGradient%3E%3C%2Fdefs%3E%3Cpath%20fill%3D%22url(%23f)%22%20opacity%3D%22.35%22%20d%3D%22M0%20134%20C60%20128%20100%20104%20150%20106%20C200%20108%20250%20122%20320%20116%20L320%20160%20L0%20160%20Z%22%2F%3E%3Cpath%20fill%3D%22url(%23f)%22%20opacity%3D%22.8%22%20d%3D%22M0%20160%20L0%20142%20C48%20138%2088%20116%20132%2084%20C144%2075%20154%2064%20168%2062%20C184%2066%20198%2088%20216%20108%20C250%20130%20286%20124%20320%20132%20L320%20160%20Z%22%2F%3E%3C%2Fsvg%3E");
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 10rem;
+  pointer-events: none;
+  background-color: rgb(var(--gray-400) / 0.85);
+  -webkit-mask-image: var(--admin-ridge);
+  mask-image: var(--admin-ridge);
+  -webkit-mask-position: left bottom;
+  mask-position: left bottom;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+  opacity: 0.45;
+  z-index: 0;
+}
+
+.admin-shell app-navbar header {
+  position: relative;
+  border-bottom: 0;
+  background-color: transparent;
+  box-shadow: none;
+  color: rgb(var(--gray-800));
+  backdrop-filter: none;
+}
+
+.admin-shell app-navbar nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 88rem;
+  gap: 1rem;
+  margin: 0 auto;
+  padding-left: 2rem;
+  padding-right: 2rem;
+}
+
+.admin-shell app-navbar nav > div:first-child {
+  display: none;
+}
+
+.admin-shell app-navbar nav > a {
+  justify-self: auto;
+  color: rgb(var(--gray-800));
+}
+
+.admin-shell app-navbar nav > div:first-child a {
+  border-radius: 0.6rem;
+  color: rgb(var(--gray-500));
+}
+
+.admin-shell app-navbar nav > div:first-child a:hover {
+  background-color: rgb(var(--brand) / 0.16);
+  color: rgb(var(--brand-accent));
+}
+
+.admin-shell app-navbar nav > div:first-child a.text-brand {
+  background-color: rgb(var(--brand) / 0.2);
+  color: rgb(var(--brand-accent));
+}
+
+.admin-shell app-sidebar aside {
+  position: sticky;
+  width: 15.5rem;
+  border-right-color: rgb(var(--line));
+  background-color: rgb(var(--surface) / 0.96);
+  color: rgb(var(--gray-500));
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+.admin-shell app-sidebar p {
+  color: rgb(var(--gray-400));
+  font-size: 0.7rem;
+  letter-spacing: 0.16em;
+}
+
+.admin-shell app-sidebar a {
+  border-radius: 0.6rem;
+  color: rgb(var(--gray-500));
+  font-size: 0.875rem;
+}
+
+.admin-shell app-sidebar a:hover {
+  background-color: rgb(var(--brand) / 0.16);
+  color: rgb(var(--brand-accent));
+}
+
+.admin-shell app-sidebar a.router-link-active,
+.admin-shell app-sidebar a.text-brand {
+  background-color: rgb(var(--brand) / 0.2);
+  box-shadow: inset 3px 0 0 rgb(var(--brand-accent));
+  color: rgb(var(--brand-accent));
+}
+
+.admin-shell app-event-list > div,
+.admin-shell app-admin-profiles > div {
+  max-width: 88rem;
+  padding-top: 2.25rem;
+}
+
+.admin-shell h1 {
+  color: rgb(var(--gray-800));
+  letter-spacing: -0.025em;
+}
+
+.admin-shell app-event-list h1 {
+  font-size: 2rem;
+}
+
+.admin-shell app-event-list h1 .text-brand {
+  color: rgb(var(--brand-accent));
+}
+
+.admin-shell p {
+  color: rgb(var(--gray-400));
+}
+
+.admin-shell .form-input {
+  background-color: rgb(var(--surface) / 0.72);
+  border-color: rgb(var(--line));
+  color: rgb(var(--gray-800));
+}
+
+.admin-shell .form-input::placeholder {
+  color: rgb(var(--gray-400));
+}
+
+.admin-shell .form-input:focus {
+  border-color: rgb(var(--brand));
+  box-shadow: 0 0 0 3px rgb(var(--brand) / 0.18);
+}
+
+.admin-shell .form-label {
+  color: rgb(var(--gray-500));
+}
+
+.admin-shell .form-error {
+  color: rgb(var(--status-danger));
+}
+
+.admin-shell .divide-y,
+.admin-shell .glass-panel {
+  border-color: rgb(var(--line));
+  background-color: rgb(var(--surface) / 0.76);
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.2);
+}
+
+.admin-shell .divide-y > * + * {
+  border-top-color: rgb(var(--line) / 0.75);
+}
+
+.admin-shell app-event-row .event-row,
+.admin-shell app-admin-profile-row > div {
+  padding: 1rem 1.25rem;
+}
+
+.admin-shell app-event-row .event-row:hover,
+.admin-shell app-admin-profile-row > div:hover {
+  background-color: rgb(var(--brand) / 0.08);
+}
+
+.admin-shell app-event-row .event-avatar,
+.admin-shell app-event-row .event-avatar-active,
+.admin-shell app-event-row .event-avatar-inactive {
+  background-color: rgb(var(--brand) / 0.18);
+  color: rgb(var(--brand-accent));
+  --tw-ring-color: rgb(var(--brand) / 0.38);
+}
+
+.admin-shell app-event-row .event-row-draft,
+.admin-shell app-event-row .event-row-draft:hover {
+  background-color: rgb(var(--status-draft) / 0.16);
+}
+
+.admin-shell app-event-row .event-avatar-draft {
+  background-color: rgb(var(--status-draft) / 0.18);
+  color: rgb(var(--status-draft));
+  --tw-ring-color: rgb(var(--status-draft) / 0.45);
+}
+
+.event-card-draft {
+  border-color: rgb(var(--status-draft) / 0.45);
+  background-color: rgb(var(--status-draft) / 0.12);
+}
+
+.event-card-draft:hover {
+  border-color: rgb(var(--status-draft) / 0.7);
+  background-color: rgb(var(--status-draft) / 0.2);
+}
+
+.dark .event-card-draft {
+  border-color: rgb(var(--status-draft) / 0.4);
+  background-color: rgb(var(--status-draft) / 0.16);
+}
+
+.dark .event-card-draft:hover {
+  background-color: rgb(var(--status-draft) / 0.24);
+}
+
+.admin-shell app-event-row a,
+.admin-shell app-admin-profile-row p {
+  color: rgb(var(--gray-800));
+}
+
+.admin-shell app-event-row strong,
+.admin-shell app-admin-profile-row strong {
+  color: rgb(var(--gray-700));
+}
+
+.admin-shell app-event-row .badge,
+.admin-shell app-admin-profile-row .badge {
+  border: 1px solid rgb(var(--line));
+  background-color: rgb(var(--surface) / 0.9);
+  color: rgb(var(--gray-500));
+}
+
+.admin-shell app-event-row .badge-published,
+.admin-shell app-event-row .badge-active,
+.admin-shell app-admin-profile-row .badge-active {
+  border-color: rgb(var(--status-active) / 0.45);
+  background-color: rgb(var(--status-active) / 0.16);
+  color: rgb(var(--status-active));
+}
+
+.admin-shell app-event-row .badge-draft,
+.admin-shell app-admin-profile-row .badge-draft {
+  border-color: rgb(var(--status-draft) / 0.45);
+  background-color: rgb(var(--status-draft) / 0.16);
+  color: rgb(var(--status-draft));
+}
+
+.admin-shell app-event-row .badge-inactive,
+.admin-shell app-admin-profile-row .badge-inactive {
+  border-color: rgb(var(--line));
+  background-color: rgb(var(--gray-100));
+  color: rgb(var(--gray-400));
+}
+
+.admin-shell app-admin-profile-row .badge-admin {
+  border-color: rgb(var(--status-draft) / 0.55);
+  background-color: rgb(var(--status-draft) / 0.24);
+  color: rgb(var(--status-draft));
+}
+
+.admin-shell app-admin-profile-row .badge-user {
+  border-color: rgb(var(--status-published) / 0.55);
+  background-color: rgb(var(--status-published) / 0.24);
+  color: rgb(var(--status-published));
+}
+
+.admin-shell app-admin-profile-row .badge-blocked {
+  border-color: rgb(var(--status-danger) / 0.55);
+  background-color: rgb(var(--status-danger) / 0.24);
+  color: rgb(var(--status-danger));
+}
+
+.admin-shell app-admin-profile-row .badge-email-verified {
+  border-color: rgb(var(--status-verified) / 0.55);
+  background-color: rgb(var(--status-verified) / 0.24);
+  color: rgb(var(--status-verified));
+}
+
+.admin-shell app-admin-profile-row .badge-email-unverified {
+  border-color: rgb(var(--line));
+  background-color: rgb(var(--gray-100));
+  color: rgb(var(--gray-500));
+}
+
+.admin-shell app-pagination p {
+  color: rgb(var(--gray-400));
+}
+
+.admin-shell app-admin-profiles nav a {
+  color: rgb(var(--gray-400));
+}
+
+.admin-shell app-admin-profiles .glass-panel p {
+  color: rgb(var(--gray-400));
+}
+
+.admin-shell app-admin-profiles .glass-panel p.text-2xl {
+  color: rgb(var(--gray-800));
+}
+
+.admin-shell app-admin-profiles .badge {
+  border-color: rgb(var(--brand) / 0.35);
+  background-color: rgb(var(--brand) / 0.16);
+  color: rgb(var(--brand-accent));
+}
+
+@media (max-width: 1023px) {
+  .admin-shell app-navbar nav {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .admin-shell app-event-list > div,
+  .admin-shell app-admin-profiles > div {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}
+
+.button-primary,
+.button-sage,
+.button-secondary,
+.button-danger,
+.button-success,
+.state-pill,
+.icon-button,
+.auth-submit,
+.chat-send-button,
+.chat-icon-button,
+app-pagination button,
+app-theme-toggle button,
+[data-profile-menu] > button,
+[role='group'] button {
+  border-radius: 0.875rem;
+  font-family: inherit;
+  font-weight: 600;
+  transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease, transform 0.18s ease;
+}
+
+app-pagination button,
+app-theme-toggle button,
+[data-profile-menu] > button,
+[role='group'] button {
+  border: 1px solid rgb(var(--line));
+  background-color: rgb(var(--surface));
+  color: rgb(var(--gray-600));
+  cursor: pointer;
+}
+
+app-pagination button:hover:not(:disabled),
+app-theme-toggle button:hover,
+[data-profile-menu] > button:hover,
+[role='group'] button:hover:not(.bg-brand) {
+  background-color: rgb(var(--gray-100));
+  color: rgb(var(--brand-dark));
+}
+
+app-pagination button.bg-brand,
+[role='group'] button.bg-brand {
+  border-color: rgb(var(--brand));
+  background-color: rgb(var(--brand));
+  color: rgb(var(--night));
+}
+
+app-pagination button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+html:not(.dark) .event-row-inactive,
+html:not(.dark) .admin-shell app-event-row .event-row-inactive {
+  background-color: rgb(var(--gray-200) / 0.95);
+  box-shadow: inset 0 0 0 1px rgb(var(--gray-300) / 0.7);
+}
+
+html:not(.dark) .event-row-inactive:hover,
+html:not(.dark) .admin-shell app-event-row .event-row-inactive:hover {
+  background-color: rgb(var(--gray-300) / 0.5);
+}
+
+html:not(.dark) .event-row-inactive .event-data,
+html:not(.dark) .admin-shell app-event-row .event-row-inactive .event-data {
+  opacity: 1;
+}
+
+html:not(.dark) .event-row-inactive .event-data :is(a, p, span, strong),
+html:not(.dark) .admin-shell app-event-row .event-row-inactive .event-data :is(a, p, span, strong) {
+  color: rgb(var(--gray-600));
+}
+
+html:not(.dark) .event-row-inactive .event-data strong,
+html:not(.dark) .admin-shell app-event-row .event-row-inactive .event-data strong {
+  color: rgb(var(--gray-700));
+}
+
+html:not(.dark) .event-row-inactive .event-data a:hover,
+html:not(.dark) .admin-shell app-event-row .event-row-inactive .event-data a:hover {
+  color: rgb(var(--gray-700));
+}
+
+html:not(.dark) .event-avatar-inactive,
+html:not(.dark) .admin-shell app-event-row .event-avatar-inactive {
+  background-color: rgb(var(--gray-300));
+  color: rgb(var(--gray-600));
+  --tw-ring-color: rgb(var(--gray-400));
+}
+
+html:not(.dark) .event-row-inactive .state-pill,
+html:not(.dark) .event-row-inactive .state-pill:hover:not(:disabled),
+html:not(.dark) .admin-shell app-event-row .event-row-inactive .state-pill,
+html:not(.dark) .admin-shell app-event-row .event-row-inactive .state-pill:hover:not(:disabled) {
+  border-color: rgb(var(--gray-400) / 0.55);
+  background-color: rgb(var(--gray-200));
+  color: rgb(var(--gray-600));
+}
+
+html:not(.dark) .event-card-inactive {
+  border-color: rgb(var(--gray-400) / 0.6);
+  background-color: rgb(var(--gray-200) / 0.95);
+}
+
+html:not(.dark) .event-card-inactive:hover {
+  border-color: rgb(var(--gray-400));
+  background-color: rgb(var(--gray-300) / 0.55);
+}
+
+html:not(.dark) .event-card-inactive :is(p, span, strong) {
+  color: rgb(var(--gray-600));
+}
+
+html:not(.dark) .event-card-inactive strong {
+  color: rgb(var(--gray-700));
+}
+
+html:not(.dark) .event-chip-inactive,
+html:not(.dark) .event-badge-inactive {
+  background-color: rgb(var(--gray-200));
+  color: rgb(var(--gray-600));
+}
+
+html:not(.dark) .event-chip-inactive:hover {
+  background-color: rgb(var(--gray-300));
+}
+
+html:not(.dark) .comment-card-hidden {
+  border-color: rgb(var(--gray-400) / 0.6);
+  background-color: rgb(var(--gray-200) / 0.95);
+}
+
+html:not(.dark) .comment-card-hidden:hover {
+  border-color: rgb(var(--gray-400));
+  background-color: rgb(var(--gray-300) / 0.55);
+}
+
+html:not(.dark) .comment-card-hidden :is(span, strong) {
+  color: rgb(var(--gray-600));
+}
+
+html:not(.dark) .comment-card-hidden .comment-content {
+  color: rgb(var(--gray-700));
+  background-color: rgb(var(--gray-100) / 0.7);
+}
+
+html:not(.dark) .comment-card-hidden .comment-avatar {
+  background-color: rgb(var(--gray-300));
+  color: rgb(var(--gray-600));
+}
+
+html:not(.dark) .comment-card-hidden .badge {
+  border-color: rgb(var(--gray-300));
+  background-color: rgb(var(--gray-300) / 0.7);
+  color: rgb(var(--gray-600));
+}
+
+html:not(.dark) .comment-card-hidden app-user-avatar {
+  filter: grayscale(1);
+  opacity: 0.75;
+}
+
+.dark .event-row-inactive,
+.dark .admin-shell app-event-row .event-row-inactive {
+  background-color: rgb(var(--gray-500) / 0.16);
+  box-shadow: inset 0 0 0 1px rgb(var(--gray-500) / 0.3);
+}
+
+.dark .event-row-inactive:hover,
+.dark .admin-shell app-event-row .event-row-inactive:hover {
+  background-color: rgb(var(--gray-500) / 0.24);
+}
+
+.dark .event-row-inactive .event-data :is(a, p, span, strong),
+.dark .admin-shell app-event-row .event-row-inactive .event-data :is(a, p, span, strong) {
+  color: rgb(var(--gray-500));
+}
+
+.dark .event-row-inactive .event-data strong,
+.dark .admin-shell app-event-row .event-row-inactive .event-data strong {
+  color: rgb(var(--gray-600));
+}
+
+.dark .event-avatar-inactive,
+.dark .admin-shell app-event-row .event-avatar-inactive {
+  background-color: rgb(var(--gray-500) / 0.18);
+  color: rgb(var(--gray-500));
+  --tw-ring-color: rgb(var(--gray-500) / 0.45);
+}
+
+.dark .event-row-inactive .state-pill,
+.dark .admin-shell app-event-row .event-row-inactive .state-pill {
+  border-color: rgb(var(--gray-500) / 0.38);
+  background-color: rgb(var(--gray-500) / 0.16);
+  color: rgb(var(--gray-500));
+}
+
+.dark .event-row-inactive .state-pill:hover:not(:disabled),
+.dark .admin-shell app-event-row .event-row-inactive .state-pill:hover:not(:disabled) {
+  background-color: rgb(var(--gray-500) / 0.22);
+}
+
+.dark .event-card-inactive {
+  border-color: rgb(var(--gray-500) / 0.4);
+  background-color: rgb(var(--gray-500) / 0.16);
+}
+
+.dark .event-card-inactive:hover {
+  border-color: rgb(var(--gray-500) / 0.55);
+  background-color: rgb(var(--gray-500) / 0.24);
+}
+
+.dark .event-card-inactive :is(p, span, strong) {
+  color: rgb(var(--gray-500));
+}
+
+.dark .event-card-inactive strong {
+  color: rgb(var(--gray-600));
+}
+
+.dark .event-chip-inactive,
+.dark .event-badge-inactive {
+  background-color: rgb(var(--gray-500) / 0.16);
+  color: rgb(var(--gray-500));
+}
+
+.dark .event-chip-inactive:hover {
+  background-color: rgb(var(--gray-500) / 0.24);
+}
+
+.dark .comment-card-hidden {
+  border-color: rgb(var(--gray-500) / 0.35);
+  background-color: rgb(var(--gray-500) / 0.12);
+}
+
+.dark .comment-card-hidden:hover {
+  border-color: rgb(var(--gray-500) / 0.5);
+  background-color: rgb(var(--gray-500) / 0.18);
+}
+
+.dark .comment-card-hidden :is(span, strong) {
+  color: rgb(var(--gray-400));
+}
+
+.dark .comment-card-hidden .comment-content {
+  color: rgb(var(--gray-200));
+  background-color: rgb(var(--gray-100) / 0.55);
+}
+
+.dark .comment-card-hidden .comment-avatar {
+  background-color: rgb(var(--gray-500) / 0.18);
+  color: rgb(var(--gray-500));
+}
+
+.dark .comment-card-hidden .badge {
+  border-color: rgb(var(--gray-500) / 0.35);
+  background-color: rgb(var(--gray-500) / 0.16);
+  color: rgb(var(--gray-500));
+}
+
+.dark .comment-card-hidden app-user-avatar {
+  filter: grayscale(1);
+  opacity: 0.8;
+}
+
+input[type='search']::-webkit-search-cancel-button,
+input[type='search']::-webkit-search-decoration {
+  -webkit-appearance: none;
+  appearance: none;
+  display: none;
+}
+
+input[type='search']::-ms-clear {
+  display: none;
 }

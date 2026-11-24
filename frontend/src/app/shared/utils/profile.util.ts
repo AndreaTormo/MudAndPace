@@ -37,13 +37,17 @@ export function profileRoleLabel(item: AdminProfile): string {
   return item.user.canManage === true ? 'Administrador' : 'Usuario';
 }
 
+export function profileRoleClass(item: AdminProfile): string {
+  return item.user.canManage === true ? 'badge-admin' : 'badge-user';
+}
+
 export function profileStatusLabel(item: AdminProfile): string {
   if (item.user.status === 'blocked') return 'Bloqueado';
   return item.user.isActive && item.user.status !== 'inactive' ? 'Activo' : 'Inactivo';
 }
 
 export function profileStatusClass(item: AdminProfile): string {
-  if (item.user.status === 'blocked') return 'bg-red-100 text-red-800';
+  if (item.user.status === 'blocked') return 'badge-blocked';
   return item.user.isActive && item.user.status !== 'inactive'
     ? 'badge-active'
     : 'badge-inactive';
@@ -54,5 +58,5 @@ export function profileEmailLabel(item: AdminProfile): string {
 }
 
 export function profileEmailClass(item: AdminProfile): string {
-  return item.user.emailVerified ? 'badge-active' : 'badge-inactive';
+  return item.user.emailVerified ? 'badge-email-verified' : 'badge-email-unverified';
 }

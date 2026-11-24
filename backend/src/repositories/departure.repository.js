@@ -25,6 +25,10 @@ class DepartureRepository {
     return Departure.findById(id);
   }
 
+  async findByIdsIncludingDeleted(ids) {
+    return Departure.find({ _id: { $in: ids } });
+  }
+
   async findBySlug(slug) {
     return this.populate(Departure.findOne({ slug, ...NOT_DELETED }));
   }

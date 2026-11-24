@@ -29,6 +29,22 @@ export const routes: Routes = [
           )
       },
       {
+        path: 'admin/comments',
+        canActivate: [adminGuard],
+        loadComponent: () =>
+          import('./features/admin/pages/admin-comments/admin-comments').then(
+            (m) => m.AdminCommentsPage
+          )
+      },
+      {
+        path: 'admin/analytics',
+        canActivate: [adminGuard],
+        loadComponent: () =>
+          import('./features/admin/pages/admin-analytics/admin-analytics').then(
+            (m) => m.AdminAnalyticsPage
+          )
+      },
+      {
         path: 'events',
         loadChildren: () =>
           import('./features/events/events.routes').then((m) => m.EVENTS_ROUTES)

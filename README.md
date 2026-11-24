@@ -75,10 +75,9 @@ MudAndPace/
 │       ├── controllers/     # Controladores HTTP
 │       ├── middlewares/     # Auth, RBAC, validación, uploads y errores
 │       ├── models/          # Modelos de Mongoose
-│       ├── policies/        # Reglas ABAC
 │       ├── repositories/    # Acceso a datos
 │       ├── routes/          # Endpoints de la API
-│       ├── services/        # Lógica de negocio y errores
+│       ├── services/        # Lógica de negocio, reglas ABAC y errores
 │       ├── utils/           # JWT, tokens, AppError, slugify, sku…
 │       ├── validators/      # Esquemas Zod
 │       ├── app.js

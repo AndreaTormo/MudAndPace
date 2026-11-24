@@ -49,7 +49,7 @@ const EVENT_LIST_PAGE_SIZE = 100;
 
         @if (isAdmin()) {
           <div
-            class="inline-flex self-start rounded-lg border border-gray-200 bg-surface p-1 shadow-sm dark:border-line sm:self-auto"
+            class="inline-flex self-start gap-2 sm:self-auto"
             role="group"
             aria-label="Vista de eventos"
           >

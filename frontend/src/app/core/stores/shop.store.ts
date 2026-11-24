@@ -69,6 +69,7 @@ export class ShopStore {
   readonly error = this._error.asReadonly();
 
   readonly event = this._event.asReadonly();
+  readonly ratingSummary = computed(() => this._event()?.rating ?? null);
   readonly detailLoading = this._detailLoading.asReadonly();
   readonly detailError = this._detailError.asReadonly();
   readonly detailLoaded = this._detailLoaded.asReadonly();

@@ -33,7 +33,11 @@ import { UserAvatar } from '../user-avatar/user-avatar';
           >
             Eventos
           </a>
-          <a routerLink="/shop" [routerLinkActive]="activeLinkClass()" [class]="navLinkClass()">
+          <a
+            routerLink="/shop/experiences"
+            [routerLinkActive]="activeLinkClass()"
+            [class]="navLinkClass()"
+          >
             Shop
           </a>
           @if (isAdmin()) {
@@ -144,6 +148,20 @@ import { UserAvatar } from '../user-avatar/user-avatar';
                       Perfiles de usuarios
                     </a>
                     <a
+                      routerLink="/admin/comments"
+                      class="block rounded-xl px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100"
+                      (click)="closeMenus()"
+                    >
+                      Comentarios
+                    </a>
+                    <a
+                      routerLink="/admin/analytics"
+                      class="block rounded-xl px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100"
+                      (click)="closeMenus()"
+                    >
+                      Análisis IA
+                    </a>
+                    <a
                       routerLink="/events/trash"
                       class="block rounded-xl px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100"
                       (click)="closeMenus()"
@@ -230,7 +248,7 @@ import { UserAvatar } from '../user-avatar/user-avatar';
             Eventos
           </a>
           <a
-            routerLink="/shop"
+            routerLink="/shop/experiences"
             routerLinkActive="bg-brand/10 text-brand"
             class="block rounded-xl px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100"
             (click)="closeMenus()"
@@ -245,6 +263,14 @@ import { UserAvatar } from '../user-avatar/user-avatar';
               (click)="closeMenus()"
             >
               Perfiles de usuarios
+            </a>
+            <a
+              routerLink="/admin/comments"
+              routerLinkActive="bg-brand/10 text-brand"
+              class="block rounded-xl px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100"
+              (click)="closeMenus()"
+            >
+              Comentarios
             </a>
             <a
               routerLink="/events/create"

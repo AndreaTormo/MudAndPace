@@ -1,4 +1,5 @@
 import { EventStatus } from './event.model';
+import { RatingSummary } from './rating.model';
 
 export type DepartureStatus = 'scheduled' | 'full' | 'cancelled' | 'completed';
 
@@ -28,6 +29,7 @@ export interface Departure {
   created_At?: string;
   updated_at?: string;
   event?: DepartureEventSummary;
+  rating?: RatingSummary;
 }
 
 export interface DeparturePayload {

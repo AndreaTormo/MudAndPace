@@ -30,6 +30,10 @@ class EventRepository {
     return Event.findOne(query).populate(POPULATE);
   }
 
+  async findByIds(ids) {
+    return Event.find({ _id: { $in: ids }, ...NOT_DELETED }).select('name slug variants');
+  }
+
   async findBySlug(slug, { includeDeleted = false } = {}) {
     const query = includeDeleted ? { slug } : { slug, ...NOT_DELETED };
     return Event.findOne(query).populate(POPULATE);

@@ -6,6 +6,7 @@ const validate = require('../middlewares/validate.middleware');
 const { chatSchema } = require('../validators/agent_ia.validator');
 const weatherRoutes = require('./weather.routes');
 const activityRoutes = require('./activity.routes');
+const commentAnalysisRoutes = require('./commentAnalysis.routes');
 
 const router = express.Router();
 
@@ -27,5 +28,6 @@ const chatLimiter = rateLimit({
 router.post('/chat', chatLimiter, validate(chatSchema), controller.chat);
 router.use('/weather', weatherRoutes);
 router.use('/activities', activityRoutes);
+router.use('/comments', commentAnalysisRoutes);
 
 module.exports = router;

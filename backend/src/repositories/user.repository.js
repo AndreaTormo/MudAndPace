@@ -25,6 +25,14 @@ class UserRepository {
     return User.findById(id);
   }
 
+  async findByIdsIncludingDeleted(ids) {
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return [];
+    }
+
+    return User.find({ _id: { $in: ids } });
+  }
+
   async existsByEmail(email) {
     return Boolean(await User.exists({ email: String(email).toLowerCase(), ...NOT_DELETED }));
   }

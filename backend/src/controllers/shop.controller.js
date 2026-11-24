@@ -1,5 +1,9 @@
 const shopService = require('../services/shop.service');
 
+function actorFrom(req) {
+  return { userId: req.user?.id, role: req.user?.role };
+}
+
 class ShopController {
   async getCategories(req, res) {
     const data = await shopService.getCategories();
@@ -17,17 +21,17 @@ class ShopController {
   }
 
   async getEvents(req, res) {
-    const { data, pagination } = await shopService.getEvents(req.query);
+    const { data, pagination } = await shopService.getEvents(req.query, actorFrom(req));
     res.json({ success: true, message: 'Eventos obtenidos correctamente', data, pagination });
   }
 
   async getEventBySlug(req, res) {
-    const data = await shopService.getEventBySlug(req.params.slug);
+    const data = await shopService.getEventBySlug(req.params.slug, actorFrom(req));
     res.json({ success: true, message: 'Evento obtenido correctamente', data });
   }
 
   async getDeparturesByEventSlug(req, res) {
-    const data = await shopService.getDeparturesByEventSlug(req.params.slug);
+    const data = await shopService.getDeparturesByEventSlug(req.params.slug, actorFrom(req));
     res.json({ success: true, message: 'Salidas obtenidas correctamente', data });
   }
 }

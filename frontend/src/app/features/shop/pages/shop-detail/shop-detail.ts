@@ -4,17 +4,20 @@ import { Subject, distinctUntilChanged, firstValueFrom, map, takeUntil } from 'r
 import { Departure } from '../../../../core/models/departure.model';
 import {
   DIFFICULTY_LABELS,
+  EventVariant,
   SURFACE_LABELS
 } from '../../../../core/models/event.model';
 import { ShopFilters } from '../../../../core/models/shop.model';
 import { ShopService } from '../../../../core/services/shop.service';
 import { ShopStore } from '../../../../core/stores/shop.store';
+import { CommentSection } from '../../../events/components/comment-section/comment-section';
 import { ActivityPanel } from '../../../../shared/components/activity-panel/activity-panel';
 import { EmptyState } from '../../../../shared/components/empty-state/empty-state';
 import { ErrorState } from '../../../../shared/components/error-state/error-state';
 import { EventMap } from '../../../../shared/components/event-map/event-map';
 import { WeatherCard } from '../../../../shared/components/weather-card/weather-card';
 import { SkeletonLoader } from '../../../../shared/components/skeleton-loader/skeleton-loader';
+import { StarRating } from '../../../../shared/components/star-rating/star-rating';
 import { resolveAssetUrl } from '../../../../shared/utils/asset.util';
 import { isHttpError } from '../../../../shared/utils/error.util';
 import {
@@ -31,7 +34,7 @@ import { buildShopQueryParams, parseShopFilters } from '../../utils/shop-query.u
   selector: 'app-shop-detail',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, EmptyState, ErrorState, EventMap, ActivityPanel, WeatherCard, SkeletonLoader],
+  imports: [RouterLink, EmptyState, ErrorState, EventMap, ActivityPanel, CommentSection, WeatherCard, SkeletonLoader, StarRating],
   template: `
     <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
       @if (store.detailLoading()) {
@@ -146,6 +149,21 @@ import { buildShopQueryParams, parseShopFilters } from '../../utils/shop-query.u
                     <p class="text-sm text-gray-500 dark:text-gray-500 sm:text-base">
                       @if (eventYear()) { {{ eventYear() }} · }{{ locationText() }}
                     </p>
+                    @if (store.ratingSummary(); as rating) {
+                      <div class="flex flex-wrap items-center gap-2">
+                        <app-star-rating
+                          [value]="rating.average"
+                          [readOnly]="true"
+                          [showValue]="true"
+                          label="Valoración media de la experiencia"
+                        />
+                        @if (rating.total > 0) {
+                          <span class="text-xs text-gray-500">
+                            {{ rating.total }} {{ rating.total === 1 ? 'valoración' : 'valoraciones' }}
+                          </span>
+                        }
+                      </div>
+                    }
                   </div>
                 </header>
 
@@ -165,7 +183,16 @@ import { buildShopQueryParams, parseShopFilters } from '../../utils/shop-query.u
                     <h2 class="text-sm font-semibold uppercase tracking-[0.08em] text-gray-500 dark:text-gray-500">Modalidades</h2>
                     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                       @for (variant of ev.variants!; track $index) {
-                        <article class="flex h-full flex-col rounded-[16px] border border-gray-200 bg-gray-50 p-4 sm:p-6 dark:border-line dark:bg-night2">
+                        <button
+                          type="button"
+                          (click)="selectVariant(variant)"
+                          [disabled]="!departureForVariant(variant)"
+                          [attr.aria-pressed]="isVariantSelected(variant)"
+                          class="flex h-full w-full flex-col rounded-[16px] border p-4 text-left transition disabled:cursor-not-allowed disabled:opacity-60 sm:p-6"
+                          [class]="isVariantSelected(variant)
+                            ? 'border-brand bg-brand/5 ring-1 ring-brand/20 dark:border-brand dark:bg-brand/10'
+                            : 'border-gray-200 bg-gray-50 hover:border-brand/40 dark:border-line dark:bg-night2'"
+                        >
                           <div class="flex items-start justify-between gap-4">
                             <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-900">{{ variant.name }}</h3>
                             <p class="shrink-0 text-lg font-semibold text-brand dark:text-accent">{{ formatPrice(variant.price) }}</p>
@@ -181,7 +208,7 @@ import { buildShopQueryParams, parseShopFilters } from '../../utils/shop-query.u
                               <dd class="font-medium text-gray-900 dark:text-gray-900">{{ formatElevation(variant.elevationGain) }}</dd>
                             </div>
                           </dl>
-                        </article>
+                        </button>
                       }
                     </div>
                   </section>
@@ -250,6 +277,14 @@ import { buildShopQueryParams, parseShopFilters } from '../../utils/shop-query.u
               [eventName]="ev.name"
               [eventDate]="ev.startDate"
             />
+
+            @if (store.selectedDeparture(); as departure) {
+              <app-comment-section
+                class="block"
+                [departureId]="departure._id"
+                [canComment]="isDepartureFinished(departure)"
+              />
+            }
           </div>
 
           <aside class="space-y-4">
@@ -286,7 +321,7 @@ import { buildShopQueryParams, parseShopFilters } from '../../utils/shop-query.u
 
               <div class="border-t border-gray-100 pt-4">
                 <div class="mb-3 flex items-center justify-between gap-2">
-                  <p class="text-xs uppercase tracking-wide text-gray-400">Salidas disponibles</p>
+                  <p class="text-xs uppercase tracking-wide text-gray-400">Salidas</p>
                   @if (store.hasDepartures()) {
                     <span class="text-xs font-medium text-gray-400">
                       {{ store.departures().length }}
@@ -328,15 +363,20 @@ import { buildShopQueryParams, parseShopFilters } from '../../utils/shop-query.u
                       >
                         <div class="flex items-start justify-between gap-3">
                           <div class="min-w-0">
+                            <p class="text-xs font-semibold uppercase tracking-wide text-brand">{{ variantLabel(departure) }}</p>
                             <p class="text-sm font-semibold text-gray-900">{{ formatDateLong(departure.startDatetime) }}</p>
                             <p class="mt-0.5 text-xs text-gray-500">
                               {{ formatTime(departure.startDatetime) }} → {{ formatTime(departure.endDatetime) }}
                             </p>
                             <p
                               class="mt-1 text-xs"
-                              [class]="departure.spotsLeft > 0 ? 'text-gray-500' : 'text-rose-600'"
+                              [class]="isDepartureFinished(departure)
+                                ? 'text-brand'
+                                : (departure.spotsLeft > 0 ? 'text-gray-500' : 'text-rose-600')"
                             >
-                              @if (departure.status === 'full' || departure.spotsLeft === 0) {
+                              @if (isDepartureFinished(departure)) {
+                                Finalizada · puedes comentar
+                              } @else if (departure.status === 'full' || departure.spotsLeft === 0) {
                                 Sin plazas disponibles
                               } @else {
                                 {{ departure.spotsLeft }}
@@ -369,9 +409,11 @@ import { buildShopQueryParams, parseShopFilters } from '../../utils/shop-query.u
                         type="button"
                         disabled
                         class="button-primary mt-3 w-full opacity-60"
-                        title="La reserva estará disponible próximamente"
+                        [title]="isDepartureFinished(selected)
+                          ? 'Esta salida ya ha finalizado'
+                          : 'La reserva estará disponible próximamente'"
                       >
-                        Reserva próximamente
+                        {{ isDepartureFinished(selected) ? 'Salida finalizada' : 'Reserva próximamente' }}
                       </button>
                     </div>
                   }
@@ -540,6 +582,39 @@ export class ShopDetail implements OnInit, OnDestroy {
     return this.store.selectedDeparture()?._id === departure._id;
   }
 
+  protected isVariantSelected(variant: EventVariant): boolean {
+    const departure = this.departureForVariant(variant);
+    return departure ? this.isSelected(departure) : false;
+  }
+
+  protected variantLabel(departure: Departure): string {
+    const variant = this.store.event()?.variants?.find(
+      (item) => this.departureForVariant(item)?._id === departure._id
+    );
+    return variant?.name ?? 'Salida';
+  }
+
+  protected departureForVariant(variant: EventVariant): Departure | undefined {
+    const slugPart = this.slugifyVariantName(variant.name);
+    const departures = this.store.departures();
+    const bySlug = slugPart
+      ? departures.find((departure) => departure.slug.includes(`-${slugPart}-`))
+      : undefined;
+    return bySlug ?? departures.find((departure) => departure.price === variant.price);
+  }
+
+  protected selectVariant(variant: EventVariant): void {
+    const departure = this.departureForVariant(variant);
+    if (departure) {
+      this.selectDeparture(departure);
+    }
+  }
+
+  protected isDepartureFinished(departure: Departure): boolean {
+    const end = new Date(departure.endDatetime).getTime();
+    return Number.isFinite(end) && end < Date.now();
+  }
+
   protected selectDeparture(departure: Departure): void {
     this.store.selectDeparture(departure._id);
   }
@@ -555,6 +630,15 @@ export class ShopDetail implements OnInit, OnDestroy {
     void this.router.navigate(['/shop/experiences'], {
       queryParams: buildShopQueryParams(filters)
     });
+  }
+
+  private slugifyVariantName(name: string): string {
+    return name
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
   }
 
   private async load(slug: string): Promise<void> {

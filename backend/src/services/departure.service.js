@@ -1,10 +1,13 @@
 const mongoose = require('mongoose');
 const repository = require('../repositories/departure.repository');
 const eventRepository = require('../repositories/event.repository');
+const commentService = require('./comment.service');
+const ratingService = require('./rating.service');
 const { AppError, normalizeAppError } = require('../utils/appError');
 const { validateService } = require('../utils/validation');
 const { buildMongoFilter } = require('../utils/queryBuilder');
 const { slugify } = require('../utils/slugify');
+const { resolveVariantName } = require('../utils/variant.util');
 const {
   objectIdSchema,
   slugSchema,
@@ -37,14 +40,15 @@ function validateId(id, message = 'ID de salida inválido') {
   return parsed.data;
 }
 
-function serializeDeparture(departure) {
+function serializeDeparture(departure, rating = null) {
   const plain = typeof departure.toObject === 'function'
     ? departure.toObject({ virtuals: true })
     : departure;
 
   return {
     ...plain,
-    spotsLeft: Math.max(0, plain.capacity - plain.bookedParticipants)
+    spotsLeft: Math.max(0, plain.capacity - plain.bookedParticipants),
+    rating: rating ?? { average: null, total: 0, mine: null }
   };
 }
 
@@ -103,9 +107,11 @@ function formatDatePart(date) {
   return `${iso.slice(0, 10)}-${iso.slice(11, 13)}${iso.slice(14, 16)}`;
 }
 
-async function buildUniqueSlug(event, startDatetime, excludeId) {
+async function buildUniqueSlug(event, startDatetime, excludeId, departure = {}) {
   const datePart = formatDatePart(startDatetime);
-  const base = slugify(`${event.slug}-${datePart}`).slice(0, 120).replace(/-+$/g, '')
+  const variantName = resolveVariantName(departure, event);
+  const variantPart = variantName ? `${slugify(variantName)}-` : '';
+  const base = slugify(`${event.slug}-${variantPart}${datePart}`).slice(0, 120).replace(/-+$/g, '')
     || `departure-${datePart}`;
 
   let candidate = base;
@@ -161,7 +167,7 @@ class DepartureService {
     }
   }
 
-  async getShopDeparturesByEventSlug(rawSlug) {
+  async getShopDeparturesByEventSlug(rawSlug, actor = {}) {
     try {
       const slug = validateService(slugSchema, rawSlug);
       const event = await eventRepository.findBySlug(slug);
@@ -170,8 +176,14 @@ class DepartureService {
         throw new AppError('Evento no encontrado', 404, 'EVENT_NOT_FOUND');
       }
 
-      const departures = await repository.findUpcomingByEventId(event._id);
-      return departures.map(serializeDeparture);
+      const departures = await repository.findByEventId(event._id);
+      const ratings = await ratingService.getSummariesForDepartures(
+        departures.map((departure) => departure._id),
+        actor
+      );
+      return departures.map((departure) =>
+        serializeDeparture(departure, ratings.get(String(departure._id)))
+      );
     } catch (error) {
       throw normalizeAppError(error);
     }
@@ -198,7 +210,9 @@ class DepartureService {
       validateBusinessRules(payload);
 
       const bookedParticipants = payload.bookedParticipants ?? 0;
-      const slug = await buildUniqueSlug(event, payload.startDatetime);
+      const slug = await buildUniqueSlug(event, payload.startDatetime, undefined, {
+        price: payload.price
+      });
       const status = payload.status ?? (bookedParticipants >= payload.capacity ? 'full' : 'scheduled');
 
       const created = await repository.create({
@@ -243,7 +257,8 @@ class DepartureService {
         data.slug = await buildUniqueSlug(
           event,
           payload.startDatetime ?? current.startDatetime,
-          id
+          id,
+          { slug: current.slug, price: payload.price ?? current.price }
         );
       }
 
@@ -326,6 +341,8 @@ class DepartureService {
       }
 
       await repository.hardDeleteById(id);
+      await commentService.deleteByDeparture(id);
+      await ratingService.deleteByDeparture(id);
       return { deleted: true };
     } catch (error) {
       throw normalizeAppError(error);

@@ -29,8 +29,6 @@ src/
 │   ├── location.model.js
 │   ├── profile.model.js
 │   └── user.model.js
-├── policies/
-│   └── access.policy.js         # reglas ABAC
 ├── repositories/
 │   ├── event.repository.js
 │   ├── eventImage.repository.js
@@ -42,7 +40,7 @@ src/
 │   ├── event.routes.js
 │   ├── reference.routes.js
 │   └── user.routes.js
-├── services/
+├── services/                    # lógica de negocio y reglas ABAC por recurso
 │   ├── auth.service.js
 │   ├── email.service.js
 │   ├── errors.js

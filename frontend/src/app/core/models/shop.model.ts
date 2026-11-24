@@ -6,6 +6,7 @@ import {
   EventLocation
 } from './event.model';
 import { PaginationMeta } from './pagination.model';
+import { RatingSummary } from './rating.model';
 
 export type ShopDistanceSlug = 'corta' | 'media' | 'larga' | 'ultra';
 
@@ -33,6 +34,7 @@ export interface ShopFilters {
 
 export interface ShopEvent extends Event {
   images?: EventImage[];
+  rating?: RatingSummary;
 }
 
 export type ShopPagination = PaginationMeta;

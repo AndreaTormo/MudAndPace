@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { forkJoin, firstValueFrom } from 'rxjs';
@@ -39,21 +39,13 @@ const AVATAR_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp']);
               <p class="truncate text-lg font-semibold text-gray-900">{{ currentUser.name }}</p>
               <p class="truncate text-sm text-gray-500">{{ currentUser.email }}</p>
               <div class="mt-2 flex flex-wrap gap-2">
-                <span class="badge bg-brand/10 text-brand">
+                <span [class]="'badge ' + roleBadgeClass()">
                   {{ isAdmin() ? 'Administrador' : 'Usuario' }}
                 </span>
-                <span
-                  class="badge"
-                  [class.badge-active]="currentUser.emailVerified"
-                  [class.badge-inactive]="!currentUser.emailVerified"
-                >
+                <span [class]="'badge ' + emailBadgeClass()">
                   {{ currentUser.emailVerified ? 'Email verificado' : 'Email sin verificar' }}
                 </span>
-                <span
-                  class="badge"
-                  [class.badge-active]="currentUser.isActive"
-                  [class.badge-inactive]="!currentUser.isActive"
-                >
+                <span [class]="'badge ' + statusBadgeClass()">
                   {{ currentUser.isActive ? 'Cuenta activa' : 'Cuenta inactiva' }}
                 </span>
               </div>
@@ -220,6 +212,15 @@ export class ProfilePage implements OnInit {
 
   protected readonly user = this.auth.user;
   protected readonly isAdmin = this.auth.isAdmin;
+  protected readonly roleBadgeClass = computed(() =>
+    this.isAdmin() ? 'badge-admin' : 'badge-user'
+  );
+  protected readonly emailBadgeClass = computed(() =>
+    this.user()?.emailVerified ? 'badge-email-verified' : 'badge-email-unverified'
+  );
+  protected readonly statusBadgeClass = computed(() =>
+    this.user()?.isActive ? 'badge-active' : 'badge-inactive'
+  );
   protected readonly saving = signal(false);
   protected readonly uploadingAvatar = signal(false);
   protected readonly errorMessage = signal<string | null>(null);

@@ -1,5 +1,11 @@
+const fs = require('fs');
 const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '.env') });
+
+const backendEnvPath = path.join(__dirname, '..', 'backend', '.env');
+if (fs.existsSync(backendEnvPath)) {
+  require('dotenv').config({ path: backendEnvPath });
+}
 
 const express = require('express');
 const cors = require('cors');
@@ -37,6 +43,9 @@ const port = Number(process.env.PORT) || 3001;
 if (require.main === module) {
   if (!process.env.GROQ_API_KEY) {
     console.warn('GROQ_API_KEY no está definida: el chat del asistente no funcionará.');
+  }
+  if (!process.env.JWT_SECRET) {
+    console.warn('JWT_SECRET no está definida: el análisis de sentimiento no funcionará.');
   }
   if (!process.env.MONGODB_URI) {
     console.warn('MONGODB_URI no está definida: las actividades no funcionarán.');

@@ -35,6 +35,24 @@ Health: `GET http://localhost:3001/health`
 - Usa Open-Meteo (sin API key) y caché en memoria de 30 minutos.
 - Documentación detallada en `weather.md`.
 
+## Análisis de comentarios
+
+Los comentarios siguen viviendo en el backend principal. Este servicio solo genera el resumen y el análisis de sentimiento, y persiste sus propios resultados en `ai_comment_summaries` y `ai_sentiment_analyses` de la misma MongoDB.
+
+- `GET http://localhost:3001/api/v1/agent/comments/:departureId/summary` (público, rate limit 10 req/15 min por IP)
+- `GET http://localhost:3001/api/v1/agent/comments/sentiment` (solo ADMIN, rate limit 5 req/15 min por usuario)
+
+Query del sentimiento:
+
+- `scope=global|departure|event` (por defecto `global`)
+- `departureId` obligatorio si `scope=departure`
+- `eventId` obligatorio si `scope=event`
+- `includeDeleted=true` para incluir comentarios borrados (por defecto `false`)
+
+Ambos endpoints devuelven `{ "success": true, "message": "...", "data": { ... } }`. Sin comentarios, devuelven `state: "no_data"` y no llaman a Groq. El sentimiento incluye distribución, puntuación 0-100, temas, evolución mensual y rankings con mínimo 5 comentarios.
+
+El frontend accede a través del gateway: `GET /api/v1/agent/comments/...`. La cookie de ADMIN (`mp_access_token` por defecto) llega al servicio IA y se valida contra `JWT_SECRET`, la colección `sessions` y el rol del usuario.
+
 ## Variables de entorno (en `backend_agent_ia/.env`)
 
 - `PORT` (por defecto `3001`)
@@ -42,5 +60,12 @@ Health: `GET http://localhost:3001/health`
 - `MONGODB_URI` (por defecto `mongodb://localhost:27017/trail_running`)
 - `GROQ_API_KEY`
 - `GROQ_MODEL` (por defecto `openai/gpt-oss-120b`)
+- `JWT_SECRET`, `JWT_ISSUER`, `JWT_AUDIENCE`, `AUTH_COOKIE_NAME` (para validar el acceso ADMIN al sentimiento)
 
-El clima no necesita variables de entorno nuevas. Las actividades necesitan `MONGODB_URI`.
+El clima no necesita variables de entorno nuevas. Las actividades y el análisis de comentarios necesitan `MONGODB_URI`. El análisis de sentimiento necesita además `JWT_SECRET` igual que en el backend principal. Si no están definidas en `backend_agent_ia/.env`, el servicio las toma de `backend/.env` al arrancar (sin sobrescribir las propias).
+
+## Tests
+
+```bash
+npm test
+```

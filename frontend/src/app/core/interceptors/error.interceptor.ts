@@ -7,9 +7,30 @@ function isSilentErrorUrl(url: string): boolean {
   return (
     url.includes('/agent/weather') ||
     url.includes('/agent/activities') ||
+    (url.includes('/agent/comments/') && url.endsWith('/summary')) ||
     url.includes('/auth/refresh')
   );
 }
+
+const CODE_MESSAGES: Record<string, string> = {
+  DUPLICATE_COMMENT: 'Ya has publicado un comentario idéntico recientemente.',
+  COMMENT_COOLDOWN: 'Espera unos segundos antes de volver a publicar un comentario.',
+  COMMENT_NOT_FOUND: 'No se ha encontrado el comentario.',
+  COMMENT_FORBIDDEN: 'No tienes permiso para realizar esta acción sobre el comentario.',
+  COMMENT_ALREADY_REPORTED: 'Ya has reportado este comentario.',
+  COMMENT_ALREADY_HIDDEN: 'El comentario ya está oculto.',
+  COMMENT_ALREADY_ACTIVE: 'El comentario no está en la papelera.',
+  DEPARTURE_NOT_COMPLETED: 'Podrás comentar o valorar cuando la salida haya finalizado.',
+  DEPARTURE_NOT_COMMENTABLE: 'La salida no admite comentarios en este momento.',
+  EVENT_NOT_COMMENTABLE: 'El evento no admite comentarios en este momento.',
+  RATING_UNAUTHENTICATED: 'Debes iniciar sesión para valorar esta salida.',
+  RATING_NOT_FOUND: 'Todavía no tienes una valoración en esta salida.',
+  RATING_FORBIDDEN: 'No tienes permiso para modificar esta valoración.',
+  RATING_SAVE_FAILED: 'No se ha podido guardar la valoración. Inténtalo de nuevo.',
+  AI_UNAVAILABLE: 'El servicio de análisis IA no está disponible ahora mismo.',
+  AI_TIMEOUT: 'El análisis IA ha tardado demasiado. Inténtalo de nuevo.',
+  AI_INVALID_RESPONSE: 'El servicio IA ha devuelto una respuesta inesperada.'
+};
 
 export const errorInterceptor: HttpInterceptorFn = (req, next) => {
   return next(req).pipe(
@@ -23,9 +44,11 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
       } else {
         const body = error.error as ApiErrorBody | null | undefined;
         const apiMessage = body?.error?.message;
+        const apiCode = body?.error?.code;
+        const baseMessage = (apiCode && CODE_MESSAGES[apiCode]) || apiMessage;
 
         if (error.status === 400) {
-          message = apiMessage ?? 'La solicitud no es válida.';
+          message = baseMessage ?? 'La solicitud no es válida.';
           const details = body?.error?.details;
           if (Array.isArray(details) && details.length > 0) {
             const lines = details
@@ -40,17 +63,17 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
             message = `${message}\n\n${lines}`;
           }
         } else if (error.status === 401) {
-          message = apiMessage ?? 'Debes iniciar sesión para acceder a este recurso.';
+          message = baseMessage ?? 'Debes iniciar sesión para acceder a este recurso.';
         } else if (error.status === 403) {
-          message = apiMessage ?? 'No tienes permiso para acceder a este recurso.';
+          message = baseMessage ?? 'No tienes permiso para acceder a este recurso.';
         } else if (error.status === 404) {
-          message = apiMessage ?? 'No se ha encontrado el recurso solicitado.';
+          message = baseMessage ?? 'No se ha encontrado el recurso solicitado.';
         } else if (error.status === 409) {
-          message = apiMessage ?? 'La operación entra en conflicto con el estado actual del recurso.';
+          message = baseMessage ?? 'La operación entra en conflicto con el estado actual del recurso.';
         } else if (error.status >= 500) {
-          message = 'Error del servidor. Inténtalo de nuevo más tarde.';
+          message = baseMessage ?? 'Error del servidor. Inténtalo de nuevo más tarde.';
         } else {
-          message = apiMessage ?? message;
+          message = baseMessage ?? message;
         }
       }
 

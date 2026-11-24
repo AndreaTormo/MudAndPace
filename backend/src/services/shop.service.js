@@ -1,9 +1,10 @@
 const repository = require('../repositories/shop.repository');
 const referenceRepository = require('../repositories/reference.repository');
 const departureService = require('./departure.service');
+const ratingService = require('./rating.service');
 const { AppError, normalizeAppError } = require('../utils/appError');
 const { validateService } = require('../utils/validation');
-const { combineClauses, mergeValues, regexOr } = require('../utils/queryBuilder');
+const { combineClauses, mergeValues, prefixRegexOr } = require('../utils/queryBuilder');
 const { slugSchema } = require('../validators/event.validator');
 const { shopListQuerySchema } = require('../validators/shop.validator');
 
@@ -64,16 +65,7 @@ function distanceClause(slug) {
 }
 
 function partialSearchClause(value) {
-  const tokens = String(value)
-    .trim()
-    .split(/\s+/)
-    .filter(Boolean);
-
-  const clauses = tokens.map((token) =>
-    regexOr(['name', 'description', 'tags', 'slug'], token)
-  );
-
-  return clauses.length === 1 ? clauses[0] : { $and: clauses };
+  return prefixRegexOr(['name', 'slug'], value);
 }
 
 function groupImages(images = []) {
@@ -89,14 +81,15 @@ function groupImages(images = []) {
   return byEvent;
 }
 
-function serializeEvent(event, imagesByEvent) {
+function serializeEvent(event, imagesByEvent, rating = null) {
   const plain = typeof event.toObject === 'function'
     ? event.toObject({ virtuals: true })
     : event;
 
   return {
     ...plain,
-    images: imagesByEvent.get(String(plain._id)) ?? []
+    images: imagesByEvent.get(String(plain._id)) ?? [],
+    rating: rating ?? { average: null, total: 0, mine: null }
   };
 }
 
@@ -113,7 +106,7 @@ class ShopService {
     return repository.findActiveLocations();
   }
 
-  async getEvents(rawQuery = {}) {
+  async getEvents(rawQuery = {}, actor = {}) {
     try {
       const input = normalizeShopQuery(validateService(shopListQuerySchema, rawQuery));
       const page = input.page ?? DEFAULT_PAGE;
@@ -156,11 +149,17 @@ class ShopService {
         { page, limit, sort }
       );
 
-      const images = await repository.findImagesByEventIds(data.map((event) => event._id));
+      const eventIds = data.map((event) => event._id);
+      const [images, ratings] = await Promise.all([
+        repository.findImagesByEventIds(eventIds),
+        ratingService.getSummariesForEvents(eventIds, actor)
+      ]);
       const imagesByEvent = groupImages(images);
 
       return {
-        data: data.map((event) => serializeEvent(event, imagesByEvent)),
+        data: data.map((event) =>
+          serializeEvent(event, imagesByEvent, ratings.get(String(event._id)))
+        ),
         pagination: paginationMeta(total, page, limit)
       };
     } catch (error) {
@@ -168,7 +167,7 @@ class ShopService {
     }
   }
 
-  async getEventBySlug(rawSlug) {
+  async getEventBySlug(rawSlug, actor = {}) {
     try {
       const slug = validateService(slugSchema, rawSlug);
       const event = await repository.findPublishedEventBySlug(slug);
@@ -177,15 +176,18 @@ class ShopService {
         throw new AppError('Evento no encontrado', 404, 'EVENT_NOT_FOUND');
       }
 
-      const images = await repository.findImagesByEventIds([event._id]);
-      return serializeEvent(event, groupImages(images));
+      const [images, ratings] = await Promise.all([
+        repository.findImagesByEventIds([event._id]),
+        ratingService.getSummariesForEvents([event._id], actor)
+      ]);
+      return serializeEvent(event, groupImages(images), ratings.get(String(event._id)));
     } catch (error) {
       throw normalizeAppError(error);
     }
   }
 
-  async getDeparturesByEventSlug(rawSlug) {
-    return departureService.getShopDeparturesByEventSlug(rawSlug);
+  async getDeparturesByEventSlug(rawSlug, actor = {}) {
+    return departureService.getShopDeparturesByEventSlug(rawSlug, actor);
   }
 }
 

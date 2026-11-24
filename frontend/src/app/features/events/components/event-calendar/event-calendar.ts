@@ -119,6 +119,8 @@ import {
                 <li>
                   <a
                     [routerLink]="['/events', event._id]"
+                    [class.event-card-draft]="isEventDraft(event)"
+                    [class.event-card-inactive]="isEventInactive(event)"
                     class="flex flex-col gap-1 rounded-lg border border-gray-200 p-3 transition-colors hover:border-brand/40 hover:bg-brand/5 dark:border-line dark:hover:bg-night2 sm:flex-row sm:items-center sm:justify-between"
                   >
                     <span class="min-w-0">
@@ -152,6 +154,8 @@ import {
               <li>
                 <a
                   [routerLink]="['/events', event._id]"
+                  [class.event-card-draft]="isEventDraft(event)"
+                  [class.event-card-inactive]="isEventInactive(event)"
                   class="block rounded-xl border border-gray-200 bg-surface/80 p-4 transition-colors hover:border-brand/40 hover:bg-brand/5 dark:border-line dark:hover:bg-night2"
                 >
                   <p class="text-xs font-semibold uppercase tracking-wide text-brand dark:text-accent">
@@ -274,10 +278,18 @@ export class EventCalendar implements OnInit {
     return `${base} border-gray-200 bg-surface hover:border-brand/40 hover:bg-brand/5 dark:border-line dark:hover:bg-night2`;
   }
 
+  protected isEventDraft(event: Event): boolean {
+    return event.isActive && event.status === 'draft';
+  }
+
+  protected isEventInactive(event: Event): boolean {
+    return !event.isActive;
+  }
+
   protected eventChipClass(event: Event): string {
     const base = 'block truncate rounded px-1.5 py-0.5 text-[11px] font-medium leading-4 transition-colors';
     if (!event.isActive) {
-      return `${base} bg-gray-100 text-gray-500 hover:bg-gray-200`;
+      return `${base} event-chip-inactive bg-gray-100 text-gray-500 hover:bg-gray-200`;
     }
     if (event.status === 'draft') {
       return `${base} bg-amber-100 text-amber-800 hover:bg-amber-200`;
@@ -288,7 +300,7 @@ export class EventCalendar implements OnInit {
   protected eventBadgeClass(event: Event): string {
     const base = 'rounded-full px-2 py-0.5 text-[11px] font-semibold';
     if (!event.isActive) {
-      return `${base} bg-gray-100 text-gray-500`;
+      return `${base} event-badge-inactive bg-gray-100 text-gray-500`;
     }
     if (event.status === 'draft') {
       return `${base} bg-amber-100 text-amber-800`;

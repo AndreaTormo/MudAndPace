@@ -40,7 +40,9 @@ npm run build                    # typecheck + build de producción
 
 La IA es un servidor independiente. El frontend solo habla con el gateway: `AI_API_URL` y `API_URL` apuntan a `http://localhost:4000/api/v1`. El gateway enruta `/api/v1/agent/**` al puerto 3001 y el resto de `/api/v1/**` y `/uploads/**` al puerto 3000. Ambos backends confían en `X-Forwarded-For` (`trust proxy = 1`) para mantener los rate limits por IP real.
 
-La verificación es manual contra la API y la app; no hay tests automatizados.
+La IA también genera el resumen de comentarios y el análisis de sentimiento. Los comentarios CRUD siguen en el backend principal (`/api/v1/departures/:departureId/comments`), pero todo lo que llama a Groq vive en `backend_agent_ia/`: `GET /api/v1/agent/comments/:departureId/summary` (público) y `GET /api/v1/agent/comments/sentiment` (solo ADMIN, validado dentro de IA con `JWT_SECRET`, sesiones y rol). La IA lee comentarios y valoraciones de la misma MongoDB y persiste resultados en `ai_comment_summaries` y `ai_sentiment_analyses`; usa fingerprint versionado (`sentiment:v2`) para recalcular solo cuando cambian los datos. El informe separa sentimiento de comentarios y de opiniones de valoraciones, añade media/distribución de notas y rankings por modalidad (`variants`). El frontend muestra el resumen en `app-comment-section` (bajo `app-rating-panel`) y el dashboard en `/admin/analytics`. `backend_agent_ia` tiene `npm test` con Jest.
+
+`backend/` tiene `npm test` con Jest para servicios de comentarios y valoraciones. `backend_agent_ia/` tiene `npm test` con Jest para el resumen y el sentimiento. El frontend se verifica con `npm run build`.
 
 ## Base de datos y seed
 
@@ -51,10 +53,12 @@ cd backend
 npm run seed
 ```
 
-- Es destructivo para hosts, categorías, ubicaciones, eventos, experiencias e imágenes: ejecuta `deleteMany` y vuelve a insertar los datos de ejemplo.
+- Es destructivo para hosts, categorías, ubicaciones, eventos, salidas, experiencias, imágenes, comentarios, valoraciones y cachés IA (`ai_comment_summaries`, `ai_sentiment_analyses`): ejecuta `deleteMany` y vuelve a insertar los datos de ejemplo.
 - No borra usuarios ni perfiles. Los usuarios demo se actualizan por email con `upsert`.
-- Deja 1 host, 2 categorías, 13 ubicaciones, 13 eventos, 1 experiencia y 1 imagen de experiencia.
+- Deja 2 hosts, 2 categorías, 13 ubicaciones, 14 eventos, 42 salidas, 1 experiencia, 70 imágenes de evento, 1 imagen de experiencia, 15 comentarios y 10 valoraciones (una eliminada).
 - Todos los eventos del seed incluyen al menos 3 modalidades en `variants`. `UTMB Mont-Blanc 2027` usa `OCC`, `CCC` y `UTMB`; `Val d'Aran by UTMB 2027` usa `20K`, `50K` y `100K`; el resto usa distancias adaptadas a su tipo de carrera.
+- `UTMB Mont-Blanc 2026` es un duplicado finalizado de `UTMB Mont-Blanc 2027`: mismas modalidades (`OCC`, `CCC`, `UTMB`) y mismas fotos de Chamonix, con fechas en agosto de 2026. Sus 3 salidas ya han terminado, así que permite publicar comentarios.
+- El seed inserta 15 comentarios y 10 valoraciones en las 3 salidas de `UTMB Mont-Blanc 2026`, con autores demo (`user@mudandpace.com`, `admin@mudandpace.com`, `admin2@mudandpace.com`). Los comentarios tienen `status: 'visible'`; una valoración está borrada lógicamente para probar `includeDeleted`.
 - Los eventos requieren `sku` único; ya está incluido en el seed. Si se añade un evento al seed sin `sku`, Mongoose falla con `Event validation failed: sku: Path \`sku\` is required.`
 - Un volumen Docker nuevo queda vacío hasta ejecutar `npm run seed`.
 - Si el frontend muestra menos eventos de los esperados, comprueba `db.events.countDocuments({})` en MongoDB.
@@ -133,6 +137,31 @@ Endpoints de eventos (`/api/v1/events`, requieren autenticación):
 
 `GET /events` acepta filtros combinables por `categorySlug`, `hostSlug`, `locationSlug` (y alias `*_slug`), `status`, `isActive`, `difficulty`, `surface`, `tags`, `minDistance`, `maxDistance`, `minElevationGain`, `maxElevationGain`, `minPrice`, `maxPrice`, `fromDate`, `toDate` y `search`. La paginación es explícita con `page` y `pageSize` (máximo 100); la respuesta mantiene `data` como array y añade `pagination: { total, page, pageSize, totalPages }`.
 
+Endpoints de comentarios (requieren autenticación):
+
+| Método | Endpoint | Acceso |
+|---|---|---|
+| GET/POST | `/api/v1/departures/:departureId/comments` | Cualquier usuario autenticado |
+| POST | `/api/v1/comments/:id/report` | Cualquier usuario autenticado (excepto el autor) |
+| GET | `/api/v1/comments` | Solo `ADMIN` |
+| GET | `/api/v1/comments/deleted` | Solo `ADMIN` |
+| PATCH | `/api/v1/comments/:id` | Solo el autor |
+| DELETE | `/api/v1/comments/:id` | Autor o `ADMIN` (borrado lógico) |
+| PATCH | `/api/v1/comments/:id/status`, `/:id/restore` | Solo `ADMIN` |
+
+- Los comentarios pertenecen a una salida (`Departure`), no al evento. Solo se pueden publicar cuando `endDatetime` ya pasó; antes devuelve 409 `DEPARTURE_NOT_COMPLETED`.
+- La salida debe estar activa/no cancelada y el evento publicado/activo; si no, devuelve 409 `DEPARTURE_NOT_COMMENTABLE` o `EVENT_NOT_COMMENTABLE`.
+- `content` admite 3–1500 caracteres tanto en el validador como en el modelo. Se rechazan etiquetas HTML, entidades `<`/`>` y esquemas `javascript:`, `data:` o `vbscript:`. El saneado posterior colapsa espacios y recorta; las URLs se muestran como texto plano, sin linkificar. El cuerpo de escrituras de comentarios está limitado a 8 KB.
+- `status` es `visible`, `reported` u `hidden`. El listado público incluye `visible` y `reported`, pero nunca `hidden` salvo para `ADMIN`.
+- `POST /comments/:id/report` exige cuerpo vacío (`{}`), impide auto-reportar y registra cada usuario en `reportedBy`. Con 3 reportes distintos el comentario pasa a `hidden` automáticamente.
+- Rate limit de 5 publicaciones por minuto por usuario en `POST` (no por IP) y de 10 reportes por minuto por usuario. Además hay cooldown de 7 segundos entre comentarios del mismo usuario y rechazo de duplicados del mismo usuario en 10 minutos mediante `contentHash`. No hay CAPTCHA.
+- Las respuestas de comentarios exponen `reportCount`, nombre/initial y avatar del autor, nunca email ni teléfono. El nombre completo solo se serializa para `ADMIN`.
+- La paginación usa `page`/`pageSize` (por defecto 20; la UI pide 5).
+- `GET /shop/experiences/:slug` devuelve también salidas finalizadas para poder comentarlas. Al eliminar definitivamente una salida se borran sus comentarios.
+- El frontend monta `app-comment-section` en el detalle de tienda junto a la salida seleccionada; `canComment` se calcula comparando `endDatetime` con `Date.now()`.
+- `GET /api/v1/comments` lista visibles, reportados y ocultos (nunca borrados) con paginación `page`/`pageSize` y filtro opcional `status`. Añade `event`, `departureSlug` y `variant`; la modalidad se deriva del slug de la salida (`<event.slug>-<slugify(variant)>-<fecha>`) o, si no, del precio cuando solo coincide una modalidad.
+- `/admin/comments` muestra filtros Todos/Visibles/Reportados/Ocultos/Papelera, permite alternar `status` con `PATCH /comments/:id/status`, eliminar con `DELETE /comments/:id` y restaurar con `PATCH /comments/:id/restore`.
+
 Referencias (`/api/v1/references/categories`, `/locations`, `/hosts`) requieren autenticación. Aceptan `search`, `slug`, `status`, `isActive` e `is_active`; ubicaciones además `city` y `country`. Los listados de usuarios y perfiles aceptan `search`, `role`, `status`, `isActive` e `is_active`.
 
 ### Papelera (borrado lógico)
@@ -173,13 +202,14 @@ Página → Store (signals) → Service (único que conoce la URL) → `ApiServi
 - `/` → `MainLayout` protegido por `authGuard`; redirige a `/shop`.
 - `/profile` → perfil del usuario autenticado.
 - `/admin/profiles` → listado de perfiles para `ADMIN`, protegido por `adminGuard` (espera a `refreshMe()` si aún no hay usuario en memoria).
+- `/admin/comments` → listado y moderación de comentarios para `ADMIN`, protegido por `adminGuard`.
 - `/events` → lista; `/events/:id` → detalle; `/events/create`, `/events/:id/edit` y `/events/trash` protegidos por `adminGuard`.
 - `guestGuard` evita que un usuario autenticado vuelva a login/registro/olvido.
 
 ### UI por rol
 
-- `navbar` y `sidebar` leen `AuthStore`; solo muestran perfiles de usuarios, crear evento, papelera y sección de administración a `ADMIN`.
-- En `/shop` la navbar se superpone al hero, la sidebar se oculta y el landing usa su propia paleta clara/oscura según el tema; el logo y la raíz enlazan a `/shop`.
+- `navbar` y `sidebar` leen `AuthStore`; solo muestran perfiles de usuarios, comentarios, crear evento, papelera y sección de administración a `ADMIN`.
+- En `/shop` la navbar se superpone al hero, la sidebar se oculta y el landing usa su propia paleta clara/oscura según el tema; el logo y la raíz enlazan a `/shop`, pero el enlace “Shop” abre `/shop/experiences`.
 - `event-row` recibe `canManage`; las acciones de administración no se renderizan para `USER`.
 - `event-list` y `event-detail` ocultan crear/editar/eliminar/activar para `USER`.
 - El selector `Lista | Calendario` de `/events` solo se muestra a `ADMIN`; la preferencia se guarda en `localStorage` (`mudandpace.events.view`). El calendario es mensual en escritorio y agenda en móvil, y cada evento enlaza a `/events/:id`.

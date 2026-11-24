@@ -48,11 +48,18 @@ function regexOr(fields, value) {
   return { $or: fields.map((field) => ({ [field]: regex })) };
 }
 
+function prefixRegexOr(fields, value) {
+  const text = String(value).trim();
+  const regex = new RegExp(`^${escapeRegex(text)}`, 'i');
+  return { $or: fields.map((field) => ({ [field]: regex })) };
+}
+
 module.exports = {
   hasValue,
   combineClauses,
   buildMongoFilter,
   mergeValues,
   escapeRegex,
-  regexOr
+  regexOr,
+  prefixRegexOr
 };

@@ -9,6 +9,7 @@ import {
   profileEmailLabel,
   profileFullName,
   profileLocation,
+  profileRoleClass,
   profileRoleLabel,
   profileStatusClass,
   profileStatusLabel
@@ -56,11 +57,11 @@ import {
       </div>
 
       <div class="flex flex-wrap items-center gap-2 sm:max-w-[18rem] sm:justify-end">
-        <span class="badge bg-brand/10 text-brand">{{ roleLabel() }}</span>
+        <span [class]="'badge ' + roleClass()">{{ roleLabel() }}</span>
         <span [class]="'badge ' + statusClass()">{{ statusLabel() }}</span>
         <span [class]="'badge ' + emailClass()">{{ emailLabel() }}</span>
         @if (!hasProfileData()) {
-          <span class="badge bg-amber-100 text-amber-800">Perfil sin completar</span>
+          <span class="badge badge-inactive">Perfil sin completar</span>
         }
       </div>
     </div>
@@ -74,6 +75,7 @@ export class AdminProfileRow {
   protected readonly fullName = computed(() => profileFullName(this.profile()));
   protected readonly hasProfileData = computed(() => checkProfileData(this.profile()));
   protected readonly location = computed(() => profileLocation(this.profile()));
+  protected readonly roleClass = computed(() => profileRoleClass(this.profile()));
   protected readonly roleLabel = computed(() => profileRoleLabel(this.profile()));
   protected readonly statusLabel = computed(() => profileStatusLabel(this.profile()));
   protected readonly statusClass = computed(() => profileStatusClass(this.profile()));

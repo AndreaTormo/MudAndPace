@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, effect, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { filter, map } from 'rxjs/operators';
@@ -14,7 +14,7 @@ import { ChatWidget } from '../../shared/components/chat-widget/chat-widget';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [RouterOutlet, Navbar, Sidebar, Loader, ChatWidget],
   template: `
-    <div class="min-h-screen bg-gray-50">
+    <div class="min-h-screen bg-gray-50" [class.admin-shell]="isAdminShell()">
       <div class="mountain-backdrop" aria-hidden="true"></div>
       <div class="mountain-fade" aria-hidden="true"></div>
       <div class="relative z-10">
@@ -48,6 +48,9 @@ export class MainLayout {
       initialValue: ['/', '/shop'].includes(this.router.url.split('?')[0])
     }
   );
+
+  private readonly isAdmin = this.auth.isAdmin;
+  protected readonly isAdminShell = computed(() => this.isAdmin() && !this.isShopHome());
 
   constructor() {
     if (this.auth.isAuthenticated()) {
